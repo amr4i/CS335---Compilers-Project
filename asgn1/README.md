@@ -1,5 +1,5 @@
 =========================================
-Instructions for building an executable:
+## Instructions for building an executable:
 =========================================
 
 $> cd asgn1
@@ -8,7 +8,7 @@ $> make
 This will create an executable named "lexer" in the asgn1/bin directory. 
 
 =========================
-Running the executable: 
+## Running the executable: 
 =========================
 
 $> bin/lexer <file>
