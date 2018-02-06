@@ -4,10 +4,13 @@ using namespace std;
 
 // 3 operand instructions
 set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">="};
+
 // 2 operand instructions
 set<string> itype2= {"=", "=!", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint"};
+
 // 1 operand instructions
 set<string> itype1= {"++", "--", "label", "print", "scan", "callvoid", "goto", "retint"};
+
 // No operand instruction
 set<string> itype0= {"ret"};
 
@@ -29,36 +32,46 @@ int main(int argc, char** argv){
         
         string ins = ir[i][1];
 
-        if(itype3.find(ins) != itype3.end()){
-            if(ir[i].size()!= 5){
+        if(itype3.find(ins) != itype3.end())
+        {
+            if(ir[i].size()!= 5)
+            {
                 cerr<<"[Error in line "<<ir[i][0]<<"] Number of tags should be 5!!\n";
                 exit(1);
             }
             Symbol*s = new Symbol(ir[i][2],"int");
             ST->insert(s);
         }
-        else if(itype2.find(ins) != itype2.end()){
-            if(ir[i].size()!= 4){
+        else if(itype2.find(ins) != itype2.end())
+        {
+            if(ir[i].size()!= 4)
+            {
                 cerr<<"[Error in line "<<ir[i][0]<<"] Number of tags should be 4!!\n";
                 exit(1);
             }
-            if(ins!="ifgoto"){
+            if(ins!="ifgoto")
+            {
                 Symbol*s = new Symbol(ir[i][2],"int");
                 ST->insert(s);
             }
         }
-        else if(itype1.find(ins) != itype1.end()){
-            if(ir[i].size()!= 3){
+        else if(itype1.find(ins) != itype1.end())
+        {
+            if(ir[i].size()!= 3)
+            {
                 cerr<<"[Error in line "<<ir[i][0]<<"] Number of tags should be 3!!\n";
                 exit(1);
             }
-            if(ins=="label"){    
+            if(ins=="label")
+            {    
                 Symbol*s = new Symbol(ir[i][2],"void");
                 ST->insert(s);
             }
         }
-        else if(itype0.find(ins) != itype0.end()){
-            if(ir[i].size()!= 2){
+        else if(itype0.find(ins) != itype0.end())
+        {
+            if(ir[i].size()!= 2)
+            {
                 cerr<<"[Error in line "<<ir[i][0]<<"] Number of tags should be 2!!\n";
                 exit(1);
             }            
@@ -70,8 +83,11 @@ int main(int argc, char** argv){
     }
 
     blocks = getBlocks();
+
     vector< pair<int, int> >::iterator it;
-    for(it = blocks.begin(); it!=blocks.end(); it++){
+
+    for(it = blocks.begin(); it!=blocks.end(); it++)
+    {
         cout << (*it).first << " " << (*it).second << endl;
     }
     
