@@ -12,6 +12,7 @@ set<string> itype1= {"++", "--", "label", "print", "scan", "callvoid", "goto", "
 set<string> itype0= {"ret"};
 
 SymTable* ST = new SymTable();
+vector< pair<int, int> > blocks;
 
 int main(int argc, char** argv){
     // Reading the text file and storing it in "ir" data structure
@@ -68,7 +69,11 @@ int main(int argc, char** argv){
         }
     }
 
-    
+    blocks = getBlocks();
+    vector< pair<int, int> >::iterator it;
+    for(it = blocks.begin(); it!=blocks.end(); it++){
+        cout << (*it).first << " " << (*it).second << endl;
+    }
     
     return 0;    
 }
