@@ -33,6 +33,6 @@ typedef set<int> si;
 #define se second
 #define INF 1000000007
 
-vector < vector < string > > vvs;
+vector < vector < string > > ir;
 
 void readFile(char* fileName);

@@ -31,7 +31,7 @@ void readFile(char* fileName)
 				}
 			}
 			if(line[s] != ' ' && line[s] != ',')	temp.pb(line.substr(s, len-s));
-			vvs.pb(temp);
+			ir.pb(temp);
 			temp.clear();
 		}
 	}

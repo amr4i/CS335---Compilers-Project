@@ -11,6 +11,6 @@ public:
 	string type;
 	map<string, string> attr;
 
-	Symbol(string name);
+	Symbol(string name,string Type);
 
 };
