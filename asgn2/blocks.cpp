@@ -7,6 +7,10 @@ vector< pair<int, int> > getBlocks(){
 	leaders.insert(1);
 	int target, lastLineNum;
 	string st;
+	it = ir.end();
+	it--;
+	st = (*it)[0];
+	stringstream(st) >> lastLineNum;
 	for(it=ir.begin(); it!=ir.end(); it++){
 		int lineNum;
 		st = (*it)[0];
@@ -25,22 +29,26 @@ vector< pair<int, int> > getBlocks(){
 		} else if(op == "callint" || op == "callvoid"){
 			leaders.insert(lineNum+1);
 		} else if(op == "ret" || op == "scan" || op == "print"){
-			leaders.insert(lineNum+1);
+			if(lineNum<lastLineNum){
+				leaders.insert(lineNum+1);
+			}
 		} else if(op == "label"){
 			leaders.insert(lineNum);
 		}
 	}
+
+
 	set<int>::iterator itt, lim, ntt;
+	cout<<leaders.size()<<"\n";
+	
 	lim = leaders.end();
 	lim--;
 	for(itt=leaders.begin(); itt != lim; itt++){
-		ntt = ++itt;
+		ntt = itt;
+		ntt++;
 		blocks.push_back(make_pair(*itt, (*ntt)-1));
 	}
-	it = ir.end();
-	it--;
-	st = (*it)[0];
-	stringstream(st) >> lastLineNum;
+	
 	blocks.push_back(make_pair(*itt, lastLineNum)); 
 	return blocks;
 }
