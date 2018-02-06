@@ -1,8 +1,8 @@
 #include "Symbol.h"
 
-Symbol::Symbol(string symName){
+Symbol::Symbol(string symName, string Type){
 	name = symName;
-	type = "";
+	type = Type;
 	isKeyword = false;
 	// attr = NULL;
 }

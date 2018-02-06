@@ -1,0 +1,10 @@
+1,=,a,2
+2,=,b,7
+3,+,a,a,b
+4, <=, x, a, 50
+5, ifgoto, x, 2
+6, callvoid, foo
+7, ret
+8, label, foo
+9, print, a
+10, ret
