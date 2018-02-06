@@ -20,12 +20,14 @@ vector< pair<int, int> > getBlocks(){
 			st = (*it)[2];
 			stringstream(st) >> target; 
 			leaders.insert(target);
-			leaders.insert(lineNum+1);
+			if(lineNum<lastLineNum)
+				leaders.insert(lineNum+1);
 		} else if(op == "ifgoto"){
 			st = (*it)[3];
 			stringstream(st) >> target; 
 			leaders.insert(target);
-			leaders.insert(lineNum+1);
+			if(lineNum<lastLineNum)
+				leaders.insert(lineNum+1);
 		} else if(op == "callint" || op == "callvoid"){
 			leaders.insert(lineNum+1);
 		} else if(op == "ret" || op == "scan" || op == "print"){
@@ -33,7 +35,8 @@ vector< pair<int, int> > getBlocks(){
 				leaders.insert(lineNum+1);
 			}
 		} else if(op == "label"){
-			leaders.insert(lineNum);
+			if(lineNum<lastLineNum)
+				leaders.insert(lineNum);
 		}
 	}
 
