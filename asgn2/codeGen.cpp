@@ -1,5 +1,5 @@
+#include "blocks.cpp"
 #include "SymTable.cpp"
-#include "IR.cpp"
 using namespace std;
 
 // 3 operand instructions
