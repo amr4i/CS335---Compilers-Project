@@ -1,4 +1,4 @@
-#include "Block.cpp"
+#include "getBlocks.cpp"
 
 using namespace std;
 
@@ -15,10 +15,14 @@ int main(int argc, char** argv){
 
     nextUseTable.resize(IR.size()+1);
 
-    for(it = blocks.begin() ; it != blocks.end() ; it++)
+    int siz = blocks.size();
+    fori(0, siz)
     {
-        (*it)->computeNextUse();
+        // (*it)->computeNextUse();
+        cout<<blocks[i]->startLine<<" "<<blocks[i]->endLine<<"\n";
     }
+
+
 
     // populateNextUse();
 

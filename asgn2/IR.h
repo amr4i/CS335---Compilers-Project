@@ -13,8 +13,6 @@ set<string> itype1= {"++", "--", "label", "print", "scan", "callvoid", "goto", "
 // No operand instruction
 set<string> itype0= {"ret"};
 
-vector < TAC* > IR;
-SymTable symTable;
 
 // TODO : Array
 
@@ -44,4 +42,9 @@ struct TAC
 	bool isInt2;
 };
 
+vector < TAC* > IR;
+SymTable symTable;
+
 void readFile(char* fileName);
+void fillTAC(vector <string> instr);
+bool isIntegerLiteral(string str);

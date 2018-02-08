@@ -1,6 +1,6 @@
 #include "Block.cpp"
 
-vector<Block> blocks;
+vector<Block*> blocks;
 
 void getBlocks(){
 
@@ -26,13 +26,13 @@ void getBlocks(){
 		if(opr == "goto" || opr == "ifgoto") {
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(op == "callint" || op == "callvoid"){
+		} else if(opr == "callint" || opr == "callvoid"){
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(op == "ret" || op == "scan" || op == "print"){
+		} else if(opr == "ret" || opr == "scan" || opr == "print"){ // TODO : print, scan
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(op == "label"){
+		} else if(opr == "label"){
 			if(lineNum<=lastLineNum) { leaders.insert(lineNum); }
 
 		}
