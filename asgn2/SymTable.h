@@ -1,9 +1,5 @@
+#include "config.h"
 #include "Symbol.cpp"
-#include <iostream>
-
-#include <string>
-#include <vector> 
-using namespace std;
 
 class SymTable{
 	public:

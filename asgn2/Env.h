@@ -1,3 +1,4 @@
+#include "config.h"
 #include "SymTable.cpp"
 
 class Env{

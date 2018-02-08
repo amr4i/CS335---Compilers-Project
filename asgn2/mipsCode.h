@@ -1,15 +1,13 @@
-#include <string>
-#include <vector>
-#include <map>
+#include "config.h"
 #include "SymTable.cpp"
 
 class mipsCode{
 public:
-	vector<string> code;
-	vector<string> freeRegs; 
-	vector<string> usedRegs;
-	map<string, string> regDesc;
-	map<string, map<string, string> > addDesc; 
+	vector <string> code;
+	vector <string> freeRegs; 
+	vector <string> usedRegs;
+	map <string, string> regDesc;
+	map <string, map<string, string> > addDesc; 
 	SymTable ST;
 
 	mipsCode(SymTable SymT);

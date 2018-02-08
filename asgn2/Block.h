@@ -1,6 +1,4 @@
 #include "IR.cpp"
-#include <sstream>
-#include <iterator>
 
 class Block{
 	int s, e;
@@ -9,4 +7,3 @@ class Block{
 	void computeNextUse();
 };
 
-vector< pair<int, int> > getBlocks();
