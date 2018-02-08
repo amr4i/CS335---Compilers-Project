@@ -35,7 +35,7 @@ struct TAC
 	Symbol* opd1;
 	Symbol* opd2;
 
-	int target;
+	string target;
 
 	int l1;
 	int l2;

@@ -1,73 +1,66 @@
 #include "Block.h"
+#include "NextUseTable.h"
 
-vector< pair<int, int> > getBlocks(){
+// void Block::computeNextUse()
+// {
+// 	forin(endLine-1, startLine-1)
+// 	{
+// 		string op = IR[i].op;
+// 		int opType = IR[i].opType;
 
-	vector< pair<int, int> > blocks;
-	vector< vector<string> >::iterator it;
-	set<int> leaders;
-	int target, lastLineNum;
-	string st;
-	
-	leaders.insert(1);
+// 		switch(opType){
+			
+// 		}
 
-	it = ir.end();
-	it--;
-	st = (*it)[0];
+// 	}
+// }
+// void computeNextUse(int l, int r)
+// {
+//     map < string, pair< string, int > > bs;
+//     int ln;
 
-	stringstream(st) >> lastLineNum;
+//     forin(r-1, l-1)
+//     {
+//         string op = ir[i][1];
+//         stringstream(ir[i][0]) >> ln;
 
-	for(it=ir.begin(); it!=ir.end(); it++)
-	{
-		int lineNum;
+//         if(itype3.find(op) != itype3.end())
+//         {   
+//             if(bs.find(ir[i][2]) == bs.end())
+//             {
+//                 bs[ir[i][2]] = pair <string, int> (string("Live"), -1);
+//             }
+//             else { bs[ir[i][2]].first = "Live"; }
 
-		st = (*it)[0];
-		stringstream(st) >> lineNum; 
-		string op = (*it)[1];
+//             bs[ir[i][3]] = pair <string, int> (string("Dead"), ln);
+//             bs[ir[i][4]] = pair <string, int> (string("Dead"), ln);
 
-		if(op == "goto")
-		{
-			st = (*it)[2];
-			stringstream(st) >> target; 
-			leaders.insert(target);
+//         } else if(itype2.find(op) != itype2.end())
+//         {
+//             if(op == "=")
+//             {
+//                 if(bs.find(ir[i][2]) == bs.end())
+//                 {
+//                     bs[ir[i][2]] = pair <string, int> (string("Live"), -1);
+//                 }
+//                 else { bs[ir[i][2]].first = "Live"; }                
+//                 bs[ir[i][3]] = pair <string, int> (string("Dead"), ln);
+//             }
+//             else
+//             {
+//                 if(op == "callint" || op == "ifgoto")
+//                 {
+//                     // Something here
+//                 }
+//                 else
+//                 {
+//                     bs
+//                 }
+//             }
 
-			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
+//         } else if(itype1.find(op) != itype1.end())
+//         {
 
-		} else if(op == "ifgoto")
-		{
-			st = (*it)[3];
-			stringstream(st) >> target; 
-			leaders.insert(target);
-
-			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
-
-		} else if(op == "callint" || op == "callvoid")
-		{
-			leaders.insert(lineNum+1);
-
-		} else if(op == "ret" || op == "scan" || op == "print")
-		{
-			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
-
-		} else if(op == "label")
-		{
-			if(lineNum<lastLineNum) { leaders.insert(lineNum); }
-
-		}
-	}
-
-
-	set<int>::iterator itt, lim, ntt;
-	
-	lim = leaders.end();
-	lim--;
-	for(itt=leaders.begin(); itt != lim; itt++)
-	{
-		ntt = itt;
-		ntt++;
-		blocks.push_back(make_pair(*itt, (*ntt)-1));
-	}
-	
-	blocks.push_back(make_pair(*itt, lastLineNum)); 
-	
-	return blocks;
-}
+//         }
+//     }
+// }

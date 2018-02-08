@@ -33,7 +33,7 @@ void readFile(char* fileName)
 			if(line[s] != ' ' && line[s] != ',')	temp.pb(line.substr(s, len-s));
 
 			fillTAC(temp);
-			
+
 			temp.clear();
 		}
 	}
@@ -66,8 +66,12 @@ void fillTAC(vector <string> instr)
 	// Check for literal if needed
 	if(tac.opType > 0)
 	{
-		flag = symbTable.insert(instr[2]);
-		tac.dest = symbols[instr[2]];
+		if(instr[1] == "goto")	{ tac.target = instr[1]; }
+		else
+		{
+			flag = symbTable.insert(instr[2]);
+			tac.dest = symbols[instr[2]];
+		}
 	}
 
 	switch(tac.opType){
@@ -75,7 +79,7 @@ void fillTAC(vector <string> instr)
 
 			if(tac.op == "ifgoto")
 			{
-				stringstream (instr[3]) >> tac.target;
+				tac.target = instr[3];
 			}
 			else
 			{
@@ -118,6 +122,7 @@ void fillTAC(vector <string> instr)
 			}
 
 			break;
+		default: break;
 	}
 
 	IR.pb(tac);
