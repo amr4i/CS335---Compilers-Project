@@ -25,5 +25,11 @@ string mipsCode::getFreeReg(){
 }
 
 string mipsCode::getReg(string var){
-
+	if(addDesc.find[var] != addDesc.end()){
+		reg = addDesc[var]['register'];
+		return reg;
+	} 
+	if(freeRegs.size() > 0){
+		
+	}
 }

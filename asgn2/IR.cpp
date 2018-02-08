@@ -75,7 +75,7 @@ void fillTAC(vector <string> instr)
 
 			if(tac.op == "ifgoto")
 			{
-				stringstream (instr[3]) >> tac.target;
+				tac.target = instr[3];
 			}
 			else
 			{

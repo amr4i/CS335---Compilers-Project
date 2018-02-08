@@ -1,9 +1,8 @@
 #include "IR.cpp"
 
 class Block{
-	int s, e;
-	map < string, pair <string, string > > varStack;
-
-	void computeNextUse();
+	int startLine, endLine;
+	map <string, pair<string,int> > varStack;
 };
+
 
