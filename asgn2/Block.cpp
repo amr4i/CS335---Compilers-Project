@@ -1,19 +1,137 @@
 #include "Block.h"
-#include "NextUseTable.h"
 
-// void Block::computeNextUse()
-// {
-// 	forin(endLine-1, startLine-1)
-// 	{
-// 		string op = IR[i].op;
-// 		int opType = IR[i].opType;
+void Block::computeNextUse()
+{
+	forin(endLine-1, startLine-1)
+	{
+		string op = IR[i]->op;
+		int opType = IR[i]->opType;
+		map <string, pair < string, int > > temp;
 
-// 		switch(opType){
-			
-// 		}
+		// cout<<op<<"\n";
 
-// 	}
-// }
+		if(opType == 0)	continue;
+		else	if(opType == 1)
+		{
+			if(op == "++" || op == "--")
+			{
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp.insert(mp(IR[i]->dest->name, mp(string ("Live"), varStack[IR[i]->dest->name].se) ) );
+				}
+				else
+				{
+					temp[IR[i]->dest->name] = mp(string ("Dead"), -1);
+				}
+				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
+			}
+			// Else : Don't know what to do for print, scan and others
+		}
+		else	if(opType == 2)
+		{
+			if(op == "ifgoto")
+			{
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+				}
+				else{ 
+					Symbol* tt = IR[i]->dest;
+					temp[IR[i]->dest->name] = mp(string("Dead"), -1); 
+				}
+
+				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
+			}
+			else 	if(op == "callint")
+			{
+				// TODO
+			}
+			else	if(op == "=")
+			{
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+					varStack.erase(IR[i]->dest->name);
+				}
+				else{ temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+
+				if(IR[i]->isInt1 == false)
+				{
+					if(varStack.find(IR[i]->opd1->name) != varStack.end() )
+					{
+						temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
+					}
+					else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+
+					varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
+				}
+				
+			}
+			else
+			{
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+				}
+				else { temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+
+				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
+
+				if(IR[i]->isInt1 == false)
+				{
+					if(varStack.find(IR[i]->opd1->name) != varStack.end())
+					{
+						temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
+					}
+					else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+
+					varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
+
+				}
+
+			}
+		}
+		else
+		{
+			if(varStack.find(IR[i]->dest->name) != varStack.end())
+			{
+				temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+				varStack.erase(IR[i]->dest->name);
+			}
+			else{ temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+
+			if(IR[i]->isInt1 == false)
+			{
+				if(varStack.find(IR[i]->opd1->name) != varStack.end())
+				{
+					temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
+				}
+				else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+
+				varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
+
+			}
+
+			if(IR[i]->isInt2 == false)
+			{
+				if(varStack.find(IR[i]->opd2->name) != varStack.end())
+				{
+					temp[IR[i]->opd2->name] = mp(string("Live"), varStack[IR[i]->opd2->name].se);
+				}
+				else { temp[IR[i]->opd2->name] = mp(string("Dead"), -1); }
+
+				varStack[IR[i]->opd2->name] = mp(string("Live"), IR[i]->lineNum);
+
+			}
+		}
+
+		nextUseTable[i] = mp(IR[i], temp);
+
+	}
+
+}
+
+
 // void computeNextUse(int l, int r)
 // {
 //     map < string, pair< string, int > > bs;

@@ -1,4 +1,5 @@
 #include "config.h"
+#include "NextUseTable.h"
 
 class Block{
 public:
@@ -11,7 +12,7 @@ public:
 	void computeNextUse();
 
 private:
-	map < string, pair <string, string > > varStack;
+	map < string, pair <string, int > > varStack;
 
 };
 

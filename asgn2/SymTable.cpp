@@ -5,8 +5,8 @@ SymTable::SymTable(){
 }
 
 bool SymTable::insert(Symbol* symbol){
-	if(symbols.find(symbol->name) != symbols.end()){
-		symbols.insert({symbol->name, symbol});
+	if(symbols.find(symbol->name) == symbols.end()){
+		symbols.insert(mp(symbol->name, symbol));
 		return true;
 	} else{
 		return false;
