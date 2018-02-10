@@ -5,14 +5,21 @@
 set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">="};
 
 // 2 operand instructions
-set<string> itype2= {"=", "=!", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint"};
+set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint"};
 
 // 1 operand instructions
-set<string> itype1= {"++", "--", "label", "print", "scan", "callvoid", "goto", "retint"};
+set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint"};
 
 // No operand instruction
-set<string> itype0= {"ret"};
+set<string> itype0= {"ret","exit"};
 
+/* 
+Execution left for :
+1> *,/,%
+2> *=,/=,%=,ifgoto,callint
+3> goto, callvoid, retint
+4> ret
+*/
 
 // TODO : Array
 

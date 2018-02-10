@@ -87,6 +87,7 @@ void fillTAC(vector <string> instr)
 				{
 					stringstream (instr[3]) >> tac->l1;
 					tac->isInt1 = true;
+					tac->opd1 = instr[3];
 				}
 				else
 				{
@@ -102,6 +103,7 @@ void fillTAC(vector <string> instr)
 			{
 				stringstream (instr[3]) >> tac->l1;
 				tac->isInt1 = true;
+				tac->opd1 = instr[4];
 			}
 			else
 			{
@@ -113,6 +115,7 @@ void fillTAC(vector <string> instr)
 			if(isIntegerLiteral(instr[4]) == true)
 			{
 				stringstream (instr[4]) >> tac->l2;
+				tac->opd2 = instr[4];
 				tac->isInt2 = true;
 			}
 			else
