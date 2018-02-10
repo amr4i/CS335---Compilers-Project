@@ -51,7 +51,7 @@ int main(int argc, char** argv){
     */
 
 	fori(0,siz){
-        TAC ir = IR[i];
+        TAC* ir = IR[i];
 		if (ir->op == "exit")
         {
             code->addLine("li $v0, 10");
