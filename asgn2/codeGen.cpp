@@ -560,6 +560,22 @@ int main(int argc, char** argv){
             }
             //flushVar call ?
         }
+        else if (ir->op == "++")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            code->addLine("lw "+reg_out+", "+ir->dest->name);
+            code->addLine("addi "+reg_out+", "+reg_out+", 1");
+            code->addLine("sw "+reg_out+", "+ir->dest->name);
+        }
+        else if (ir->op == "--")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            code->addLine("lw "+reg_out+", "+ir->dest->name);
+            code->addLine("subi "+reg_out+", "+reg_out+", 1");
+            code->addLine("sw "+reg_out+", "+ir->dest->name);
+        }
         else if (ir->op == "printint")
         {
             // printing integer
