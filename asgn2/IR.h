@@ -42,8 +42,8 @@ struct TAC
 
 	string target;
 
-	int l1;
-	int l2;
+	string l1;
+	string l2;
 
 	bool isInt1;
 	bool isInt2;
