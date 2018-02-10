@@ -28,6 +28,9 @@ struct TAC
 	TAC(){
 		isInt1 = false;
 		isInt2 = false;
+		opd1 = NULL;
+		opd2 = NULL;
+		dest = NULL;
 	}
 
 	int lineNum;

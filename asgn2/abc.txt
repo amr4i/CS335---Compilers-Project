@@ -3,9 +3,4 @@
 3,+,d,a,b
 4,=,a,d
 5, <=, x, a, 50
-6, ifgoto, x, 2
-7, callvoid, foo
-8, ret
-9, label, foo
-10, print, a
-11, ret
+6, printint, a

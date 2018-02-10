@@ -51,6 +51,7 @@ void fillTAC(vector <string> instr)
 	else	if(itype1.find(instr[1]) != itype1.end())	tac->opType = 1;
 	else	if(itype0.find(instr[1]) != itype0.end())	tac->opType = 0;
 	else{
+		cerr << instr[0] << " " << instr[1] << "\n";
 		cerr << "Invalid operator\n";
 		exit(1);
 	}

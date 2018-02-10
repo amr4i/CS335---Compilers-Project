@@ -21,7 +21,7 @@ void Block::computeNextUse()
 				}
 				else
 				{
-					temp[IR[i]->dest->name] = mp(string ("Dead"), -1);
+					temp[IR[i]->dest->name] = mp(string ("Dead"), INF);
 				}
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 			}
@@ -37,7 +37,7 @@ void Block::computeNextUse()
 				}
 				else{ 
 					Symbol* tt = IR[i]->dest;
-					temp[IR[i]->dest->name] = mp(string("Dead"), -1); 
+					temp[IR[i]->dest->name] = mp(string("Dead"), INF); 
 				}
 
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
@@ -53,7 +53,7 @@ void Block::computeNextUse()
 					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
 					varStack.erase(IR[i]->dest->name);
 				}
-				else{ temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+				else{ temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
 
 				if(IR[i]->isInt1 == false)
 				{
@@ -61,7 +61,7 @@ void Block::computeNextUse()
 					{
 						temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
 					}
-					else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+					else { temp[IR[i]->opd1->name] = mp(string("Dead"), INF); }
 
 					varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
 				}
@@ -73,7 +73,7 @@ void Block::computeNextUse()
 				{
 					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
 				}
-				else { temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+				else { temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
 
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 
@@ -83,7 +83,7 @@ void Block::computeNextUse()
 					{
 						temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
 					}
-					else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+					else { temp[IR[i]->opd1->name] = mp(string("Dead"), INF); }
 
 					varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
 
@@ -98,7 +98,7 @@ void Block::computeNextUse()
 				temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
 				varStack.erase(IR[i]->dest->name);
 			}
-			else{ temp[IR[i]->dest->name] = mp(string("Dead"), -1); }
+			else{ temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
 
 			if(IR[i]->isInt1 == false)
 			{
@@ -106,7 +106,7 @@ void Block::computeNextUse()
 				{
 					temp[IR[i]->opd1->name] = mp(string("Live"), varStack[IR[i]->opd1->name].se);
 				}
-				else { temp[IR[i]->opd1->name] = mp(string("Dead"), -1); }
+				else { temp[IR[i]->opd1->name] = mp(string("Dead"), INF); }
 
 				varStack[IR[i]->opd1->name] = mp(string("Live"), IR[i]->lineNum);
 
@@ -118,7 +118,7 @@ void Block::computeNextUse()
 				{
 					temp[IR[i]->opd2->name] = mp(string("Live"), varStack[IR[i]->opd2->name].se);
 				}
-				else { temp[IR[i]->opd2->name] = mp(string("Dead"), -1); }
+				else { temp[IR[i]->opd2->name] = mp(string("Dead"), INF); }
 
 				varStack[IR[i]->opd2->name] = mp(string("Live"), IR[i]->lineNum);
 

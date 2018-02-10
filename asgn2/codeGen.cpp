@@ -1,12 +1,11 @@
-#include "getBlocks.cpp"
+#include "mipsCode.cpp"
 
 using namespace std;
-
-SymTable* ST = new SymTable();
 
 int main(int argc, char** argv){
 
     int siz;
+    map <string, Symbol*> ::iterator itt;
 
     // Reading the text file and storing it in "ir" data structure
     readFile(argv[1]);
@@ -23,20 +22,16 @@ int main(int argc, char** argv){
         blocks[i]->computeNextUse();
     }
 
-    siz = IR.size();
-    fori(0, siz)
+    mipsCode* code = new mipsCode(symTable);
+    code->addLine(".data");
+
+    for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
     {
-        // cout<<IR[i]->opType<<" "<<IR[i]->op<<"\n";
-        if(IR[i]->opType == 0 || IR[i]->op == "callvoid")  continue;
-        // cout<<nextUseTable[i].fi->lineNum<<" :\n";
-        for(map<string, pair<string, int> >::iterator it = nextUseTable[i].se.begin() ; it != nextUseTable[i].se.end() ; it++ )
+        if( (*itt).se->type == "int" )
         {
-            cout<<"\t"<<((*it).fi)<<" -> "<<((*it).se.fi)<<" , "<<((*it).se.se)<<"\n";
+            code->addLine((*itt).fi + ":\t.word 0");
         }
     }
-
-	mipsCode *code = new mipsCode();
-	code->addLine(".data");
 
     string reg_out, reg_in1, reg_in2;
 
@@ -50,17 +45,18 @@ int main(int argc, char** argv){
     -> String printing is to be allowed
     */
 
-	fori(0,siz){
+    siz = IR.size();
+    fori(0,siz){
         TAC* ir = IR[i];
-		if (ir->op == "exit")
+        if (ir->op == "exit")
         {
             code->addLine("li $v0, 10");
             code->addLine("syscall");
-        }	
+        }   
         else if (ir->op == "=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -70,7 +66,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("move "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -78,7 +74,7 @@ int main(int argc, char** argv){
         else if (ir->op == "+=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -88,7 +84,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("add "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -96,8 +92,7 @@ int main(int argc, char** argv){
         else if (ir->op == "-=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
-
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
             if (ir->isInt1)
             {
                 /* immediate assignment, e.g. a=5 */
@@ -106,7 +101,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("sub "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -114,7 +109,7 @@ int main(int argc, char** argv){
         else if (ir->op == "<<=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -124,7 +119,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("sllv "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -132,7 +127,7 @@ int main(int argc, char** argv){
         else if (ir->op == ">>=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -142,7 +137,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("srlv "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -150,7 +145,7 @@ int main(int argc, char** argv){
         else if (ir->op == "&=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -160,7 +155,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("and "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -168,7 +163,7 @@ int main(int argc, char** argv){
         else if (ir->op == "|=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -178,7 +173,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("or "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -186,7 +181,7 @@ int main(int argc, char** argv){
         else if (ir->op == "^=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if (ir->isInt1)
             {
@@ -196,7 +191,7 @@ int main(int argc, char** argv){
             else
             {
                 /* assignment through variable, e.g. a=b */
-                reg_in1 = code->getReg(ir->opd1->name);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 code->addLine("xor "+reg_out+", "+reg_out+", "+reg_in1);
             }
             // flushVar call ?
@@ -204,7 +199,7 @@ int main(int argc, char** argv){
         else if (ir->op == "+")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -213,26 +208,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("addi ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("addi "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("addi ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("addi "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("add ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("add "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "-")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -241,26 +236,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("subi ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("subi "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("subi ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("subi "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sub ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sub "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "&")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -269,26 +264,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("andi ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("andi "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("andi ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("andi "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("and ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("and "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "|")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -297,26 +292,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("ori ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("ori ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("or ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("or "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "^")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -325,26 +320,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("xori ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("xori "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("xori ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("xori "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("xor ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("xor "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "<<")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -353,26 +348,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sll ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sll "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("sll ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("sll "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sllv ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sllv "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == ">>")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -381,26 +376,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("srl ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("srl "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("srl ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("srl "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("srlv ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("srlv "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "<")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -409,26 +404,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("slti ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("slti "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("slti ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("slti "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("slt ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("slt "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == ">")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -437,26 +432,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sgti ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sgti "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("sgti ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("sgti "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sgt ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sgt "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "<=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -465,26 +460,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("slei ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("slei "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("slei ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("slei "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sle ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sle "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == ">=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -493,26 +488,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sgei ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sgei "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("sgei ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("sgei "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sge ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sge "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "!=")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -521,26 +516,26 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("snei ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("snei "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("snei ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("snei "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("sne ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("sne "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "==")
         {
             /* code */
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
             if(ir->isInt1 && ir->isInt2)
             {
@@ -549,31 +544,32 @@ int main(int argc, char** argv){
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("seqi ",reg_out+", "+reg_in2+", "+ir->l1);
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("seqi "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                code->addLine("seqi ",reg_out+", "+reg_in1+", "+ir->l2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("seqi "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
-                reg_in1 = code->getReg(ir->opd1->name);
-                reg_in2 = code->getReg(ir->opd2->name);
-                code->addLine("seq ",reg_out+", "+reg_in1+", "+reg_in2);
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("seq "+reg_out+", "+reg_in1+", "+reg_in2);
             }
             //flushVar call ?
         }
         else if (ir->op == "printint")
         {
             // printing integer
-            reg_out = code->getReg(ir->dest->name);
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            code->addLine("lw " + reg_out + ", " + ir->dest->name);
             code->addLine("li $a0, "+reg_out);
             code->addLine("li $v0, 1");
             code->addLine("syscall");
 
-            //flushVar call ?
+        //     //flushVar call ?
         }
         else if (ir->op == "label")
         {
@@ -586,14 +582,15 @@ int main(int argc, char** argv){
         {
             code->addLine("li $v0, 5");
             code->addLine("syscall");
-            addLine("sw $v0, "+ir->dest->name);
+            code->addLine("sw $v0, " + ir->dest->name);
 
             //flushVar call ?
         }
 
         // flushAll call ?
-	}
+    }
 
+    code->printCode();
 
     return 0;    
 }
