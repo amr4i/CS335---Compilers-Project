@@ -106,6 +106,33 @@ int main(int argc, char** argv){
             }
             // flushVar call ?
         }
+        else if (ir->op == "*=")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            code->addLine("mult "+reg_out+", "+reg_in1);
+            code->addLine("mflo "+reg_out)
+            // flushVar call ?
+        }
+        else if (ir->op == "/=")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            code->addLine("div "+reg_out+", "+reg_in1);
+            code->addLine("mflo "+reg_out)
+            // flushVar call ?
+        }
+        else if (ir->op == "%=")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            code->addLine("div "+reg_out+", "+reg_in1);
+            code->addLine("mfhi "+reg_out)
+            // flushVar call ?
+        }
         else if (ir->op == "<<=")
         {
             /* code */
@@ -249,6 +276,90 @@ int main(int argc, char** argv){
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
                 code->addLine("sub "+reg_out+", "+reg_in1+", "+reg_in2);
+            }
+            //flushVar call ?
+        }
+        else if (ir->op == "*")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+
+            if (ir->isInt1 && !ir->isInt2)
+            {
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l1);
+                code->addLine("mult "+reg_out+", "+reg_in2);
+                code->addLine("mflo "+reg_out);
+            }
+            else if (!ir->isInt1 && ir->isInt2)
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("mult "+reg_in1+", "+reg_out);
+                code->addLine("mflo "+reg_out);
+            }
+            else
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("mult "+reg_in1+", "+reg_in2);
+                code->addLine("mflo "+reg_out)
+            }
+            //flushVar call ?
+        }
+        else if (ir->op == "/")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+
+            if (ir->isInt1 && !ir->isInt2)
+            {
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l1);
+                code->addLine("div "+reg_out+", "+reg_in2);
+                code->addLine("mflo "+reg_out);
+            }
+            else if (!ir->isInt1 && ir->isInt2)
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("div "+reg_in1+", "+reg_out);
+                code->addLine("mflo "+reg_out);
+            }
+            else
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("div "+reg_in1+", "+reg_in2);
+                code->addLine("mflo "+reg_out);
+            }
+            //flushVar call ?
+        }
+        else if (ir->op == "%")
+        {
+            /* code */
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum));
+
+            if (ir->isInt1 && !ir->isInt2)
+            {
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l1);
+                code->addLine("div "+reg_out+", "+reg_in2);
+                code->addLine("mfhi "+reg_out);
+            }
+            else if (!ir->isInt1 && ir->isInt2)
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("div "+reg_in1+", "+reg_out);
+                code->addLine("mfhi "+reg_out);
+            }
+            else
+            {
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
+                code->addLine("div "+reg_in1+", "+reg_in2);
+                code->addLine("mfhi "+reg_out);
             }
             //flushVar call ?
         }
@@ -575,6 +686,36 @@ int main(int argc, char** argv){
             code->addLine("lw "+reg_out+", "+ir->dest->name);
             code->addLine("subi "+reg_out+", "+reg_out+", 1");
             code->addLine("sw "+reg_out+", "+ir->dest->name);
+        }
+        else if (ir->op == "ifgoto")
+        {
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            code->addLine("bne "+reg_in1+", $zero, "+ir->target);
+        }
+        else if (ir->op == "goto")
+        {
+            code->addLine("j "+ir->target);
+        }
+        else if (ir->op == "callvoid")
+        {
+            code->addLine("jal "+ir->target);
+        }
+        else if (ir->op == "callint")
+        {
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            code->addLine("jal "+ir->target);
+            code->addLine("lw "+reg_in1)
+        }
+        else if (ir->op == "retint")
+        {
+            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+            lw $t2, 0($t0)
+            code->addLine("lw $v0, 0("+reg_in1+")");
+            code->addLine("jr $rs");
+        }
+        else if (ir->op == "ret")
+        {
+            code->addLine("jr $rs");
         }
         else if (ir->op == "printint")
         {

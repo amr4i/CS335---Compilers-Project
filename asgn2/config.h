@@ -35,3 +35,17 @@ typedef set<int> si;
 #define fi first
 #define se second
 #define INF 1000000007
+
+// We are disallowing mult/div of two integers in TAC.
+// We will beforehand add a temporary variable to store one of
+// the numbers. 
+
+// Similarly, *=, /= and %= can have only variables as
+// their argument. 
+// i.e. a*=5 is not allowed. a*=b is allowed. 
+
+// Assuming that all multiplicaton results can be fit in
+// 32 bits. If higher needed, then we will have to do type
+// checking at the code gen to see if the dest var is long
+// type or int, and proceed accordingly. This we can do later
+// as Sir has said to assume all variables as interger type. 
