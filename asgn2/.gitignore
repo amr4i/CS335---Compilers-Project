@@ -3,6 +3,9 @@
 
 # Unignore all with extensions
 !*.*
+*.o *.so *.log
 
 # Unignore all dirs
 !*/
+
+MIPStextSMv11.pdf
