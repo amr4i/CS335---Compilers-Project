@@ -538,18 +538,21 @@ int main(int argc, char** argv){
 
             if(ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, "+ir->l2);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("sgti "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("sgt "+reg_out+", "+reg_out+", $t0");
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l1);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("sgti "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("sgt "+reg_out+", "+reg_in2+", $t0");
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("sgti "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("sgt "+reg_out+", "+reg_in1+", $t0");
             }
             else
             {
@@ -566,18 +569,21 @@ int main(int argc, char** argv){
 
             if(ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("slei "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("sle "+reg_out+", "+reg_out+", $t0");
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l1);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("slei "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("sle "+reg_out+", "+reg_in2+", $t0");
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("slei "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("sle "+reg_out+", "+reg_in1+", $t0");
             }
             else
             {
@@ -594,18 +600,21 @@ int main(int argc, char** argv){
 
             if(ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("sgei "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("sge "+reg_out+", "+reg_out+", $t0");
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l1);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("sgei "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("sge "+reg_out+", "+reg_in2+", $t0");
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("sgei "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("sge "+reg_out+", "+reg_in1+", $t0");
             }
             else
             {
@@ -622,18 +631,21 @@ int main(int argc, char** argv){
 
             if(ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("snei "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("sne "+reg_out+", "+reg_out+", $t0");
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l1);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("snei "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("sne "+reg_out+", "+reg_in2+", $t0");
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("snei "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("sne "+reg_out+", "+reg_in1+", ");
             }
             else
             {
@@ -650,18 +662,21 @@ int main(int argc, char** argv){
 
             if(ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("seqi "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("seq "+reg_out+", "+reg_out+", $t0");
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l1);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("seqi "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("seq "+reg_out+", "+reg_in2+", $t0");
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
+                code->addLine("li $t0, ",ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("seqi "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("seq "+reg_out+", "+reg_in1+", $t0");
             }
             else
             {
