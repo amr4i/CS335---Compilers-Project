@@ -709,7 +709,6 @@ int main(int argc, char** argv){
         else if (ir->op == "retint")
         {
             reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-            lw $t2, 0($t0)
             code->addLine("lw $v0, 0("+reg_in1+")");
             code->addLine("jr $rs");
         }

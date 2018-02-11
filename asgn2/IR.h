@@ -16,9 +16,9 @@ set<string> itype0= {"ret","exit"};
 /* 
 Execution left for :
 1> *,/,% 						-- done 
-2> *=,/=,%=,ifgoto,callint
-3> goto, callvoid, retint
-4> ret
+2> *=,/=,%=,ifgoto,callint		-- done
+3> goto, callvoid, retint		-- done
+4> ret 							-- done
 */
 
 // TODO : Array
