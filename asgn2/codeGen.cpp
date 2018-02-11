@@ -27,7 +27,16 @@ int main(int argc, char** argv){
 
     for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
     {
-        if( (*itt).se->type == "int" )
+        if( (*itt).se->isArray == true )
+        {
+            code->addLine((*itt).fi + ":\t.space " + to_string((*itt).se->array_size * 4));
+        }
+    }
+
+
+    for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
+    {
+        if( (*itt).se->type == "int" && (*itt).se->isArray == false )
         {
             code->addLine((*itt).fi + ":\t.word 0");
         }

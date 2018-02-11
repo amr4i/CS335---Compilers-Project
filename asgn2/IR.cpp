@@ -70,7 +70,8 @@ void fillTAC(vector <string> instr)
 		if(instr[1] == "goto" || instr[1] == "callvoid" || instr[1] == "label")	{ tac->target = instr[2]; }
 		else if (tac->op == "array")
 		{
-			flag = symTable.insert(new Symbol(instr[2], "array"));
+			flag = symTable.insert(new Symbol(instr[2], "int"));
+			symTable.symbols[instr[2]]->isArray = true;
 			stringstream(instr[3]) << symTable.symbols[instr[2]]->array_size;
 			tac->dest = symTable.symbols[instr[2]];
 		}
