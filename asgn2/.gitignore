@@ -3,7 +3,10 @@
 
 # Unignore all with extensions
 !*.*
-*.o *.so *.log 
+
+*.o 
+*.so 
+*.log 
 *.asm
 
 # Unignore all dirs

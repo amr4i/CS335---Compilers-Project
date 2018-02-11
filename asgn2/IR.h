@@ -2,10 +2,10 @@
 #include "SymTable.cpp"
 
 // 3 operand instructions
-set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">="};
+set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr"};
 
 // 2 operand instructions
-set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint"};
+set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint", "array"};
 
 // 1 operand instructions
 set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint"};
@@ -39,7 +39,7 @@ struct TAC
 
 	string l1;
 	string l2;
-
+	
 	bool isInt1;
 	bool isInt2;
 };
