@@ -18,4 +18,5 @@ public:
 	string getFreeReg();
 	string getReg(string var, int ins);
 	void printCode();
+	string spillReg(string var, int ins);
 };
