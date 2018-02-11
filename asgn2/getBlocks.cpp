@@ -29,7 +29,7 @@ void getBlocks(){
 		} else if(opr == "callint" || opr == "callvoid"){
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(opr == "ret" || opr == "scan" || opr == "print"){ // TODO : print, scan
+		} else if(opr == "ret"){ // TODO : print, scan
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
 		} else if(opr == "label"){

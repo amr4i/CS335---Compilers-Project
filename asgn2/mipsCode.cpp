@@ -63,6 +63,7 @@ string mipsCode::getReg(string var, int ins)
 
 				flag = true;
 			}
+			// addLine("sw "+reg+", "+tempVarName);
 		}
 		
 		if(flag == false && IR[ins-1]->opd2 != NULL)
@@ -84,6 +85,7 @@ string mipsCode::getReg(string var, int ins)
 
 				flag = true;
 			}
+			// addLine("sw "+reg+", "+tempVarName);
 		}
 	}
 

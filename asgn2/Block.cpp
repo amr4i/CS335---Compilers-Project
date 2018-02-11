@@ -5,7 +5,7 @@ Block::Block(int s, int e)
 	startLine = s;
 	endLine = e;
 }
-
+			
 void Block::computeNextUse()
 {
 	forin(endLine-1, startLine-1)
@@ -19,7 +19,7 @@ void Block::computeNextUse()
 		if(opType == 0)	continue;
 		else	if(opType == 1)
 		{
-			if(op == "++" || op == "--")
+			if(op == "++" || op == "--" || op == "printint" || op == "retint")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -32,6 +32,8 @@ void Block::computeNextUse()
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 			}
 			// Else : Don't know what to do for print, scan and others
+			// Resolve: Make scan action to be similar to that of asignment.
+			
 		}
 		else	if(opType == 2)
 		{
