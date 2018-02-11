@@ -110,27 +110,54 @@ int main(int argc, char** argv){
         {
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
-            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-            code->addLine("mult "+reg_out+", "+reg_in1);
-            code->addLine("mflo "+reg_out)
+            if (ir->isInt1)
+            {
+                /* immediate assignment, e.g. a=5 */
+                code->addLine("li $t0, "+it->l1);
+                code->addLine("mult $t0, "+reg_out);
+                code->addLine("mflo "+reg_out)
+            }
+            else{
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("mult "+reg_out+", "+reg_in1);
+                code->addLine("mflo "+reg_out)
+            }
             // flushVar call ?
         }
         else if (ir->op == "/=")
         {
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
-            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-            code->addLine("div "+reg_out+", "+reg_in1);
-            code->addLine("mflo "+reg_out)
+            if (ir->isInt1)
+            {
+                /* immediate assignment, e.g. a=5 */
+                code->addLine("li $t0, "+it->l1);
+                code->addLine("div "+reg_out+", $t0");
+                code->addLine("mflo "+reg_out)
+            }
+            else{
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("div "+reg_out+", "+reg_in1);
+                code->addLine("mflo "+reg_out)
+            }
             // flushVar call ?
         }
         else if (ir->op == "%=")
         {
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
-            reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-            code->addLine("div "+reg_out+", "+reg_in1);
-            code->addLine("mfhi "+reg_out)
+            if (ir->isInt1)
+            {
+                /* immediate assignment, e.g. a=5 */
+                code->addLine("li $t0, "+it->l1);
+                code->addLine("div "+reg_out+", $t0");
+                code->addLine("mfhi "+reg_out)
+            }
+            else{
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
+                code->addLine("div "+reg_out+", "+reg_in1);
+                code->addLine("mfhi "+reg_out)
+            }
             // flushVar call ?
         }
         else if (ir->op == "<<=")
@@ -284,18 +311,25 @@ int main(int argc, char** argv){
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
-            if (ir->isInt1 && !ir->isInt2)
+            if(ir->isInt1 && ir->isInt2)
+            {
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("mult $t0, "+reg_out);
+                code->addLine("mflo "+reg_out);
+            }
+            else if (ir->isInt1 && !ir->isInt2)
             {
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("mult "+reg_out+", "+reg_in2);
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("mult $t0, "+reg_in2);
                 code->addLine("mflo "+reg_out);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l2);
-                code->addLine("mult "+reg_in1+", "+reg_out);
+                code->addLine("li $t0, "+ir->l2);
+                code->addLine("mult "+reg_in1+", $t0");
                 code->addLine("mflo "+reg_out);
             }
             else
@@ -312,18 +346,25 @@ int main(int argc, char** argv){
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
-            if (ir->isInt1 && !ir->isInt2)
+            if(ir->isInt1 && ir->isInt2)
+            {
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("div $t0, "+reg_out);
+                code->addLine("mflo "+reg_out);
+            }
+            else if (ir->isInt1 && !ir->isInt2)
             {
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("div "+reg_out+", "+reg_in2);
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("div $t0, "+reg_in2);
                 code->addLine("mflo "+reg_out);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l2);
-                code->addLine("div "+reg_in1+", "+reg_out);
+                code->addLine("li $t0, "+ir->l2);
+                code->addLine("div "+reg_in1+", $t0");
                 code->addLine("mflo "+reg_out);
             }
             else
@@ -331,7 +372,7 @@ int main(int argc, char** argv){
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
                 code->addLine("div "+reg_in1+", "+reg_in2);
-                code->addLine("mflo "+reg_out);
+                code->addLine("mflo "+reg_out)
             }
             //flushVar call ?
         }
@@ -340,18 +381,25 @@ int main(int argc, char** argv){
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum));
 
-            if (ir->isInt1 && !ir->isInt2)
+            if(ir->isInt1 && ir->isInt2)
+            {
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("li "+reg_out+", "+ir->l2);
+                code->addLine("div $t0, "+reg_out);
+                code->addLine("mfhi "+reg_out);
+            }
+            else if (ir->isInt1 && !ir->isInt2)
             {
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("div "+reg_out+", "+reg_in2);
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("div $t0, "+reg_in2);
                 code->addLine("mfhi "+reg_out);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
-                code->addLine("li "+reg_out+", "+ir->l2);
-                code->addLine("div "+reg_in1+", "+reg_out);
+                code->addLine("li $t0, "+ir->l2);
+                code->addLine("div "+reg_in1+", $t0");
                 code->addLine("mfhi "+reg_out);
             }
             else
@@ -359,7 +407,7 @@ int main(int argc, char** argv){
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum));
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum));
                 code->addLine("div "+reg_in1+", "+reg_in2);
-                code->addLine("mfhi "+reg_out);
+                code->addLine("mfhi "+reg_out)
             }
             //flushVar call ?
         }
