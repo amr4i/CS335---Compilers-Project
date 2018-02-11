@@ -129,7 +129,7 @@ string mipsCode::getReg(string var, int ins)
 		exit(1);
 	}
 
-	cout<< ins<<": "<<var<<" -> "<<reg<<"\n";
+	// cout<< ins<<": "<<var<<" -> "<<reg<<"\n";
 
 	if(IR[ins-1]->dest->name != var)	addLine("lw " + reg + ", " + var);
 
