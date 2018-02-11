@@ -1,16 +1,17 @@
 .data
-B:	.word 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+B:	.space 60
 a:	.word 0
 c:	.word 0
 d:	.word 0
 x:	.word 0
+string_11:	.asciiz "infoo"
 .text
 main:
 wow:
+li $s7, 15
 li $t0, 8
 sll $t0, $t0, 2
-lw $s7, B($t0)
-addi $s7, $s7, 5
+sw $s7, B($t0)
 li $t0, 7
 sw $s7, a
 sle $s7, $s7, $t0
@@ -26,15 +27,13 @@ li $v0, 10
 syscall
 sw $s7, c
 foo:
-lw $s7, a
-li $v0, 1
-move $a0, $s7
+li $v0, 4
+la $a0, string_11
 syscall
-lw $s6, d
-add $s6, $s6, $s7
-andi $s5, $s6, 3
-sw $s6, d
-sw $s5, c
+li $t0, 8
+sll $t0, $t0, 2
+lw $s7, B($t0)
+sw $s7, d
 lw $s7, d
 move $v0, $s7
 jr $ra

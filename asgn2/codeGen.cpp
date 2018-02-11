@@ -43,7 +43,6 @@ int main(int argc, char** argv){
     -> Arrays are to be implemented
     -> String printing is to be allowed
     */
-
     blockNum = 0;
     siz = IR.size();
     fori(0,siz){
@@ -827,7 +826,6 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("li $t0, "+ir->l2);
                 code->addLine("sll $t0, $t0, 2");
-                cerr<< ir->array_name <<endl;
                 code->addLine("lw "+reg_out+", "+ir->array_name+"($t0)");
             }
             else{
@@ -836,6 +834,43 @@ int main(int argc, char** argv){
                 code->addLine("sll $t0, "+reg_in2+", 2");
                 code->addLine("lw "+reg_out+", "+ir->array_name+"($t0)");
             }
+        }
+        else if(ir->op == "setarr")
+        {
+            if(ir->isInt1 && ir->isInt2){
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("sll $t0, $t0, 2");
+                code->addLine("li $t1, "+ir->l2);
+                code->addLine("sw $t1, "+ir->array_name+"($t0)");
+            }
+            else if(ir->isInt1 && !ir->isInt2){
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("sll $t0, $t0, 2");
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+                code->addLine("sw "+reg_in2+", "+ir->array_name+"($t0)");
+            }
+            else if(!ir->isInt1 && ir->isInt2){
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+                code->addLine("sll $t0, "+reg_in1+", 2");
+                code->addLine("li $t1, "+ir->l2);
+                code->addLine("sw $t1, "+ir->array_name+"($t0)");
+            }
+            else{
+                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+                code->addLine("sll $t0, "+reg_in1+", 2");
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+                code->addLine("sw "+reg_in2+", "+ir->array_name+"($t0)");
+            }
+        }
+        else if(ir->op == "printstr")
+        {
+            vector<string>::iterator ittt;
+            ittt = find(code->code.begin(), code->code.end(), ".text");
+            string line = "string_"+to_string(ir->lineNum)+":\t.asciiz "+ir->target;
+            code->code.insert(ittt, line);
+            code->addLine("li $v0, 4");
+            code->addLine("la $a0, string_"+to_string(ir->lineNum));
+            code->addLine("syscall"); 
         }
 
         //Flush all variables to memory on block end, but before any jump

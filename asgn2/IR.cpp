@@ -43,7 +43,6 @@ void fillTAC(vector <string> instr)
 {
 	bool flag;
 	TAC* tac = new TAC();
-
 	stringstream (instr[0]) >> tac->lineNum;
 
 	if(itype3.find(instr[1]) != itype3.end())	tac->opType = 3;
@@ -68,8 +67,15 @@ void fillTAC(vector <string> instr)
 		else if (tac->op == "array")
 		{
 			tac->array_name = instr[2];
-			cerr << tac->array_name <<endl;
 			tac->array_size = stoi(instr[3]);
+		}
+		else if (tac->op == "setarr")
+		{
+			tac->array_name = instr[2];
+		}
+		else if (tac->op == "printstr")
+		{
+			tac->target = instr[2];
 		}
 		else
 		{

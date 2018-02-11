@@ -1,14 +1,13 @@
 1, array, B, 15
 2, label, wow
-3, getarr, a, B, 8
-4, +, a, a, 5
+3, =, a, 15
+4, setarr, B, 8, a
 5, <=, x, a, 7
 6, ifgoto, x, wow
 7, callint, c, foo
 8, printint, c
 9, exit
 10, label, foo
-11, printint, a
-12, +=, d, a
-13, &, c, d, 3
-14, retint, d
+11, printstr, "infoo"
+12, getarr, d, B, 8
+13, retint, d

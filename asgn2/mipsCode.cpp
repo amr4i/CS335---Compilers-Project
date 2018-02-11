@@ -3,8 +3,8 @@
 mipsCode::mipsCode(SymTable SymT)
 {
 
-	string FRS[] = {"$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7"};
-	const int lenFRS = 15;
+	string FRS[] = {"$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7"};
+	const int lenFRS = 14;
 	for(int i=0; i<lenFRS; i++){
 		freeRegs.push_back(FRS[i]);
 	}

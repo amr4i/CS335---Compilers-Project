@@ -8,12 +8,12 @@ set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "
 set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint", "array"};
 
 // 1 operand instructions
-set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint"};
+set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint", "printstr"};
 
 // No operand instruction
 set<string> itype0= {"ret","exit"};
 
-// TODO : Array, strings, and finally DEBUGGING
+// TODO :  strings with spaces. without spaces has been done. and TEST_CASES. 
 // Arrays need to neccessarily have a pre-defined integer size
 
 struct TAC
