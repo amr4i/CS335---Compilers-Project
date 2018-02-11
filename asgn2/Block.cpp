@@ -30,10 +30,21 @@ void Block::computeNextUse()
 					temp[IR[i]->dest->name] = mp(string ("Dead"), INF);
 				}
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
+
 			}
-			// Else : Don't know what to do for print, scan and others
-			// Resolve: Make scan action to be similar to that of asignment.
-			
+			else if(op == "scan")
+			{
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+					varStack.erase(IR[i]->dest->name);
+				}
+				else
+				{
+					varStack[IR[i]->dest->name] = mp(string("Dead"), INF);
+				}
+			}
+
 		}
 		else	if(opType == 2)
 		{
@@ -52,7 +63,16 @@ void Block::computeNextUse()
 			}
 			else 	if(op == "callint")
 			{
-				// TODO
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+					varStack.erase(IR[i]->dest->name);
+				}
+				else
+				{
+					varStack[IR[i]->dest->name] = mp(string("Dead"), INF);
+				}
+				
 			}
 			else	if(op == "=")
 			{

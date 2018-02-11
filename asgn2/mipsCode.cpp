@@ -47,7 +47,7 @@ string mipsCode::getReg(string var, int ins)
 		if(IR[ins-1]->opd1 != NULL)
 		{
 			tempVarName = IR[ins-1]->opd1->name;
-			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
+			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
 				reg = addDesc[ tempVarName ]["register"];
 				regDesc[reg] = var;
@@ -62,14 +62,14 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
+				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
 			}
-			// addLine("sw "+reg+", "+tempVarName);
 		}
 		
 		if(flag == false && IR[ins-1]->opd2 != NULL)
 		{
 			tempVarName = IR[ins-1]->opd2->name;
-			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
+			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
 				reg = addDesc[ tempVarName ]["register"];
 				regDesc[reg] = var;
@@ -84,8 +84,8 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
+				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
 			}
-			// addLine("sw "+reg+", "+tempVarName);
 		}
 	}
 
