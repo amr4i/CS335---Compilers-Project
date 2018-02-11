@@ -15,8 +15,9 @@ public:
 
 	mipsCode(SymTable SymT);
 	void addLine(string line);
-	string getFreeReg();
-	string getReg(string var, int ins);
-	void printCode();
+	string getFreeReg(void);
+	string getReg(string var, int ins, int isDst);
+	void printCode(void);
 	string spillReg(string var, int ins);
+	void flushAll(void);
 };

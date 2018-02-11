@@ -1,4 +1,4 @@
-1, =, a, 2
+1, scan, a
 2, label, wow
 3, =, B, 7
 4, +, a, a, B

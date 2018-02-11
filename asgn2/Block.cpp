@@ -49,7 +49,7 @@ void Block::computeNextUse()
 			}
 
 		}
-		else	if(opType == 2)
+		else if(opType == 2)
 		{
 			if(op == "ifgoto")
 			{

@@ -26,15 +26,16 @@ string mipsCode::getFreeReg(){
 	return reg;
 }
 
-string mipsCode::getReg(string var, int ins)
+string mipsCode::getReg(string var, int ins, int isDst)
 {
 	string reg, tempVarName;
 	vector < pair < int, string > > :: iterator it;
 	bool flag = false;
 
 
+
 	// If variable already has a register 
-	if(addDesc.find(var) != addDesc.end())
+	if(addDesc.find(var) != addDesc.end() && addDesc[var]["register"]!="NONE")
 	{
 		reg = addDesc[var]["register"];
 		return reg;
@@ -42,14 +43,18 @@ string mipsCode::getReg(string var, int ins)
 	
 	// If there is variable on the RHS that has no nextUse
 	// This should be done only when the register is destination register (i.e. on the LHS)
-	if(IR[ins-1]->dest->name == var)
+	if(isDst==1 && !(IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
+		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
+		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))
 	{
+		addDesc[var]["memory"] = "false";
+
 		if(IR[ins-1]->opd1 != NULL)
 		{
 			tempVarName = IR[ins-1]->opd1->name;
 			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
-				reg = addDesc[ tempVarName ]["register"];
+				reg = addDesc[tempVarName]["register"];
 				regDesc[reg] = var;
 				addDesc[var]["register"] = reg;
 
@@ -62,8 +67,12 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
-				cerr << (nextUseTable[ins-1].se)[tempVarName].fi << "\n";
-				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
+				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	
+				{ 
+					addLine("sw "+reg+", "+tempVarName); 
+					addDesc[tempVarName]["memory"] = "true";
+					addDesc[tempVarName]["register"] = "NONE";
+				}
 			}
 		}
 		
@@ -85,8 +94,12 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
-				cerr << (nextUseTable[ins-1].se)[tempVarName].fi << "\n";
-				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
+				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	
+				{ 
+					addLine("sw "+reg+", "+tempVarName);
+					addDesc[tempVarName]["memory"] = "true";
+					addDesc[tempVarName]["register"] = "NONE";
+				}
 			}
 		}
 	}
@@ -99,6 +112,9 @@ string mipsCode::getReg(string var, int ins)
 		regDesc[reg] = var;
 		usedRegs.push_back( mp( (nextUseTable[ins-1].se)[var].se, reg ) );
 		addDesc[var]["register"] = reg;	
+		if(addDesc[var]["memory"] != "true"){
+			addDesc[var]["memory"] = "false";
+		}
 
 		flag = true;
 	}
@@ -108,16 +124,19 @@ string mipsCode::getReg(string var, int ins)
 	{
 		reg = spillReg(var, ins);
 		flag = true;
+		if(addDesc[var]["memory"] != "true"){
+			addDesc[var]["memory"] = "false";
+		}
 	}
 
 	if(flag == false){
-		cerr << "Could not allocate a register to the variable " << var <<"\n";
 		exit(1);
 	}
 
 	// cout<< ins<<": "<<var<<" -> "<<reg<<"\n";
-
-	if(IR[ins-1]->dest->name != var)	addLine("lw " + reg + ", " + var);
+	if((isDst!=1) || (IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
+		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
+		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))	addLine("lw " + reg + ", " + var);
 
 	return reg;
 
@@ -158,6 +177,8 @@ string mipsCode::spillReg(string var, int ins)
 	// Write store instructions to transfer the data in the variable to the stack
 	addLine("sw "+spilledReg+", "+regDesc[spilledReg]);
 
+	addDesc[regDesc[spilledReg]]["memory"] = "true";
+
 	reg = spilledReg;
 
 	regDesc[reg] = var;
@@ -173,4 +194,31 @@ void mipsCode::printCode()
 	for(it = code.begin(); it != code.end() ; it++){
 		cout<<(*it)<<"\n";
 	}
+}
+
+void mipsCode::flushAll()
+{
+	vector< pair<int, string> >::iterator it;
+	string reg, varName;
+	for(it=usedRegs.begin(); it!=usedRegs.end(); it++){
+		reg = (*it).se;
+		varName = regDesc[reg];
+		if(addDesc[varName]["memory"] != "true")
+		{
+			addLine("sw "+reg+", "+varName);
+			addDesc[varName]["memory"] = "true";
+			
+		}
+		addDesc[varName]["register"] = "NONE";
+	}
+
+	usedRegs.clear();
+	regDesc.clear();
+
+	string FRS[] = {"$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7"};
+	const int lenFRS = 15;
+	for(int i=0; i<lenFRS; i++){
+		freeRegs.push_back(FRS[i]);
+	}
+
 }

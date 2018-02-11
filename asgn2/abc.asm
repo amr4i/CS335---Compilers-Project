@@ -4,19 +4,26 @@ a:	.word 0
 x:	.word 0
 .text
 main:
-li $s7, 2
+li $v0, 5
+syscall
+sw $v0, a
 wow:
-li $s6, 7
-add $s7, $s7, $s6
-sw $s7, a
+li $s7, 7
+lw $s6, a
+add $s6, $s6, $s7
 li $t0, 50
-sle $s7, $s7, $t0
+sw $s6, a
+sle $s6, $s6, $t0
+sw $s7, B
+sw $s6, x
+lw $s7, x
 bne $s7, $zero, wow
 jal foo
 li $v0, 10
 syscall
 foo:
-move $a0, $s7
+lw $s7, a
 li $v0, 1
+move $a0, $s7
 syscall
-jr $rs
+jr $ra
