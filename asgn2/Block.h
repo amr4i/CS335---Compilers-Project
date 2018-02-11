@@ -10,6 +10,7 @@ public:
 
 private:
 	map < string, pair <string, int > > varStack;
+	map < string, bool > visited;
 
 };
 

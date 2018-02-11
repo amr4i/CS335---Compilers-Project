@@ -62,6 +62,7 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
+				cerr << (nextUseTable[ins-1].se)[tempVarName].fi << "\n";
 				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
 			}
 		}
@@ -84,6 +85,7 @@ string mipsCode::getReg(string var, int ins)
 				}
 
 				flag = true;
+				cerr << (nextUseTable[ins-1].se)[tempVarName].fi << "\n";
 				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	{ addLine("sw "+reg+", "+tempVarName); }
 			}
 		}
