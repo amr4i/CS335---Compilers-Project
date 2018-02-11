@@ -41,46 +41,49 @@ string mipsCode::getReg(string var, int ins)
 	} 
 	
 	// If there is variable on the RHS that has no nextUse
-	if(IR[ins-1]->opd1 != NULL)
+	// This should be done only when the register is destination register (i.e. on the LHS)
+	if(IR[ins-1]->dest->name == var)
 	{
-		tempVarName = IR[ins-1]->opd1->name;
-		if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
+		if(IR[ins-1]->opd1 != NULL)
 		{
-			reg = addDesc[ tempVarName ]["register"];
-			regDesc[reg] = var;
-			addDesc[var]["register"] = reg;
-
-			for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
+			tempVarName = IR[ins-1]->opd1->name;
+			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
 			{
-				if((*it).se == reg){ 
-					(*it).fi = (nextUseTable[ins-1].se)[var].se; 
-					break;
-				}
-			}
+				reg = addDesc[ tempVarName ]["register"];
+				regDesc[reg] = var;
+				addDesc[var]["register"] = reg;
 
-			flag = true;
+				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
+				{
+					if((*it).se == reg){ 
+						(*it).fi = (nextUseTable[ins-1].se)[var].se; 
+						break;
+					}
+				}
+
+				flag = true;
+			}
 		}
-	}
-	
-	if(flag == false && IR[ins-1]->opd2 != NULL)
-	{
-
-		tempVarName = IR[ins-1]->opd2->name;
-		if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
+		
+		if(flag == false && IR[ins-1]->opd2 != NULL)
 		{
-			reg = addDesc[ tempVarName ]["register"];
-			regDesc[reg] = var;
-			addDesc[var]["register"] = reg;
-
-			for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
+			tempVarName = IR[ins-1]->opd2->name;
+			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF)
 			{
-				if((*it).se == reg){ 
-					(*it).fi = (nextUseTable[ins-1].se)[var].se; 
-					break;
-				}
-			}
+				reg = addDesc[ tempVarName ]["register"];
+				regDesc[reg] = var;
+				addDesc[var]["register"] = reg;
 
-			flag = true;
+				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
+				{
+					if((*it).se == reg){ 
+						(*it).fi = (nextUseTable[ins-1].se)[var].se; 
+						break;
+					}
+				}
+
+				flag = true;
+			}
 		}
 	}
 
@@ -99,28 +102,7 @@ string mipsCode::getReg(string var, int ins)
 	// Spilling
 	if(flag == false)
 	{
-		int farthest;
-		string spilledReg;
-		vector < pair < int, string > >::iterator far; 
-
-		far = usedRegs.end();
-		farthest = 0;
-		for(it = usedRegs.begin() ; it  != usedRegs.end() ; it++)
-		{
-			if((*it).fi > farthest)	far = it;
-		}
-
-		spilledReg = (*far).se;
-
-		// Write store instructions to transfer the data in the variable to the stack
-		addLine("sw "+spilledReg+", "+regDesc[spilledReg]);
-
-		reg = spilledReg;
-
-		regDesc[reg] = var;
-		(*far).fi = (nextUseTable[ins-1].se)[var].se;
-		addDesc[var]["register"] = reg;
-
+		reg = spillReg(var, ins);
 		flag = true;
 	}
 
@@ -137,7 +119,52 @@ string mipsCode::getReg(string var, int ins)
 
 }
 
-void mipsCode::printCode(){
+string mipsCode::spillReg(string var, int ins)
+{
+	vector < pair < int, string > >::iterator far, it; 
+	vector <string> varsPresent;
+	vector <string>:: iterator itt;
+	string spilledReg, reg;
+	int farthest;
+	bool flag;
+
+	if(IR[ins-1]->dest != NULL)	varsPresent.pb(IR[ins-1]->dest->name);
+	if(IR[ins-1]->opd1 != NULL)	varsPresent.pb(IR[ins-1]->opd1->name);
+	if(IR[ins-1]->opd2 != NULL)	varsPresent.pb(IR[ins-1]->opd2->name);
+
+	far = usedRegs.end();
+	farthest = 0;
+
+	for(it = usedRegs.begin() ; it  != usedRegs.end() ; it++)
+	{
+		flag = true;
+		if((*it).fi > farthest)
+		{
+			for(itt = varsPresent.begin() ; itt != varsPresent.end() ; itt++)
+			{
+				if((*itt) == regDesc[(*it).se])	flag = false;
+			}
+
+			if(flag == true) { far = it; }
+		}
+	}
+
+	spilledReg = (*far).se;
+
+	// Write store instructions to transfer the data in the variable to the stack
+	addLine("sw "+spilledReg+", "+regDesc[spilledReg]);
+
+	reg = spilledReg;
+
+	regDesc[reg] = var;
+	(*far).fi = (nextUseTable[ins-1].se)[var].se;
+	addDesc[var]["register"] = reg;
+
+	return reg;
+}
+
+void mipsCode::printCode()
+{
 	vector <string> ::iterator it;
 	for(it = code.begin(); it != code.end() ; it++){
 		cout<<(*it)<<"\n";
