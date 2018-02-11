@@ -67,7 +67,7 @@ void fillTAC(vector <string> instr)
 	// Check for literal if needed
 	if(tac->opType > 0)
 	{
-		if(instr[1] == "goto")	{ tac->target = instr[1]; }
+		if(instr[1] == "goto" || instr[1] == "callvoid" || instr[1] == "label")	{ tac->target = instr[2]; }
 		else
 		{
 			flag = symTable.insert(new Symbol(instr[2], "int"));
@@ -78,7 +78,7 @@ void fillTAC(vector <string> instr)
 	switch(tac->opType){
 		case 2:
 
-			if(tac->op == "ifgoto")
+			if(tac->op == "ifgoto" || tac->op == "callint")
 			{
 				tac->target = instr[3];
 			}
