@@ -13,7 +13,7 @@ set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto"
 // No operand instruction
 set<string> itype0= {"ret","exit"};
 
-// TODO : Array, strings, after -blocks clearance, and finally DEBUGGING
+// TODO : Array, strings, and finally DEBUGGING
 
 struct TAC
 {

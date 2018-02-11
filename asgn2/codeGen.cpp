@@ -289,7 +289,6 @@ int main(int argc, char** argv){
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                // //cerr<<"debug "<<reg_in1<<reg_in2<<reg_out<<endl;
                 code->addLine("add "+reg_out+", "+reg_in1+", "+reg_in2);
             }
         }
@@ -301,19 +300,20 @@ int main(int argc, char** argv){
             {
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("subi "+reg_out+", "+reg_out+", "+ir->l2);
+                code->addLine("addi "+reg_out+", "+reg_out+", -"+ir->l2);
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("subi "+reg_out+", "+reg_in2+", "+ir->l1);
+                code->addLine("sub "+reg_out+", $zero, "+reg_in2);
+                code->addLine("addi "+reg_out+", "+reg_out+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("subi "+reg_out+", "+reg_in1+", "+ir->l2);
+                code->addLine("addi "+reg_out+", "+reg_in1+", -"+ir->l2);
             }
             else
             {
@@ -326,7 +326,6 @@ int main(int argc, char** argv){
         else if (ir->op == "*")
         {
             /* code */
-
             if(ir->isInt1 && ir->isInt2)
             {
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
@@ -819,7 +818,6 @@ int main(int argc, char** argv){
         //Flush all variables to memory on block end, but before any jump
         if(ir->lineNum == blocks[blockNum]->endLine)
         {
-            //cerr<<"calling flushAll()"<<endl;
             code->flushAll();
             blockNum++;
         }

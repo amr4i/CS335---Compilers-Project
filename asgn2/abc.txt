@@ -2,10 +2,13 @@
 2, label, wow
 3, =, B, 7
 4, +, a, a, B
-5, <=, x, a, 50
+5, <=, x, a, 7
 6, ifgoto, x, wow
-7, callvoid, foo
-8, exit
-9, label, foo
-10, printint, a
-11, ret
+7, callint, c, foo
+8, printint, c
+9, exit
+10, label, foo
+11, printint, a
+12, +=, d, a
+13, &, c, d, 3
+14, retint, d
