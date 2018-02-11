@@ -3,12 +3,9 @@
 
 class Block{
 public:
-	Block(int s, int e)
-	{
-		startLine = s;
-		endLine = e;
-	}
+	
 	int startLine, endLine;
+	Block(int s, int e);
 	void computeNextUse();
 
 private:

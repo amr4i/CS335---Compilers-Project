@@ -1,5 +1,11 @@
 #include "Block.h"
 
+Block::Block(int s, int e)
+{
+	startLine = s;
+	endLine = e;
+}
+
 void Block::computeNextUse()
 {
 	forin(endLine-1, startLine-1)
