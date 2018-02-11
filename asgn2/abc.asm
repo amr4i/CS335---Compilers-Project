@@ -1,23 +1,20 @@
 .data
-B:	.word 0
+B:	.word 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 a:	.word 0
 c:	.word 0
 d:	.word 0
 x:	.word 0
 .text
 main:
-li $v0, 5
-syscall
-sw $v0, a
 wow:
-li $s7, 7
-lw $s6, a
-add $s6, $s6, $s7
+li $t0, 8
+sll $t0, $t0, 2
+lw $s7, B($t0)
+addi $s7, $s7, 5
 li $t0, 7
-sw $s6, a
-sle $s6, $s6, $t0
-sw $s7, B
-sw $s6, x
+sw $s7, a
+sle $s7, $s7, $t0
+sw $s7, x
 lw $s7, x
 bne $s7, $zero, wow
 jal foo

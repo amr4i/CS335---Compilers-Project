@@ -51,8 +51,6 @@ void fillTAC(vector <string> instr)
 	else	if(itype1.find(instr[1]) != itype1.end())	tac->opType = 1;
 	else	if(itype0.find(instr[1]) != itype0.end())	tac->opType = 0;
 	else{
-		cerr << instr[0] << " " << instr[1] << "\n";
-		cerr << "Invalid operator\n";
 		exit(1);
 	}
 
@@ -60,7 +58,6 @@ void fillTAC(vector <string> instr)
 
 	if(instr.size() != tac->opType + 2)
 	{
-		cerr << "Wrong three address code at line number : " << tac->lineNum << "\n";
 		exit(1);
 	}
 
@@ -70,10 +67,9 @@ void fillTAC(vector <string> instr)
 		if(instr[1] == "goto" || instr[1] == "callvoid" || instr[1] == "label")	{ tac->target = instr[2]; }
 		else if (tac->op == "array")
 		{
-			flag = symTable.insert(new Symbol(instr[2], "int"));
-			symTable.symbols[instr[2]]->isArray = true;
-			stringstream(instr[3]) << symTable.symbols[instr[2]]->array_size;
-			tac->dest = symTable.symbols[instr[2]];
+			tac->array_name = instr[2];
+			cerr << tac->array_name <<endl;
+			tac->array_size = stoi(instr[3]);
 		}
 		else
 		{
@@ -89,7 +85,7 @@ void fillTAC(vector <string> instr)
 			{
 				tac->target = instr[3];
 			}
-			else
+			else if( tac->op != "array")
 			{
 				if(isIntegerLiteral(instr[3]) == true)
 				{
@@ -105,19 +101,18 @@ void fillTAC(vector <string> instr)
 			}
 			break;
 		case 3:
-
 			if(isIntegerLiteral(instr[3]) == true)
 			{				
 				tac->isInt1 = true;
 				tac->l1 = instr[3];
 			}
-			else
+			else if(tac->op!="getarr")
 			{
-				if (tac->op != "getarr"){
-					flag = symTable.insert(new Symbol(instr[3], "int"));
-					tac->opd1 = symTable.symbols[instr[3]];
-				}
+				flag = symTable.insert(new Symbol(instr[3], "int"));
+				tac->opd1 = symTable.symbols[instr[3]];
 			}
+			else
+				tac->array_name = instr[3];
 
 
 			if(isIntegerLiteral(instr[4]) == true)

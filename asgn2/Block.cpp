@@ -17,7 +17,7 @@ void Block::computeNextUse()
 		// cout<<op<<"\n";
 
 		if(opType == 0)	continue;
-		else	if(opType == 1)
+		else if(opType == 1)
 		{
 			if(op == "++" || op == "--" || op == "printint" || op == "retint")
 			{
@@ -66,7 +66,7 @@ void Block::computeNextUse()
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 				visited[IR[i]->dest->name] = true;
 			}
-			else 	if(op == "callint")
+			else if(op == "callint")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -81,7 +81,7 @@ void Block::computeNextUse()
 				visited[IR[i]->dest->name] = true;
 
 			}
-			else	if(op == "=")
+			else if(op == "=")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -113,7 +113,7 @@ void Block::computeNextUse()
 				}
 				
 			}
-			else
+			else if(op != "array")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -148,19 +148,21 @@ void Block::computeNextUse()
 		}
 		else
 		{
-			if(varStack.find(IR[i]->dest->name) != varStack.end())
-			{
-				temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
-				varStack.erase(IR[i]->dest->name);
+			if(op!="setarr"){
+				if(varStack.find(IR[i]->dest->name) != varStack.end())
+				{
+					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+					varStack.erase(IR[i]->dest->name);
+				}
+				else
+				{ 
+					if(visited.find(IR[i]->dest->name) != visited.end()) { temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
+					else { temp[IR[i]->dest->name] = mp(string("Live"), INF); }
+				}
+				visited[IR[i]->dest->name] = true;
 			}
-			else
-			{ 
-				if(visited.find(IR[i]->dest->name) != visited.end()) { temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
-				else { temp[IR[i]->dest->name] = mp(string("Live"), INF); }
-			}
-			visited[IR[i]->dest->name] = true;
 
-			if(IR[i]->isInt1 == false)
+			if(IR[i]->isInt1 == false && op!="getarr")
 			{
 				if(varStack.find(IR[i]->opd1->name) != varStack.end())
 				{

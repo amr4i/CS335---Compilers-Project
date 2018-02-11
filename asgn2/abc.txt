@@ -1,7 +1,7 @@
-1, scan, a
+1, array, B, 15
 2, label, wow
-3, =, B, 7
-4, +, a, a, B
+3, getarr, a, B, 8
+4, +, a, a, 5
 5, <=, x, a, 7
 6, ifgoto, x, wow
 7, callint, c, foo

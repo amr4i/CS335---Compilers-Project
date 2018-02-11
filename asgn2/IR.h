@@ -14,6 +14,7 @@ set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto"
 set<string> itype0= {"ret","exit"};
 
 // TODO : Array, strings, and finally DEBUGGING
+// Arrays need to neccessarily have a pre-defined integer size
 
 struct TAC
 {
@@ -39,6 +40,9 @@ struct TAC
 
 	string l1;
 	string l2;
+
+	string array_name;
+	int array_size;
 	
 	bool isInt1;
 	bool isInt2;

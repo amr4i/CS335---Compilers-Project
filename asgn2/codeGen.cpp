@@ -21,22 +21,12 @@ int main(int argc, char** argv){
     {
         blocks[i]->computeNextUse();
     }
-
     mipsCode* code = new mipsCode(symTable);
     code->addLine(".data");
 
     for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
     {
-        if( (*itt).se->isArray == true )
-        {
-            code->addLine((*itt).fi + ":\t.space " + to_string((*itt).se->array_size * 4));
-        }
-    }
-
-
-    for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
-    {
-        if( (*itt).se->type == "int" && (*itt).se->isArray == false )
+        if( (*itt).se->type == "int" )
         {
             code->addLine((*itt).fi + ":\t.word 0");
         }
@@ -822,6 +812,30 @@ int main(int argc, char** argv){
             code->addLine("syscall");
             code->addLine("sw $v0, " + ir->dest->name);
 
+        }
+        else if (ir->op == "array")
+        {
+            vector<string>::iterator ittt;
+            ittt = code->code.begin();
+            ittt++;
+            string line = ir->array_name+":\t.space "+to_string(4*ir->array_size);
+            code->code.insert(ittt, line);
+        }
+        else if (ir->op == "getarr")
+        {
+            if(ir->isInt2){
+                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+                code->addLine("li $t0, "+ir->l2);
+                code->addLine("sll $t0, $t0, 2");
+                cerr<< ir->array_name <<endl;
+                code->addLine("lw "+reg_out+", "+ir->array_name+"($t0)");
+            }
+            else{
+                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+                code->addLine("sll $t0, "+reg_in2+", 2");
+                code->addLine("lw "+reg_out+", "+ir->array_name+"($t0)");
+            }
         }
 
         //Flush all variables to memory on block end, but before any jump
