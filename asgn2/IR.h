@@ -46,6 +46,7 @@ struct TAC
 	
 	bool isInt1;
 	bool isInt2;
+
 };
 
 vector < TAC* > IR;

@@ -21,6 +21,7 @@ int main(int argc, char** argv){
     {
         blocks[i]->computeNextUse();
     }
+
     mipsCode* code = new mipsCode(symTable);
     code->addLine(".data");
 

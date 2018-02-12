@@ -63,15 +63,15 @@ void fillTAC(vector <string> instr)
 	// Check for literal if needed
 	if(tac->opType > 0)
 	{
-		if(instr[1] == "goto" || instr[1] == "callvoid" || instr[1] == "label")	{ tac->target = instr[2]; }
+		if(instr[1] == "goto" || instr[1] == "callvoid" || instr[1] == "label")	{ tac->target = "_"+instr[2]; }
 		else if (tac->op == "array")
 		{
-			tac->array_name = instr[2];
+			tac->array_name = "_"+instr[2];
 			tac->array_size = stoi(instr[3]);
 		}
 		else if (tac->op == "setarr")
 		{
-			tac->array_name = instr[2];
+			tac->array_name = "_"+instr[2];
 		}
 		else if (tac->op == "printstr")
 		{
@@ -80,7 +80,7 @@ void fillTAC(vector <string> instr)
 		else
 		{
 			flag = symTable.insert(new Symbol(instr[2], "int"));
-			tac->dest = symTable.symbols[instr[2]];
+			tac->dest = symTable.symbols["_"+instr[2]];
 		}
 	}
 
@@ -89,7 +89,7 @@ void fillTAC(vector <string> instr)
 
 			if(tac->op == "ifgoto" || tac->op == "callint")
 			{
-				tac->target = instr[3];
+				tac->target = "_"+instr[3];
 			}
 			else if( tac->op != "array")
 			{
@@ -101,7 +101,7 @@ void fillTAC(vector <string> instr)
 				else
 				{
 					flag = symTable.insert(new Symbol(instr[3], "int"));
-					tac->opd1 = symTable.symbols[instr[3]];
+					tac->opd1 = symTable.symbols["_"+instr[3]];
 				}
 
 			}
@@ -115,10 +115,10 @@ void fillTAC(vector <string> instr)
 			else if(tac->op!="getarr")
 			{
 				flag = symTable.insert(new Symbol(instr[3], "int"));
-				tac->opd1 = symTable.symbols[instr[3]];
+				tac->opd1 = symTable.symbols["_"+instr[3]];
 			}
 			else
-				tac->array_name = instr[3];
+				tac->array_name = "_"+instr[3];
 
 
 			if(isIntegerLiteral(instr[4]) == true)
@@ -129,7 +129,7 @@ void fillTAC(vector <string> instr)
 			else
 			{
 				flag = symTable.insert(new Symbol(instr[4], "int"));
-				tac->opd2 = symTable.symbols[instr[4]];
+				tac->opd2 = symTable.symbols["_"+instr[4]];
 			}
 
 			break;
