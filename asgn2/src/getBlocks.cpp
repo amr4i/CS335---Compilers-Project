@@ -2,6 +2,9 @@
 
 vector<Block*> blocks;
 
+// Get the blocks from the IR structure. 
+// We find the leaders in the code, and use those to 
+// segregate different blocks.
 void getBlocks(){
 
 	vector<TAC*>::iterator it;
@@ -29,7 +32,7 @@ void getBlocks(){
 		} else if(opr == "callint" || opr == "callvoid"){
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(opr == "ret"){ // TODO : print, scan
+		} else if(opr == "ret"){ 
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
 		} else if(opr == "label"){

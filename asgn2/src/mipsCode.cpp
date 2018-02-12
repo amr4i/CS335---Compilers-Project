@@ -16,6 +16,7 @@ void mipsCode::addLine(string line){
 	code.push_back(line);
 }
 
+// to get a register that is not in use. 
 string mipsCode::getFreeReg(){
 	string reg;
 	if(freeRegs.size() > 0){
@@ -37,6 +38,7 @@ string mipsCode::getReg(string var, int ins, int isDst)
 	// If variable already has a register 
 	if(addDesc.find(var) != addDesc.end() && addDesc[var]["register"]!="NONE")
 	{
+		if(isDst==1) 	addDesc[var]["memory"]="false";
 		reg = addDesc[var]["register"];
 		return reg;
 	} 
@@ -133,10 +135,13 @@ string mipsCode::getReg(string var, int ins, int isDst)
 		exit(1);
 	}
 
-	// cout<< ins<<": "<<var<<" -> "<<reg<<"\n";
 	if((isDst!=1) || (IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
 		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
-		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))	addLine("lw " + reg + ", " + var);
+		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))
+	{
+		addLine("lw " + reg + ", " + var);
+		if(isDst==1) addDesc[var]["memory"]="false";
+	}
 
 	return reg;
 
@@ -196,6 +201,8 @@ void mipsCode::printCode()
 	}
 }
 
+// to clear the registers at the end of blocks, 
+// and move them to memory locations. 
 void mipsCode::flushAll()
 {
 	vector< pair<int, string> >::iterator it;

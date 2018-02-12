@@ -5,7 +5,8 @@ Block::Block(int s, int e)
 	startLine = s;
 	endLine = e;
 }
-			
+		
+// For computng the nextUse within the block for all of the symbols.	
 void Block::computeNextUse()
 {
 	forin(endLine-1, startLine-1)

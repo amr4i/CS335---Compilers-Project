@@ -17,6 +17,7 @@ int main(int argc, char** argv){
 
     blockSiz = blocks.size();
 
+    //computing next use in each of the blocks.
     fori(0, blockSiz)
     {
         blocks[i]->computeNextUse();
@@ -25,6 +26,7 @@ int main(int argc, char** argv){
     mipsCode* code = new mipsCode(symTable);
     code->addLine(".data");
 
+    // add all the data variables
     for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
     {
         if( (*itt).se->type == "int" )
@@ -35,7 +37,7 @@ int main(int argc, char** argv){
 
     string reg_out, reg_in1, reg_in2;
 
-    // add all the data variables
+    
 
     code->addLine(".text");
     code->addLine("main:");
@@ -70,7 +72,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("move "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "+=")
         {
@@ -89,7 +91,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("add "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "-=")
         {
@@ -98,7 +100,7 @@ int main(int argc, char** argv){
             {
                 /* immediate assignment, e.g. a=5 */
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("subi "+reg_out+", "+reg_out+", "+ir->l1);
+                code->addLine("addi "+reg_out+", "+reg_out+", -"+ir->l1);
             }
             else
             {
@@ -107,7 +109,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("sub "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "*=")
         {
@@ -126,7 +128,7 @@ int main(int argc, char** argv){
                 code->addLine("mult "+reg_out+", "+reg_in1);
                 code->addLine("mflo "+reg_out);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "/=")
         {
@@ -145,7 +147,7 @@ int main(int argc, char** argv){
                 code->addLine("div "+reg_out+", "+reg_in1);
                 code->addLine("mflo "+reg_out);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "%=")
         {
@@ -164,7 +166,7 @@ int main(int argc, char** argv){
                 code->addLine("div "+reg_out+", "+reg_in1);
                 code->addLine("mfhi "+reg_out);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "<<=")
         {
@@ -183,7 +185,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("sllv "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == ">>=")
         {
@@ -202,7 +204,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("srlv "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "&=")
         {
@@ -221,7 +223,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("and "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "|=")
         {
@@ -240,7 +242,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("or "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "^=")
         {
@@ -259,7 +261,7 @@ int main(int argc, char** argv){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("xor "+reg_out+", "+reg_out+", "+reg_in1);
             }
-            // flushVar call ?
+            
         }
         else if (ir->op == "+")
         {
@@ -734,7 +736,7 @@ int main(int argc, char** argv){
                 code->addLine("li $t0, "+ir->l2);
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("sne "+reg_out+", "+reg_in1+", ");
+                code->addLine("sne "+reg_out+", "+reg_in1+", $t0");
             }
             else
             {
@@ -788,7 +790,7 @@ int main(int argc, char** argv){
         {
             /* code */
             reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-            code->addLine("subi "+reg_out+", "+reg_out+", 1");
+            code->addLine("addi "+reg_out+", "+reg_out+", -1");
             code->addLine("sw "+reg_out+", "+ir->dest->name);
         }
         else if (ir->op == "printint")

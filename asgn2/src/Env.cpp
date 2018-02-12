@@ -1,5 +1,10 @@
 #include "Env.h"
 
+/*
+	Not being used currently, will be helpful later while
+	implementing scopes.
+*/
+
 Env::Env(){
 	symbolTable = new SymTable();
 	prevEnv = NULL;

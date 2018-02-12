@@ -1,5 +1,6 @@
 #include "IR.h"
 
+//Reading an preprocessing each line in the IR text.
 void readFile(char* fileName)
 {
 	string line;
@@ -40,7 +41,7 @@ void readFile(char* fileName)
 			if(line[s] != ' ' && line[s] != ',' && s!=len){	
 				temp.pb(line.substr(s, len-s));
 			}
-
+    		
 			fillTAC(temp);
 
 			temp.clear();
@@ -48,6 +49,10 @@ void readFile(char* fileName)
 	}
 }
 
+/*
+	To fill the line from IR text into the three-address code
+	data structure , which will make the IR structure.
+*/
 void fillTAC(vector <string> instr)
 {
 	bool flag;
