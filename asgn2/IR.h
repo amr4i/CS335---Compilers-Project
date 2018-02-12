@@ -13,7 +13,7 @@ set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto"
 // No operand instruction
 set<string> itype0= {"ret","exit"};
 
-// TODO :  strings with spaces. without spaces has been done. and TEST_CASES. 
+// TODO :  TEST_CASES. 
 // Arrays need to neccessarily have a pre-defined integer size
 
 struct TAC

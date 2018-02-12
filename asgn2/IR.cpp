@@ -27,10 +27,19 @@ void readFile(char* fileName)
 						s++;
 						if(s == len)	break;
 					}
-                    i=s;
+					if(line[s] == '"') i=s-1;
+                    else i=s;
+				}
+				else if (line[i] == '"')
+				{
+					temp.pb(line.substr(i,len-i));
+					s=len;
+					break;
 				}
 			}
-			if(line[s] != ' ' && line[s] != ',')	temp.pb(line.substr(s, len-s));
+			if(line[s] != ' ' && line[s] != ',' && s!=len){	
+				temp.pb(line.substr(s, len-s));
+			}
 
 			fillTAC(temp);
 
@@ -57,6 +66,11 @@ void fillTAC(vector <string> instr)
 
 	if(instr.size() != tac->opType + 2)
 	{
+		cerr<<"Error at line "<<tac->lineNum<<endl;
+		fori(0,instr.size()){
+			cerr<<instr[i]<<endl;
+		}
+		cerr<<"number of operands "<<instr.size()-2<<" do not match with instruction type"<<tac->opType<<"\n";
 		exit(1);
 	}
 

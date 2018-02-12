@@ -8,6 +8,6 @@
 8, printint, c
 9, exit
 10, label, jal
-11, printstr, "infoo"
+11, printstr, "in foo\n"
 12, getarr, j, b, 8
 13, retint, j

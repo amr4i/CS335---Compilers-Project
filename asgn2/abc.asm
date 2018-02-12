@@ -4,7 +4,7 @@ _a:	.word 0
 _c:	.word 0
 _j:	.word 0
 _x:	.word 0
-string_11:	.asciiz "infoo"
+string_11:	.asciiz "in foo\n"
 .text
 main:
 _wow:
