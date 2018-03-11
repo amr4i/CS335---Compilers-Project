@@ -12,7 +12,7 @@
 	#include "y.tab.h"
 	
 	using namespace std;
-	map<string,vector<string> > tokenLexemeMapping;
+	// map<string,vector<string> > tokenLexemeMapping;
  	
 
 %}
@@ -34,7 +34,7 @@ CONTINUE		continue
 DEFAULT			default
 DO				do
 ELSE			else
-FLASE			false
+FALSE			false
 FINALLY			finally
 FOR 			for
 FOREACH			foreach
@@ -129,8 +129,109 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 
 {COMMENT} ;
 {WHITESPACE}  ;
-{DEFINE}  { tokenLexemeMapping["DEFINE"].push_back(yytext);}
-{UNDEF}  { tokenLexemeMapping["UNDEF"].push_back(yytext);}
+{DEFINE}  { return DEFINE; }
+{UNDEF}  { return UNDEF; }
+{BASE} { return BASE; }
+{BOOL} { return BOOL; }
+{BREAK} { return BREAK; }
+{CASE} { return CASE; }
+{CATCH} { return CATCH; }
+{CHAR} { return CHAR; }
+{CLASS} { return CLASS; }
+{CONST} { return CONST; }
+{CONTINUE}  { return CONTINUE; }
+{DEFAULT} { return DEFAULT; }
+{DO} { return DO; }
+{ELSE} { return ELSE; }
+{FALSE} { return FALSE; }
+{FINALLY} { return FINALLY; }
+{FOR} { return FOR; }
+{FOREACH} { return FOREACH; }
+{GOTO} { return GOTO; }
+{IF} { return IF; }
+{IN} { return IN; }
+{INT} { return INT; }
+{LONG} { return LONG; }
+{NAMESPACE} { return NAMESPACE; }
+{NEW} { return NEW; }
+{NULL} { return NULL; }
+{OBJECT} { return OBJECT; }
+{PARAMS} { return PARAMS; }
+{PRIVATE} { return PRIVATE; }
+{PROTECTED} { return PROTECTED; }
+{PUBLIC} { return PUBLIC; }
+{REF} { return REF; }
+{RETURN} { return RETURN; }
+{STRING} { return STRING; }
+{STRUCT} { return STRUCT; }
+{SWITCH} { return SWITCH; }
+{THIS} { return THIS; }
+{THROW} { return THROW; }
+{TRUE} { return TRUE; }
+{TRY} { return TRY; }
+{TYPEOF} { return TYPEOF; }
+{UINT} { return UINT; }
+{ULONG} { return ULONG; }
+{USING} { return USING; }
+{VOID} { return VOID; }
+{WHILE} { return WHILE; }
+{ID}  { yylval.sVal = yytext; return ID; }
+{DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
+{HDINT_LITERAL}  { yylval.iVa
+l = atoi(yytext); return HDINT_LITERAL; }
+{SIMPLE_ESC_SEQ}  { return SOMPLE_ESC_SEQ; }
+{CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
+{REG_STR_LITERAL}  { yylval.sVal = yytext; return REG_STR_LITERAL; }
+{VER_STR_LITERAL}  { yylval.sVal = yytext; return VER_STR_LITERAL; }
+{NULL_LITERAL}  { return NULL_LITERAL; }
+{LBRACE}  { return *yytext; }
+{RBRACE}  { return *yytext; }
+{LBRACKET}  { return *yytext; }
+{RBRACKET}  { return *yytext; }
+{LPARENTHESES}  { return *yytext; }
+{RPARENTHESES}  { return *yytext; }
+{DOT}  { return *yytext; }
+{COMMA}  { return *yytext; }
+{COLON}  { return *yytext; }
+{SEMICOLON}  { return *yytext; }
+{PLUS}  { return *yytext; }
+{MINUS}  { return *yytext; }
+{STAR}  { return *yytext; }
+{DIVIDE}  { return *yytext; }
+{MODULO}  { return *yytext; }
+{AMPERSAND}  { return *yytext; }
+{OR}  { return *yytext; }
+{CARET}  { return *yytext; }
+{EXCLAMATION}  { return *yytext; }
+{TILDE}  { return *yytext; }
+{EQUALS}  { return *yytext; }
+{LESS_THAN}  { return *yytext; }
+{GREATER_THAN}  { return *yytext; }
+{QUESTION_MARK}  { return *yytext; }
+{DOUBLE_QM}  { return DQM; }
+{DOUBLE_COLON}  { return DCLN; }
+{INCREMENT}  { return INCR; }
+{DECREMENT}  { return DECR; }
+{REL_AND} { return RAND; }
+{REL_OR} { return ROR; }
+{REL_EQUALS}  { return REQ; }
+{REL_NOT_EQ}  { return RNE; }
+{LESS_EQUALS}  { return LE; }
+{GREATER_EQUALS}  { return GE; }
+{ASSIGN_PLUS}  { return APLUS; }
+{ASSIGN_MINUS}  { return AMINUS; }
+{ASSIGN_STAR}  { return AMULT; }
+{ASSIGN_DIV}  { return ADIV; }
+{ASSIGN_MOD}  { return AMOD; }
+{ASSIGN_AND}  { return AAND; }
+{ASSIGN_OR}  { return AOR; }
+{ASSIGN_CARET}  { return ACARET; }
+{LEFT_SHIFT}  { return LSHIFT; }
+{LEFT_SHIFT_EQ}  { return LSHIFTEQ; }
+{RIGHT_SHIFT}  { return RSHIFT; }
+{RIGHT_SHIFT_EQ}  { return RSHIFTEQ; }
+
+/*
 {BASE}  { tokenLexemeMapping["BASE"].push_back(yytext);}
 {BOOL}  { tokenLexemeMapping["BOOL"].push_back(yytext);}
 {BREAK}  { tokenLexemeMapping["BREAK"].push_back(yytext);}
@@ -143,7 +244,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {DEFAULT}  { tokenLexemeMapping["DEFAULT"].push_back(yytext);}
 {DO}  { tokenLexemeMapping["DO"].push_back(yytext);}
 {ELSE}  { tokenLexemeMapping["ELSE"].push_back(yytext);}
-{FLASE}  { tokenLexemeMapping["FLASE"].push_back(yytext);}
+{FALSE}  { tokenLexemeMapping["FALSE"].push_back(yytext);}
 {FINALLY}  { tokenLexemeMapping["FINALLY"].push_back(yytext);}
 {FOR}  { tokenLexemeMapping["FOR"].push_back(yytext);}
 {FOREACH}  { tokenLexemeMapping["FOREACH"].push_back(yytext);}
@@ -229,6 +330,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {LEFT_SHIFT_EQ}  { tokenLexemeMapping["LEFT_SHIFT_EQ"].push_back(yytext);}
 {RIGHT_SHIFT}  { tokenLexemeMapping["RIGHT_SHIFT"].push_back(yytext);}
 {RIGHT_SHIFT_EQ}  { tokenLexemeMapping["RIGHT_SHIFT_EQ"].push_back(yytext);}
+*/
 .	{yyerror();}
 
 %%
@@ -243,10 +345,12 @@ int main(int argc, char *argv[]){
 		cerr << "Please specify an existing filename." << endl;	
 		return 1;
 	}
+
 	string s;
 	int flag = 0;
 	yyin = fopen(argv[1], "r");
 	yylex();
+	 /*
 	cout << "===============================================================================\n";
 	cout << setw(20) << "Tokens" << setw(15) << "Occurences" << setw(45) << "Lexemes\n";
 	cout << "===============================================================================\n";
@@ -274,6 +378,7 @@ int main(int argc, char *argv[]){
 		else
 			cout << setw(80) << s <<endl;
 	}
+	*/
 	fclose(yyin);
 	return 0;
 }
