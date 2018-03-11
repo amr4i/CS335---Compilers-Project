@@ -177,8 +177,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {WHILE} { return WHILE; }
 {ID}  { yylval.sVal = yytext; return ID; }
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
-{HDINT_LITERAL}  { yylval.iVa
-l = atoi(yytext); return HDINT_LITERAL; }
+{HDINT_LITERAL}  { yylval.iVal = atoi(yytext); return HDINT_LITERAL; }
 {SIMPLE_ESC_SEQ}  { return SOMPLE_ESC_SEQ; }
 {CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
 {REG_STR_LITERAL}  { yylval.sVal = yytext; return REG_STR_LITERAL; }
