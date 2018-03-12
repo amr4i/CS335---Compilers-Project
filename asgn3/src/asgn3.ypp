@@ -31,7 +31,8 @@
 %%
 start :	compilation_unit	{}
 		;
-
+/* PROBLEM : All the basic units that build the code (basically tokens) have been left to us and we have to ensure that this LR grammar.
+*/
 /*B.1 Lexical grammar*/
 input : input_section 	{}
 		| epsilon	{}
