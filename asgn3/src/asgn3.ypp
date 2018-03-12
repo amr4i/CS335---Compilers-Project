@@ -23,7 +23,7 @@
 	char cVal;	
 };
 
-%token DEFINE UNDEF BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL NULL_LITERAL DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ
+%token DEFINE UNDEF BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL NULL_LITERAL DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ NEWLINE
 
 // Left - associativity if to be done
 %left or %right
@@ -46,19 +46,20 @@ input_section_part : new_line 	{}
 input_elements : input_element 	{}
 		| input_elements input_element	{}
 		;
-input_element :	whitespace 	{}
-		| comment 	{}
+input_element :	comment 	{}
 		| ?any token?	{}
 		;
 
 /*B.1.1 Line terminators*/ 
-new_line : ?Carriage return character (U+000D)?	 	{}
+new_line : NEWLINE
+/*?Carriage return character (U+000D)?	 	{}
 		| ?Line feed character (U+000A)? 	{}
 		| ?Carriage return character (U+000D) followed by line feed character (U+000A)? 	{}
 		| ?Next line character (U+0085)? 	{}
 		| ?Line separator character (U+2028)? 	{}
 		| ?Paragraph separator character (U+2029)?	{}
 		;
+*/
 
 /*B.1.2 Comments*/ 
 comment : single_line_comment	{}
@@ -69,7 +70,8 @@ single_line_comment : '//' 	{}
 input_characters : input_character 	{}
 		| input_characters input_character	{}
 		;
-input_character : ?Any Unicode character except a new_line_character?	{}
+input_character : character
+/*?Any Unicode character except a new_line_character?	{}
 		;
 new_line_character : ?Carriage return character (U+000D)? 	{}
 		| ?Line feed character (U+000A)? 	{}
@@ -77,13 +79,16 @@ new_line_character : ?Carriage return character (U+000D)? 	{}
 		| ?Line separator character (U+2028)? 	{}
 		| ?Paragraph separator character (U+2029)?	{}
 		;
+*/
 
 /*B.1.3 White space*/ 
+/*
 whitespace : ?Any character with Unicode class Zs? 	{}
 		| ?Horizontal tab character (U+0009)? 	{}
 		| ?Vertical tab character (U+000B)? 	{}
 		| ?Form feed character (U+000C)?	{}
 		;
+*/
 
 /*B.1.4 Tokens*/ 
 token :	identifier 	{}
@@ -100,6 +105,7 @@ unicode_escape_sequence : '\u' hex_digit hex_digit hex_digit hex_digit 	{}
 		;
 
 /*B.1.6 Identifiers*/
+/*
 identifier : available_identifier 	{}
 		| '@' identifier_or_keyword	{}
 		;
@@ -135,10 +141,10 @@ connecting_character : ?A Unicode character of the class Pc? 	{}
 formatting_character : ?A Unicode character of the class Cf? 	{}
 		| ?A unicode_escape_sequence representing a character of the class Cf?	{}
 		;
+*/
 
 /*B.1.7 Keywords*/ 
-keyword :  'as' 	{}
-		| BASE 	{}
+keyword : BASE 	{}
 		| BOOL 	{}
 		| BREAK 	{}
 		| CASE 	{}
@@ -150,17 +156,14 @@ keyword :  'as' 	{}
 		| DEFAULT 	{}
 		| DO 	{}
 		| ELSE 	{}
-		| 'explicit' 	{}
 		| FALSE 	{}
 		| FINALLY  	{}
 		| FOR 	{}
 		| FOREACH 	{}
 		| GOTO 	{}
 		| IF 	{}
-		| 'implicit' 	{}
 		| IN 	{}
 		| INT 	{}
-		| 'is' 	{}
 		| LONG 	{}
 		| NAMESPACE 	{}
 		| NEW 	{}
@@ -170,7 +173,6 @@ keyword :  'as' 	{}
 		| PRIVATE 	{}
 		| PROTECTED 	{}
 		| PUBLIC 	{}
-		| 'readonly' 	{}
 		| REF 	{}
 		| RETURN 	{}
 		| STRING 	{}
@@ -375,19 +377,13 @@ pp_directive :	pp_declaration 	{}
 		;
 conditional_symbol : ?Any identifier_or_keyword except true or false?	{}
 		;
-pp_declaration : '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| '#' whitespace UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' whitespace UNDEF whitespace conditional_symbol pp_new_line	{}
+pp_declaration : DEFINE conditional_symbol pp_new_line 	{}
+		| UNDEF conditional_symbol pp_new_line 	{}
 		;
 pp_new_line : new_line 	{}
 		| single_line_comment new_line 	{}
-		| whitespace new_line 	{}
-		| whitespace single_line_comment new_line	{}
+		| new_line 	{}
+		| single_line_comment new_line	{}
 		;
 
 

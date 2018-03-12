@@ -19,7 +19,8 @@
 %option yylineno
 
 COMMENT			\/\/[^\n]*\n	
-WHITESPACE		[\t\v\n ]+ 
+WHITESPACE		[\t\v ]+ 
+NEWLINE			[\n]
 BASE			base
 BOOL			bool
 BREAK			break
@@ -126,6 +127,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 
 {COMMENT} ;
 {WHITESPACE}  ;
+{NEWLINE} { return NEWLINE; }
 {DEFINE}  { return DEFINE; }
 {UNDEF}  { return UNDEF; }
 {BASE} { return BASE; }
