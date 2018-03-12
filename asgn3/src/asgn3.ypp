@@ -46,7 +46,8 @@ input_section_part : new_line 	{}
 input_elements : input_element 	{}
 		| input_elements input_element	{}
 		;
-input_element :	comment 	{}
+input_element :	whitespace 	{}
+		| comment 	{}
 		| ?any token?	{}
 		;
 
@@ -78,12 +79,11 @@ new_line_character : ?Carriage return character (U+000D)? 	{}
 		;
 
 /*B.1.3 White space*/ 
-/*whitespace : ?Any character with Unicode class Zs? 	{}
+whitespace : ?Any character with Unicode class Zs? 	{}
 		| ?Horizontal tab character (U+0009)? 	{}
 		| ?Vertical tab character (U+000B)? 	{}
 		| ?Form feed character (U+000C)?	{}
 		;
-*/
 
 /*B.1.4 Tokens*/ 
 token :	identifier 	{}
@@ -375,13 +375,19 @@ pp_directive :	pp_declaration 	{}
 		;
 conditional_symbol : ?Any identifier_or_keyword except true or false?	{}
 		;
-pp_declaration : DEFINE conditional_symbol pp_new_line 	{}
-		| UNDEF conditional_symbol pp_new_line 	{}
+pp_declaration : '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
+		| '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
+		| whitespace '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
+		| whitespace '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
+		| '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
+		| '#' whitespace UNDEF whitespace conditional_symbol pp_new_line 	{}
+		| whitespace '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
+		| whitespace '#' whitespace UNDEF whitespace conditional_symbol pp_new_line	{}
 		;
 pp_new_line : new_line 	{}
 		| single_line_comment new_line 	{}
-		| new_line 	{}
-		| single_line_comment new_line	{}
+		| whitespace new_line 	{}
+		| whitespace single_line_comment new_line	{}
 		;
 
 
