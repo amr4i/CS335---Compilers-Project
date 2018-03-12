@@ -73,7 +73,7 @@ SIMPLE_ESC_SEQ	\'|\"|\\|\0|\n|\r|\t
 CHAR_LITERAL	'([^'\\(\n)]|{SIMPLE_ESC_SEQ})'
 REG_STR_LITERAL	\"([^(\")(\\)(\n)]|{SIMPLE_ESC_SEQ}|(\\x[0-9a-fA-F]{1,4})|(\\u[0-9a-fA-F]{4,4})|(\\U[0-9a-fA-F]{8,8}))+\"
 VER_STR_LITERAL	@\"([^\"]|\"\")+\"
-NULL_LITERAL	lsnull
+NULL_LITERAL	null
 LBRACE			\}
 RBRACE			\{
 LBRACKET		\]
