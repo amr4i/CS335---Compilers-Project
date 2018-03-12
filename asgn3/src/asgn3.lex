@@ -73,7 +73,6 @@ SIMPLE_ESC_SEQ	\'|\"|\\|\0|\n|\r|\t
 CHAR_LITERAL	'([^'\\(\n)]|{SIMPLE_ESC_SEQ})'
 REG_STR_LITERAL	\"([^(\")(\\)(\n)]|{SIMPLE_ESC_SEQ}|(\\x[0-9a-fA-F]{1,4})|(\\u[0-9a-fA-F]{4,4})|(\\U[0-9a-fA-F]{8,8}))+\"
 VER_STR_LITERAL	@\"([^\"]|\"\")+\"
-NULL_LITERAL	null
 LBRACE			\}
 RBRACE			\{
 LBRACKET		\]
@@ -180,7 +179,6 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
 {REG_STR_LITERAL}  { yylval.sVal = _strdup(yytext); return REG_STR_LITERAL; }
 {VER_STR_LITERAL}  { yylval.sVal = _strdup(yytext); return VER_STR_LITERAL; }
-{NULL_LITERAL}  { return NULL_LITERAL; }
 {LBRACE}  { return *yytext; }
 {RBRACE}  { return *yytext; }
 {LBRACKET}  { return *yytext; }
