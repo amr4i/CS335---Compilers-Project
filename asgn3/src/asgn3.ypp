@@ -694,10 +694,10 @@ class_declaration : CLASS identifier class_body 	{}
 		| CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';' 	{}
 		| class_modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';'	{}
 		;
-class_modifiers : class_modifier 	{}
-		| class_modifiers class_modifier	{}
+class_modifiers : modifier 	{}
+		| class_modifiers modifier	{}
 		;
-class_modifier : NEW 	{}
+modifier : NEW 	{}
 		| PUBLIC 	{}
 		| PROTECTED 	{}
 		| PRIVATE 	{}
@@ -749,14 +749,10 @@ class_member_declaration : constant_declaration 	{}
 constant_declaration : CONST type constant_declarators ';' 	{}
 		| constant_modifiers CONST type constant_declarators ';'	{}
 		;
-constant_modifiers : constant_modifier 	{}
-		| constant_modifiers constant_modifier	{}
+constant_modifiers : modifier 	{}
+		| constant_modifiers modifier	{}
 		;
-constant_modifier : NEW 	{}
-		| PUBLIC 	{}
-		| PROTECTED 	{}
-		| PRIVATE	{}
-		;
+
 constant_declarators : constant_declarator  	{}
 		| constant_declarators ',' constant_declarator	{}
 		;
@@ -765,14 +761,10 @@ constant_declarator : identifier '=' constant_expression	{}
 field_declaration : type variable_declarators ';' 	{}
 		| field_modifiers type variable_declarators ';'	{}
 		;
-field_modifiers : field_modifier 	{}
-		| field_modifiers field_modifier	{}
+field_modifiers : modifier 	{}
+		| field_modifiers modifier	{}
 		;
-field_modifier : NEW 	{}
-		| PUBLIC 	{}
-		| PROTECTED 	{}
-		| PRIVATE 	{}
-		;
+
 variable_declarators : variable_declarator 	{}
 		| variable_declarators ',' variable_declarator	{}
 		;
@@ -800,13 +792,8 @@ method_header : return_type member_name '(' ')' 	{}
 		| method_modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' 	{}
 		| method_modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' type_parameter_constraints_clauses	{}
 		;
-method_modifiers : method_modifier 	{}
-		| method_modifiers method_modifier	{}
-		;
-method_modifier : NEW 	{}
-		| PUBLIC 	{}
-		| PROTECTED 	{}
-		| PRIVATE 		{}
+method_modifiers : modifier 	{}
+		| method_modifiers modifier	{}
 		;
 
 return_type : type 	{}
@@ -883,13 +870,8 @@ struct_declaration : STRUCT identifier struct_body 	{}
 		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
 		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';'	{}
 		;
-struct_modifiers : struct_modifier 	{}
-		| struct_modifiers struct_modifier	{}
-		;
-struct_modifier : NEW 	{}
-		| PUBLIC 	{}
-		| PROTECTED 	{}
-		| PRIVATE	{}
+struct_modifiers : modifier 	{}
+		| struct_modifiers modifier	{}
 		;
 struct_body : '{' '}' 	{}
 		| '{' struct_member_declarations '}'	{}
