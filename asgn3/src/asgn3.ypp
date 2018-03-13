@@ -663,44 +663,42 @@ qualified_alias_member : identifier DCLN identifier 	{}
 
 /*B.2.7 Classes;*/ 
 class_declaration : CLASS identifier class_body 	{}
-		| class_modifiers CLASS identifier class_body 	{}
+		| modifiers CLASS identifier class_body 	{}
 		| CLASS identifier type_parameter_list class_body 	{}
 		| CLASS identifier class_base class_body 	{}
 		| CLASS identifier type_parameter_constraints_clauses class_body 	{}
 		| CLASS identifier class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_body 	{}
-		| class_modifiers CLASS identifier class_base class_body 	{}
-		| class_modifiers CLASS identifier type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS identifier class_body ';' 	{}
+		| modifiers CLASS identifier type_parameter_list class_body 	{}
+		| modifiers CLASS identifier class_base class_body 	{}
+		| modifiers CLASS identifier type_parameter_constraints_clauses class_body 	{}
+		| modifiers CLASS identifier class_body ';' 	{}
 		| CLASS identifier type_parameter_list class_base class_body 	{}
 		| CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body 	{}
 		| CLASS identifier type_parameter_list class_body ';' 	{}
 		| CLASS identifier class_base type_parameter_constraints_clauses class_body 	{}
 		| CLASS identifier class_base class_body ';' 	{}
 		| CLASS identifier type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_base class_body 	{}
-		| class_modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_body ';' 	{}
-		| class_modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS identifier class_base class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_constraints_clauses class_body ';' 	{}
+		| modifiers CLASS identifier type_parameter_list class_base class_body 	{}
+		| modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body 	{}
+		| modifiers CLASS identifier type_parameter_list class_body ';' 	{}
+		| modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body 	{}
+		| modifiers CLASS identifier class_base class_body ';' 	{}
+		| modifiers CLASS identifier type_parameter_constraints_clauses class_body ';' 	{}
 		| CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body 	{}
 		| CLASS identifier type_parameter_list class_base class_body ';' 	{}
 		| CLASS identifier class_base type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_base class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body ';' 	{}
+		| modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body 	{}
+		| modifiers CLASS identifier type_parameter_list class_base class_body ';' 	{}
+		| modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body ';' 	{}
+		| modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body ';' 	{}
 		| CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';'	{}
+		| modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';'	{}
 		;
-class_modifiers : modifier 	{}
-		| class_modifiers modifier	{}
+modifiers : modifier 	{}
+		| modifiers modifier	{}
 		;
 modifier : NEW 	{}
-		| PUBLIC 	{}
-		| PROTECTED 	{}
-		| PRIVATE 	{}
+		| constructor_modifier 		{}
 		;
 type_parameter_list : '<' type_parameters '>'	{}
 		;
@@ -747,10 +745,7 @@ class_member_declaration : constant_declaration 	{}
 		| type_declaration	{}
 		;
 constant_declaration : CONST type constant_declarators ';' 	{}
-		| constant_modifiers CONST type constant_declarators ';'	{}
-		;
-constant_modifiers : modifier 	{}
-		| constant_modifiers modifier	{}
+		| modifiers CONST type constant_declarators ';'	{}
 		;
 
 constant_declarators : constant_declarator  	{}
@@ -759,10 +754,7 @@ constant_declarators : constant_declarator  	{}
 constant_declarator : identifier '=' constant_expression	{}
 		;
 field_declaration : type variable_declarators ';' 	{}
-		| field_modifiers type variable_declarators ';'	{}
-		;
-field_modifiers : modifier 	{}
-		| field_modifiers modifier	{}
+		| modifiers type variable_declarators ';'	{}
 		;
 
 variable_declarators : variable_declarator 	{}
@@ -776,25 +768,23 @@ variable_initializer : expression 	{}
 method_declaration : method_header method_body	{}
 		;
 method_header : return_type member_name '(' ')' 	{}
-		| method_modifiers return_type member_name '(' ')' 	{}
+		| modifiers return_type member_name '(' ')' 	{}
 		| return_type member_name type_parameter_list '(' ')' 	{}
 		| return_type member_name '(' formal_parameter_list ')' 	{}
 		| return_type member_name '(' ')' type_parameter_constraints_clauses 	{}
-		| method_modifiers return_type member_name type_parameter_list '(' ')' 	{}
-		| method_modifiers return_type member_name '(' formal_parameter_list ')' 	{}
-		| method_modifiers return_type member_name '(' ')' type_parameter_constraints_clauses 	{}
+		| modifiers return_type member_name type_parameter_list '(' ')' 	{}
+		| modifiers return_type member_name '(' formal_parameter_list ')' 	{}
+		| modifiers return_type member_name '(' ')' type_parameter_constraints_clauses 	{}
 		| return_type member_name type_parameter_list '(' formal_parameter_list ')' 	{}
 		| return_type member_name type_parameter_list '(' ')' type_parameter_constraints_clauses 	{}
 		| return_type member_name '(' formal_parameter_list ')' type_parameter_constraints_clauses 	{}
 		| return_type member_name type_parameter_list '(' formal_parameter_list ')' type_parameter_constraints_clauses 	{}
-		| method_modifiers return_type member_name '(' formal_parameter_list ')' type_parameter_constraints_clauses 	{}
-		| method_modifiers return_type member_name type_parameter_list '(' ')' type_parameter_constraints_clauses 	{}
-		| method_modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' 	{}
-		| method_modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' type_parameter_constraints_clauses	{}
+		| modifiers return_type member_name '(' formal_parameter_list ')' type_parameter_constraints_clauses 	{}
+		| modifiers return_type member_name type_parameter_list '(' ')' type_parameter_constraints_clauses 	{}
+		| modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' 	{}
+		| modifiers return_type member_name type_parameter_list '(' formal_parameter_list ')' type_parameter_constraints_clauses	{}
 		;
-method_modifiers : modifier 	{}
-		| method_modifiers modifier	{}
-		;
+
 
 return_type : type 	{}
 		| VOID	{}
@@ -854,25 +844,23 @@ destructor_body : block 	{}
 
 /*B.2.8 Structs*/ 
 struct_declaration : STRUCT identifier struct_body 	{}
-		| struct_modifiers STRUCT identifier struct_body 	{}
+		| modifiers STRUCT identifier struct_body 	{}
 		| STRUCT identifier type_parameter_list struct_body 	{}
 		| STRUCT identifier type_parameter_constraints_clauses struct_body 	{}
 		| STRUCT identifier struct_body ';' 	{}
-		| struct_modifiers STRUCT identifier type_parameter_list struct_body 	{}
-		| struct_modifiers STRUCT identifier type_parameter_constraints_clauses struct_body 	{}
-		| struct_modifiers STRUCT identifier struct_body ';' 	{}
+		| modifiers STRUCT identifier type_parameter_list struct_body 	{}
+		| modifiers STRUCT identifier type_parameter_constraints_clauses struct_body 	{}
+		| modifiers STRUCT identifier struct_body ';' 	{}
 		| STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
 		| STRUCT identifier type_parameter_list struct_body ';' 	{}
 		| STRUCT identifier type_parameter_constraints_clauses struct_body ';' 	{}
 		| STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';' 	{}
-		| struct_modifiers STRUCT identifier type_parameter_constraints_clauses struct_body ';' 	{}
-		| struct_modifiers STRUCT identifier type_parameter_list struct_body ';' 	{}
-		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
-		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';'	{}
+		| modifiers STRUCT identifier type_parameter_constraints_clauses struct_body ';' 	{}
+		| modifiers STRUCT identifier type_parameter_list struct_body ';' 	{}
+		| modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
+		| modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';'	{}
 		;
-struct_modifiers : modifier 	{}
-		| struct_modifiers modifier	{}
-		;
+
 struct_body : '{' '}' 	{}
 		| '{' struct_member_declarations '}'	{}
 		;
