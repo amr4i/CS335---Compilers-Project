@@ -31,16 +31,8 @@ start :	compilation_unit	{}
 		;
 
 /*B.1.1 Line terminators*/ 
-new_line : 	NEWLINE 		{}
+/*new_line : 	NEWLINE 		{}
 			;
-/*			
-new_line : ?Carriage return character (U+000D)?	 	{}
-		| ?Line feed character (U+000A)? 	{}
-		| ?Carriage return character (U+000D) followed by line feed character (U+000A)? 	{}
-		| ?Next line character (U+0085)? 	{}
-		| ?Line separator character (U+2028)? 	{}
-		| ?Paragraph separator character (U+2029)?	{}
-		;
 */
 /*B.1.2 Comments*/ 
 /*new_line_character : ?Carriage return character (U+000D)? 	{}
@@ -65,7 +57,7 @@ identifier : 	ID 		{}
 				;
 
 /*B.1.7 Keywords*/ 
-keyword :  BASE 	{}
+/*keyword :  BASE 	{}
 		| BOOL 	{}
 		| BREAK 	{}
 		| CASE 	{}
@@ -110,7 +102,7 @@ keyword :  BASE 	{}
 		| VOID 	{}
 		| WHILE	{}
 		;
-
+*/
 /*B.1.8 Literals*/ 
 literal : boolean_literal 	{}
 		| integer_literal 	{}
@@ -141,7 +133,7 @@ null_literal :	NULL	{}
 		;
 
 /*B.1.9 Operators and punctuators*/ 
-operator_or_punctuator : '{' 	{}
+/*operator_or_punctuator : '{' 	{}
 		| '}' 	{}
 		| '[' 	{}
 		| ']' 	{}
@@ -186,7 +178,7 @@ operator_or_punctuator : '{' 	{}
 		| LSHIFT 	{}
 		| LSHIFTEQ 	{}
 		;
-
+*/
 right_shift : RSHIFT	{}
 		;
 right_shift_assignment : RSHIFTEQ	{}
@@ -215,10 +207,10 @@ namespace_name : namespace_or_type_name	{}
 		;
 type_name : namespace_or_type_name	{}
 		;
-namespace_or_type_name : ID 	{}
-		| ID type_argument_list 	{}
-		| namespace_or_type_name '.' ID 	{}
-		| namespace_or_type_name '.' ID type_argument_list 	{}
+namespace_or_type_name : identifier 	{}
+		| identifier type_argument_list 	{}
+		| namespace_or_type_name '.' identifier 	{}
+		| namespace_or_type_name '.' identifier type_argument_list 	{}
 		| qualified_alias_member	{}
 		;
 
@@ -276,7 +268,7 @@ argument_list : argument 	{}
 argument : argument_value 	{}
 		| argument_name argument_value	{}
 		;
-argument_name : ID ':'	{}
+argument_name : identifier ':'	{}
 		;
 argument_value : expression 	{}
 		| REF variable_reference 	{}
@@ -299,15 +291,15 @@ primary_no_array_creation_expression : literal 	{}
 		| typeof_expression 	{}
 		| default_value_expression	{}
 		;
-simple_name : ID 	{}
-		| ID type_argument_list	{}
+simple_name : identifier 	{}
+		| identifier type_argument_list	{}
 		;
 parenthesized_expression : '(' expression ')'	{}
 		;
-member_access : primary_expression '.' ID 	{}
-		| primary_expression '.' ID type_argument_list 	{}
-		| predefined_type '.' ID 	{}
-		| predefined_type '.' ID type_argument_list 	{}
+member_access : primary_expression '.' identifier 	{}
+		| primary_expression '.' identifier type_argument_list 	{}
+		| predefined_type '.' identifier 	{}
+		| predefined_type '.' identifier type_argument_list 	{}
 		| qualified_alias_member '.' identifier	{}
 		;
 predefined_type : BOOL 	{}
@@ -329,7 +321,7 @@ expression_list : expression  	{}
 		;
 this_access : THIS	{}
 		;
-base_access : BASE '.' ID 	{}
+base_access : BASE '.' identifier 	{}
 		| BASE '[' expression_list ']'	{}
 		;
 post_increment_expression : primary_expression INCR	{}
@@ -352,7 +344,7 @@ object_initializer : '{' '}' 	{}
 member_initializer_list : member_initializer 	{}
 		| member_initializer_list ',' member_initializer	{}
 		;
-member_initializer : ID '=' initializer_value	{}
+member_initializer : identifier '=' initializer_value	{}
 		;
 initializer_value : expression 	{}
 		| object_or_collection_initializer	{}
@@ -367,9 +359,9 @@ element_initializer : non_assignment_expression 	{}
 		| '{' expression_list '}'	{}
 		;
 array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{}
-		| NEW non_array_type '[' expression_list ']' rank_specifiers 	{}
+		| NEW non_array_type '[' expression_list ']' rank_specifier 	{}
 		| NEW non_array_type '[' expression_list ']' array_initializer 	{}
-		| NEW non_array_type '[' expression_list ']' rank_specifiers array_initializer 	{}
+		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{}
 		| NEW array_type array_initializer 	{}
 		| NEW rank_specifier array_initializer	{}
 		;
@@ -385,18 +377,18 @@ member_declarator_list : member_declarator 	{}
 member_declarator : simple_name 	{}
 		| member_access 	{}
 		| base_access 	{}
-		| ID '=' expression	{}
+		| identifier '=' expression	{}
 		;
 typeof_expression : TYPEOF '(' type ')' 	{}
 		| TYPEOF '(' unbound_type_name ')' 	{}
 		| TYPEOF '(' VOID ')'	{}
 		;
-unbound_type_name : ID 	{}
-		| ID generic_dimension_specifier 	{}
-		| ID DCLN ID 	{}
-		| ID DCLN ID generic_dimension_specifier 	{}
-		| unbound_type_name '.' ID 	{}
-		| unbound_type_name '.' ID generic_dimension_specifier	{}
+unbound_type_name : identifier 	{}
+		| identifier generic_dimension_specifier 	{}
+		| identifier DCLN identifier 	{}
+		| identifier DCLN identifier generic_dimension_specifier 	{}
+		| unbound_type_name '.' identifier 	{}
+		| unbound_type_name '.' identifier generic_dimension_specifier	{}
 		;
 generic_dimension_specifier : '<' '>' 	{}
 		| '<' commas '>'	{}
@@ -523,8 +515,8 @@ local_variable_type : type 	{}
 local_variable_declarators : local_variable_declarator 	{}
 		| local_variable_declarators ',' local_variable_declarator	{}
 		;
-local_variable_declarator : ID 	{}
-		| ID '=' local_variable_initializer	{}
+local_variable_declarator : identifier 	{}
+		| identifier '=' local_variable_initializer	{}
 		;
 local_variable_initializer : expression 	{}
 		| array_initializer	{}
@@ -591,7 +583,7 @@ for_iterator : statement_expression_list	{}
 statement_expression_list : statement_expression 	{}
 		| statement_expression_list ',' statement_expression	{}
 		;
-foreach_statement : FOREACH '(' local_variable_type ID IN expression ')' embedded_statement	{}
+foreach_statement : FOREACH '(' local_variable_type identifier IN expression ')' embedded_statement	{}
 		;
 jump_statement : break_statement 	{}
 		| continue_statement 	{}
@@ -603,7 +595,7 @@ break_statement : BREAK ';'	{}
 		;
 continue_statement : CONTINUE ';'	{}
 		;
-goto_statement : GOTO ID ';' 	{}
+goto_statement : GOTO identifier ';' 	{}
 		| GOTO CASE constant_expression ';' 	{}
 		| GOTO DEFAULT ';'	{}
 		;
@@ -652,7 +644,7 @@ using_directives : using_directive 	{}
 using_directive : using_alias_directive 	{}
 		| using_namespace_directive	{}
 		;
-using_alias_directive : USING ID '=' namespace_or_type_name ';'	{}
+using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{}
 		;
 using_namespace_directive : USING namespace_name ';'	{}
 		;
@@ -665,42 +657,42 @@ namespace_member_declaration : namespace_declaration 	{}
 type_declaration : class_declaration 	{}
 		| struct_declaration	{}
 		;
-qualified_alias_member : ID DCLN ID 	{}
-		| ID DCLN ID type_argument_list	{}
+qualified_alias_member : identifier DCLN identifier 	{}
+		| identifier DCLN identifier type_argument_list	{}
 		;
 
 /*B.2.7 Classes;*/ 
-class_declaration : CLASS ID class_body 	{}
-		| class_modifiers CLASS ID class_body 	{}
-		| CLASS ID type_parameter_list class_body 	{}
-		| CLASS ID class_body class_body 	{}
-		| CLASS ID type_parameter_constraints_clauses class_body 	{}
-		| CLASS ID class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body 	{}
-		| class_modifiers CLASS ID class_body class_body 	{}
-		| class_modifiers CLASS ID type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS ID class_body ';' 	{}
-		| CLASS ID type_parameter_list class_body class_body 	{}
-		| CLASS ID type_parameter_list type_parameter_constraints_clauses class_body 	{}
-		| CLASS ID type_parameter_list class_body ';' 	{}
-		| CLASS ID class_body type_parameter_constraints_clauses class_body 	{}
-		| CLASS ID class_body class_body ';' 	{}
-		| CLASS ID type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body class_body 	{}
-		| class_modifiers CLASS ID type_parameter_list type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body ';' 	{}
-		| class_modifiers CLASS ID class_body type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS ID class_body class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_constraints_clauses class_body ';' 	{}
-		| CLASS ID type_parameter_list class_body type_parameter_constraints_clauses class_body 	{}
-		| CLASS ID type_parameter_list class_body class_body ';' 	{}
-		| CLASS ID class_body type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body type_parameter_constraints_clauses class_body 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_list type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS ID class_body type_parameter_constraints_clauses class_body ';' 	{}
-		| CLASS ID type_parameter_list class_body type_parameter_constraints_clauses class_body ';' 	{}
-		| class_modifiers CLASS ID type_parameter_list class_body type_parameter_constraints_clauses class_body ';'	{}
+class_declaration : CLASS identifier class_body 	{}
+		| class_modifiers CLASS identifier class_body 	{}
+		| CLASS identifier type_parameter_list class_body 	{}
+		| CLASS identifier class_base class_body 	{}
+		| CLASS identifier type_parameter_constraints_clauses class_body 	{}
+		| CLASS identifier class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_body 	{}
+		| class_modifiers CLASS identifier class_base class_body 	{}
+		| class_modifiers CLASS identifier type_parameter_constraints_clauses class_body 	{}
+		| class_modifiers CLASS identifier class_body ';' 	{}
+		| CLASS identifier type_parameter_list class_base class_body 	{}
+		| CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body 	{}
+		| CLASS identifier type_parameter_list class_body ';' 	{}
+		| CLASS identifier class_base type_parameter_constraints_clauses class_body 	{}
+		| CLASS identifier class_base class_body ';' 	{}
+		| CLASS identifier type_parameter_constraints_clauses class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_base class_body 	{}
+		| class_modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_body ';' 	{}
+		| class_modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body 	{}
+		| class_modifiers CLASS identifier class_base class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_constraints_clauses class_body ';' 	{}
+		| CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body 	{}
+		| CLASS identifier type_parameter_list class_base class_body ';' 	{}
+		| CLASS identifier class_base type_parameter_constraints_clauses class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_base class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_list type_parameter_constraints_clauses class_body ';' 	{}
+		| class_modifiers CLASS identifier class_base type_parameter_constraints_clauses class_body ';' 	{}
+		| CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';' 	{}
+		| class_modifiers CLASS identifier type_parameter_list class_base type_parameter_constraints_clauses class_body ';'	{}
 		;
 class_modifiers : class_modifier 	{}
 		| class_modifiers class_modifier	{}
@@ -768,7 +760,7 @@ constant_modifier : NEW 	{}
 constant_declarators : constant_declarator  	{}
 		| constant_declarators ',' constant_declarator	{}
 		;
-constant_declarator : ID '=' constant_expression	{}
+constant_declarator : identifier '=' constant_expression	{}
 		;
 field_declaration : type variable_declarators ';' 	{}
 		| field_modifiers type variable_declarators ';'	{}
@@ -784,8 +776,8 @@ field_modifier : NEW 	{}
 variable_declarators : variable_declarator 	{}
 		| variable_declarators ',' variable_declarator	{}
 		;
-variable_declarator : ID 	{}
-		| ID '=' variable_initializer;	
+variable_declarator : identifier 	{}
+		| identifier '=' variable_initializer;	
 variable_initializer : expression 	{}
 		| array_initializer	{}
 		;
@@ -832,10 +824,10 @@ formal_parameter_list : fixed_parameters 	{}
 fixed_parameters : fixed_parameter 	{}
 		| fixed_parameters ',' fixed_parameter	{}
 		;
-fixed_parameter : type ID 	{}
-		| parameter_modifier type ID 	{}
-		| type ID default_argument 	{}
-		| parameter_modifier type ID default_argument	{}
+fixed_parameter : type identifier 	{}
+		| parameter_modifier type identifier 	{}
+		| type identifier default_argument 	{}
+		| parameter_modifier type identifier default_argument	{}
 		;
 default_argument : '=' expression	{}
 		;
@@ -854,10 +846,10 @@ constructor_modifier : PUBLIC 	{}
 		| PROTECTED 	{}
 		| PRIVATE	{}
 		;
-constructor_declarator : ID '(' ')' 	{}
-		| ID '(' ')' constructor_initializer 	{}
-		| ID '(' formal_parameter_list ')' 	{}
-		| ID '(' formal_parameter_list ')' constructor_initializer	{}
+constructor_declarator : identifier '(' ')' 	{}
+		| identifier '(' ')' constructor_initializer 	{}
+		| identifier '(' formal_parameter_list ')' 	{}
+		| identifier '(' formal_parameter_list ')' constructor_initializer	{}
 		;
 constructor_initializer : ':' BASE '(' ')' 	{}
 		| ':' BASE '(' argument_list ')' 	{}
@@ -867,29 +859,29 @@ constructor_initializer : ':' BASE '(' ')' 	{}
 constructor_body : block 	{}
 		| ';'	{}
 		;
-destructor_declaration : '~' ID '(' ')' destructor_body	{}
+destructor_declaration : '~' identifier '(' ')' destructor_body	{}
 		;
 destructor_body : block 	{}
 		| ';'	{}
 		;
 
 /*B.2.8 Structs*/ 
-struct_declaration : STRUCT ID struct_body 	{}
-		| struct_modifiers STRUCT ID struct_body 	{}
-		| STRUCT ID type_parameter_list struct_body 	{}
-		| STRUCT ID type_parameter_constraints_clauses struct_body 	{}
-		| STRUCT ID struct_body ';' 	{}
-		| struct_modifiers STRUCT ID type_parameter_list struct_body 	{}
-		| struct_modifiers STRUCT ID type_parameter_constraints_clauses struct_body 	{}
-		| struct_modifiers STRUCT ID struct_body ';' 	{}
-		| STRUCT ID type_parameter_list type_parameter_constraints_clauses struct_body 	{}
-		| STRUCT ID type_parameter_list struct_body ';' 	{}
-		| STRUCT ID type_parameter_constraints_clauses struct_body ';' 	{}
-		| STRUCT ID type_parameter_list type_parameter_constraints_clauses struct_body ';' 	{}
-		| struct_modifiers STRUCT ID type_parameter_constraints_clauses struct_body ';' 	{}
-		| struct_modifiers STRUCT ID type_parameter_list struct_body ';' 	{}
-		| struct_modifiers STRUCT ID type_parameter_list type_parameter_constraints_clauses struct_body 	{}
-		| struct_modifiers STRUCT ID type_parameter_list type_parameter_constraints_clauses struct_body ';'	{}
+struct_declaration : STRUCT identifier struct_body 	{}
+		| struct_modifiers STRUCT identifier struct_body 	{}
+		| STRUCT identifier type_parameter_list struct_body 	{}
+		| STRUCT identifier type_parameter_constraints_clauses struct_body 	{}
+		| STRUCT identifier struct_body ';' 	{}
+		| struct_modifiers STRUCT identifier type_parameter_list struct_body 	{}
+		| struct_modifiers STRUCT identifier type_parameter_constraints_clauses struct_body 	{}
+		| struct_modifiers STRUCT identifier struct_body ';' 	{}
+		| STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
+		| STRUCT identifier type_parameter_list struct_body ';' 	{}
+		| STRUCT identifier type_parameter_constraints_clauses struct_body ';' 	{}
+		| STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';' 	{}
+		| struct_modifiers STRUCT identifier type_parameter_constraints_clauses struct_body ';' 	{}
+		| struct_modifiers STRUCT identifier type_parameter_list struct_body ';' 	{}
+		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body 	{}
+		| struct_modifiers STRUCT identifier type_parameter_list type_parameter_constraints_clauses struct_body ';'	{}
 		;
 struct_modifiers : struct_modifier 	{}
 		| struct_modifiers struct_modifier	{}
