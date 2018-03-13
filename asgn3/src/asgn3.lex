@@ -19,7 +19,8 @@
 %option yylineno
 
 COMMENT			\/\/[^\n]*\n	
-WHITESPACE		[\t\v\n ]+ 
+WHITESPACE		[\t\v ]+
+NEWLINE			\n
 BASE			base
 BOOL			bool
 BREAK			break
@@ -64,6 +65,7 @@ ULONG			ulong
 USING 			using
 VOID 			void
 WHILE 			while
+WHERE 			where
 DIGIT 			[0-9]
 HEX_DIGIT		[0-9a-fA-F]
 ID 				@?[a-zA-Z_][a-zA-Z0-9_]*
@@ -119,15 +121,15 @@ LEFT_SHIFT		<<
 LEFT_SHIFT_EQ	<<=
 RIGHT_SHIFT		>>
 RIGHT_SHIFT_EQ	>>=
+/*
 DEFINE			{WHITESPACE}*#{WHITESPACE}*define
 UNDEF			{WHITESPACE}*#{WHITESPACE}*undef 
-
+*/
 %%
 
-{COMMENT} ;
+{COMMENT} {return COMMENT;}
 {WHITESPACE}  ;
-{DEFINE}  { return DEFINE; }
-{UNDEF}  { return UNDEF; }
+{NEWLINE}	{return NEWLINE; }
 {BASE} { return BASE; }
 {BOOL} { return BOOL; }
 {BREAK} { return BREAK; }
@@ -172,6 +174,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {USING} { return USING; }
 {VOID} { return VOID; }
 {WHILE} { return WHILE; }
+{WHERE}	{return WHERE; }
 {ID}  { yylval.sVal = _strdup(yytext); return ID; }
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
 {HDINT_LITERAL}  { yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }

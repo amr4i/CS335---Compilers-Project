@@ -23,35 +23,17 @@
 	char cVal;	
 };
 
-%token DEFINE UNDEF BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL NULL_LITERAL DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ
-
-// Left - associativity if to be done
-%left or %right
+%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL NULL_LITERAL DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ NEWLINE COMMENT WHERE
 
 %%
+
 start :	compilation_unit	{}
 		;
 
-/*B.1 Lexical grammar*/
-input : input_section 	{}
-		| epsilon	{}
-		;
-input_section :	input_section_part 	{}
-		| input_section input_section_part	{}
-		;
-input_section_part : new_line 	{}
-		| input_elements new_line 	{}
-		| pp_directive	{}
-		;
-input_elements : input_element 	{}
-		| input_elements input_element	{}
-		;
-input_element :	whitespace 	{}
-		| comment 	{}
-		| ?any token?	{}
-		;
-
 /*B.1.1 Line terminators*/ 
+new_line : 	NEWLINE 		{}
+			;
+/*			
 new_line : ?Carriage return character (U+000D)?	 	{}
 		| ?Line feed character (U+000A)? 	{}
 		| ?Carriage return character (U+000D) followed by line feed character (U+000A)? 	{}
@@ -59,86 +41,31 @@ new_line : ?Carriage return character (U+000D)?	 	{}
 		| ?Line separator character (U+2028)? 	{}
 		| ?Paragraph separator character (U+2029)?	{}
 		;
-
+*/
 /*B.1.2 Comments*/ 
-comment : single_line_comment	{}
-		;
-single_line_comment : '//' 	{}
-		| '//' input_characters	{}
-		;
-input_characters : input_character 	{}
-		| input_characters input_character	{}
-		;
-input_character : ?Any Unicode character except a new_line_character?	{}
-		;
-new_line_character : ?Carriage return character (U+000D)? 	{}
+/*new_line_character : ?Carriage return character (U+000D)? 	{}
 		| ?Line feed character (U+000A)? 	{}
 		| ?Next line character (U+0085)? 	{}
 		| ?Line separator character (U+2028)? 	{}
 		| ?Paragraph separator character (U+2029)?	{}
 		;
+*/
 
 /*B.1.3 White space*/ 
+/*
 whitespace : ?Any character with Unicode class Zs? 	{}
 		| ?Horizontal tab character (U+0009)? 	{}
 		| ?Vertical tab character (U+000B)? 	{}
 		| ?Form feed character (U+000C)?	{}
 		;
-
-/*B.1.4 Tokens*/ 
-token :	identifier 	{}
-		| keyword 	{}
-		| integer_literal 	{}
-		| character_literal 	{}
-		| string_literal 	{}
-		| operator_or_punctuator	{}
-		;
-
-/*B.1.5 Unicode character escape sequences*/ 
-unicode_escape_sequence : '\u' hex_digit hex_digit hex_digit hex_digit 	{}
-		| '\U' hex_digit hex_digit hex_digit hex_digit hex_digit hex_digit hex_digit hex_digit	{}
-		;
+*/
 
 /*B.1.6 Identifiers*/
-identifier : available_identifier 	{}
-		| '@' identifier_or_keyword	{}
-		;
-available_identifier : ?An identifier_or_keyword that is not a keyword?	{}
-		;
-identifier_or_keyword :	identifier_start_character 	{}
-		| identifier_start_character identifier_part_characters	{}
-		;
-identifier_start_character : letter_character 	{}
-		| '_'	{}
-		;
-identifier_part_characters : identifier_part_character 	{}
-		| identifier_part_characters identifier_part_character	{}
-		;
-identifier_part_character : letter_character 	{}
-		| decimal_digit_character 	{}
-		| connecting_character 	{}
-		| combining_character 	{}
-		| formatting_character	{}
-		;
-letter_character : ?A Unicode character of classes Lu Ll Lt Lm Lo or Nl? 	{}
-		| ?A unicode_escape_sequence representing a character of classes Lu Ll Lt Lm Lo or Nl?	{}
-		;
-combining_character : ?A Unicode character of classes Mn or Mc? 	{}
-		| ?A unicode_escape_sequence representing a character of classes Mn or Mc?	{}
-		;
-decimal_digit_character : ?A Unicode character of the class Nd? 	{}
-		| ?A unicode_escape_sequence representing a character of the class Nd?	{}
-		;
-connecting_character : ?A Unicode character of the class Pc? 	{}
-		| ?A unicode_escape_sequence representing a character of the class Pc?	{}
-		;
-formatting_character : ?A Unicode character of the class Cf? 	{}
-		| ?A unicode_escape_sequence representing a character of the class Cf?	{}
-		;
+identifier : 	ID 		{}
+				;
 
 /*B.1.7 Keywords*/ 
-keyword :  'as' 	{}
-		| BASE 	{}
+keyword :  BASE 	{}
 		| BOOL 	{}
 		| BREAK 	{}
 		| CASE 	{}
@@ -150,17 +77,14 @@ keyword :  'as' 	{}
 		| DEFAULT 	{}
 		| DO 	{}
 		| ELSE 	{}
-		| 'explicit' 	{}
 		| FALSE 	{}
 		| FINALLY  	{}
 		| FOR 	{}
 		| FOREACH 	{}
 		| GOTO 	{}
 		| IF 	{}
-		| 'implicit' 	{}
 		| IN 	{}
 		| INT 	{}
-		| 'is' 	{}
 		| LONG 	{}
 		| NAMESPACE 	{}
 		| NEW 	{}
@@ -170,7 +94,6 @@ keyword :  'as' 	{}
 		| PRIVATE 	{}
 		| PROTECTED 	{}
 		| PUBLIC 	{}
-		| 'readonly' 	{}
 		| REF 	{}
 		| RETURN 	{}
 		| STRING 	{}
@@ -198,121 +121,22 @@ literal : boolean_literal 	{}
 boolean_literal : TRUE 	{}
 		| FALSE	{}
 		;
-integer_literal : decimal_integer_literal 	{}
-		| hexadecimal_integer_literal	{}
+integer_literal : DINT_LITERAL 	{}
+		| HDINT_LITERAL	{}
 		;
-decimal_integer_literal : decimal_digits 	{}
-		| decimal_digits integer_type_suffix	{}
+
+character_literal : CHAR_LITERAL	{}
 		;
-decimal_digits : decimal_digit 	{}
-		| decimal_digits decimal_digit	{}
+		
+/*
+simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{}
+							;
+*/
+
+string_literal : REG_STR_LITERAL 	{}
+		| VER_STR_LITERAL	{}
 		;
-decimal_digit :	'0' 	{}
-		| '1' 	{}
-		| '2' 	{}
-		| '3' 	{}
-		| '4' 	{}
-		| '5' 	{}
-		| '6' 	{}
-		| '7' 	{}
-		| '8' 	{}
-		| '9'	{}
-		;
-integer_type_suffix : 'U' 	{}
-		| 'u' 	{}
-		| 'L' 	{}
-		| 'l' 	{}
-		| 'UL' 	{}
-		| 'Ul' 	{}
-		| 'uL' 	{}
-		| 'ul' 	{}
-		| 'LU' 	{}
-		| 'Lu' 	{}
-		| 'lU' 	{}
-		| 'lu'	{}
-		;
-hexadecimal_integer_literal : '0x' hex_digits 	{}
-		| '0x' hex_digits integer_type_suffix 	{}
-		| '0X' hex_digits 	{}
-		| '0X' hex_digits integer_type_suffix	{}
-		;
-hex_digits : hex_digit 	{}
-		| hex_digits hex_digit	{}
-		;
-hex_digit :	'0' 	{}
-		| '1' 	{}
-		| '2' 	{}
-		| '3' 	{}
-		| '4' 	{}
-		| '5' 	{}
-		| '6' 	{}
-		| '7' 	{}
-		| '8' 	{}
-		| '9' 	{}
-		| 'A' 	{}
-		| 'B' 	{}
-		| 'C' 	{}
-		| 'D' 	{}
-		| 'E' 	{}
-		| 'F' 	{}
-		| 'a' 	{}
-		| 'b' 	{}
-		| 'c' 	{}
-		| 'd' 	{}
-		| 'e' 	{}
-		| 'f'	{}
-		;
-character_literal : "'" character "'"	{}
-		;
-character :	single_character 	{}
-		| simple_escape_sequence 	{}
-		| hexadecimal_escape_sequence 	{}
-		| unicode_escape_sequence	{}
-		;
-single_character : ?Any character except ' (U+0027) \ (U+005C) and new_line_character?	{}
-		;
-simple_escape_sequence : " \’ “ 	{}
-		| ‘ \” ‘ 	{}
-		| ' \\ ' 	{}
-		| ' \0 ' 	{}
-		| ' \n ' 	{}
-		| ' \r ' 	{}
-		| ' \t '	{}
-		;
-hexadecimal_escape_sequence : '\x' hex_digit 	{}
-		| '\x' hex_digit hex_digit 	{}
-		| '\x' hex_digit hex_digit hex_digit 	{}
-		| '\x' hex_digit hex_digit hex_digit hex_digit	{}
-		;
-string_literal : regular_string_literal 	{}
-		| verbatim_string_literal	{}
-		;
-regular_string_literal : '"' '"' 	{}
-		| '"' regular_string_literal_characters '"'	{}
-		;
-regular_string_literal_characters :	regular_string_literal_character 	{}
-		| regular_string_literal_characters regular_string_literal_character	{}
-		;
-regular_string_literal_character : single_regular_string_literal_character 	{}
-		| simple_escape_sequence 	{}
-		| hexadecimal_escape_sequence 	{}
-		| unicode_escape_sequence	{}
-		;
-single_regular_string_literal_character : ?Any character except " (U+0022) \ (U+005C) and new_line_character?	{}
-		;
-verbatim_string_literal : '@” ' ‘ “ ‘ 	{}
-		| '@” ' [verbatim_string_literal_characters] ‘ “ ‘	{}
-		;
-verbatim_string_literal_characters : verbatim_string_literal_character 	{}
-		| verbatim_string_literal_characters verbatim_string_literal_character	{}
-		;
-verbatim_string_literal_character :	single_verbatim_string_literal_character 	{}
-		| quote_escape_sequence	{}
-		;
-single_verbatim_string_literal_character : ?any character except "?	{}
-		;
-quote_escape_sequence : ‘ “ “ ‘	{}
-		;
+
 null_literal :	NULL	{}
 		;
 
@@ -347,7 +171,6 @@ operator_or_punctuator : '{' 	{}
 		| DECR 	{}
 		| RAND 	{}
 		| ROR 	{}
-		| '->' 	{}
 		| REQ 	{}
 		| RNE 	{}
 		| LE 	{}
@@ -362,34 +185,28 @@ operator_or_punctuator : '{' 	{}
 		| ACARET 	{}
 		| LSHIFT 	{}
 		| LSHIFTEQ 	{}
-		| '=>'	{}
 		;
+
 right_shift : RSHIFT	{}
 		;
 right_shift_assignment : RSHIFTEQ	{}
 		;
 
-/*B.1.10 Pre_processing directives*/ 
+/*B.1.10 Pre_processing directives*/
+/* 
 pp_directive :	pp_declaration 	{}
-		| pp_line 	{}
-		;
-conditional_symbol : ?Any identifier_or_keyword except true or false?	{}
-		;
-pp_declaration : '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' whitespace DEFINE whitespace conditional_symbol pp_new_line 	{}
-		| '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| '#' whitespace UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' UNDEF whitespace conditional_symbol pp_new_line 	{}
-		| whitespace '#' whitespace UNDEF whitespace conditional_symbol pp_new_line	{}
-		;
-pp_new_line : new_line 	{}
-		| single_line_comment new_line 	{}
-		| whitespace new_line 	{}
-		| whitespace single_line_comment new_line	{}
 		;
 
+conditional_symbol : ?Any identifier_or_keyword except true or false?	{}
+		;
+pp_declaration : DEFINE conditional_symbol pp_new_line 	{}
+		| UNDEF conditional_symbol pp_new_line 	{}
+		;
+
+pp_new_line : new_line 	{}
+		| COMMENT	{}
+		;
+*/
 
 /*B.2 Syntactic grammar*/ 
 
@@ -429,18 +246,17 @@ integral_type : INT 	{}
 		;
 nullable_type : non_nullable_value_type '?'	{}
 		;
-non_nullable_value_type : type	{}
+non_nullable_value_type : simple_type	{}
 		;
 reference_type : class_type 	{}
-		| interface_type 	{}
 		| array_type	{}
 		;
+
 class_type : type_name 	{}
 		| OBJECT 	{}
 		| STRING	{}
 		;
-interface_type : type_name	{}
-		;
+
 type_argument_list : '<' type_arguments '>'	{}
 		;
 type_arguments : type_argument 	{}
@@ -504,7 +320,7 @@ predefined_type : BOOL 	{}
 		| ULONG 	{}
 		;
 invocation_expression : primary_expression '(' ')' 	{}
-		| primary_expression '(' [argument_list] ')'	{}
+		| primary_expression '(' argument_list ')'	{}
 		;
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{}
 		;
@@ -583,7 +399,7 @@ unbound_type_name : ID 	{}
 		| unbound_type_name '.' ID generic_dimension_specifier	{}
 		;
 generic_dimension_specifier : '<' '>' 	{}
-		| '<' [commas] '>'	{}
+		| '<' commas '>'	{}
 		;
 commas : ',' 	{}
 		| commas ','	{}
@@ -688,7 +504,7 @@ embedded_statement : block 	{}
 		| using_statement	{}
 		;
 block : '{' '}' 	{}
-		| '{' [statement_list] '}'	{}
+		| '{' statement_list '}'	{}
 		;
 statement_list : statement 	{}
 		| statement_list statement	{}
@@ -906,7 +722,7 @@ class_base : ':' class_type	{}
 type_parameter_constraints_clauses : type_parameter_constraints_clause 	{}
 		| type_parameter_constraints_clauses type_parameter_constraints_clause	{}
 		;
-type_parameter_constraints_clause : 'where' type_parameter ':' type_parameter_constraints	{}
+type_parameter_constraints_clause : WHERE type_parameter ':' type_parameter_constraints	{}
 		;
 type_parameter_constraints : primary_constraint 	{}
 		| secondary_constraints 	{}
@@ -934,7 +750,6 @@ class_member_declarations : class_member_declaration 	{}
 class_member_declaration : constant_declaration 	{}
 		| field_declaration 	{}
 		| method_declaration 	{}
-		| indexer_declaration 	{}
 		| constructor_declaration 	{}
 		| destructor_declaration 	{}
 		| type_declaration	{}
@@ -999,12 +814,13 @@ method_modifiers : method_modifier 	{}
 method_modifier : NEW 	{}
 		| PUBLIC 	{}
 		| PROTECTED 	{}
-		| PRIVATE ;	
+		| PRIVATE 		{}
+		;
+
 return_type : type 	{}
 		| VOID	{}
 		;
-member_name : ID 	{}
-		| interface_type '.' identifier	{}
+member_name : qualified_identifier	{}
 		;
 method_body : block 	{}
 		| ';'	{}
@@ -1084,7 +900,7 @@ struct_modifier : NEW 	{}
 		| PRIVATE	{}
 		;
 struct_body : '{' '}' 	{}
-		| '{' [struct_member_declarations] '}'	{}
+		| '{' struct_member_declarations '}'	{}
 		;
 struct_member_declarations : struct_member_declaration 	{}
 		| struct_member_declarations struct_member_declaration	{}
@@ -1092,7 +908,6 @@ struct_member_declarations : struct_member_declaration 	{}
 struct_member_declaration : constant_declaration 	{}
 		| field_declaration 	{}
 		| method_declaration 	{}
-		| event_declaration 	{}
 		| constructor_declaration 	{}
 		| type_declaration	{}
 		;
@@ -1112,6 +927,9 @@ array_initializer : '{' '}' 	{}
 variable_initializer_list : variable_initializer 	{}
 		| variable_initializer_list ',' variable_initializer	{}
 		;
+
+epsilon : 	%empty 		{}
+			;
 
 %%	
 
