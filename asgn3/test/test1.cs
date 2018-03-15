@@ -9,7 +9,7 @@ namespace check1
 {
     class Program
         {
-            static void Main(string[] args)
+            void Main(string[] args)
             {
                 int i;
                 Console.Write("Enter a Number : ");

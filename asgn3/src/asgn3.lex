@@ -128,7 +128,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 */
 %%
 
-{COMMENT} {return COMMENT;}
+{COMMENT} ;
 {WHITESPACE}  ;
 {NEWLINE} ;	
 {BASE} { return BASE; }
