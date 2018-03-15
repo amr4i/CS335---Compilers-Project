@@ -1,5 +1,5 @@
 %{
-	extern void yyerror();
+	extern void yyerror(char*);
 	#include <math.h>
 	#include <cstdio> 
 	#include <map>
@@ -10,6 +10,7 @@
 	#include <cstdlib>
 	#include <algorithm>
 	#include <iomanip>
+	#include <string.h>
 	#include "y.tab.h"
 	
 	using namespace std;	
@@ -44,7 +45,7 @@ INT				int
 LONG			long
 NAMESPACE		namespace
 NEW				new 	
-NULL			null
+NULL_LIT		null
 OBJECT			object
 PARAMS			params
 PRIVATE  	  	private
@@ -153,7 +154,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {LONG} { return LONG; }
 {NAMESPACE} { return NAMESPACE; }
 {NEW} { return NEW; }
-{NULL} { return NULL; }
+{NULL_LIT} { return NULL_LIT; }
 {OBJECT} { return OBJECT; }
 {PARAMS} { return PARAMS; }
 {PRIVATE} { return PRIVATE; }
@@ -175,13 +176,13 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {VOID} { return VOID; }
 {WHILE} { return WHILE; }
 {WHERE}	{return WHERE; }
-{ID}  { yylval.sVal = _strdup(yytext); return ID; }
+{ID}  { yylval.sVal = strdup(yytext); return ID; }
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
 {HDINT_LITERAL}  { yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }
 {SIMPLE_ESC_SEQ}  { return SIMPLE_ESC_SEQ; }
 {CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
-{REG_STR_LITERAL}  { yylval.sVal = _strdup(yytext); return REG_STR_LITERAL; }
-{VER_STR_LITERAL}  { yylval.sVal = _strdup(yytext); return VER_STR_LITERAL; }
+{REG_STR_LITERAL}  { yylval.sVal = strdup(yytext); return REG_STR_LITERAL; }
+{VER_STR_LITERAL}  { yylval.sVal = strdup(yytext); return VER_STR_LITERAL; }
 {LBRACE}  { return *yytext; }
 {RBRACE}  { return *yytext; }
 {LBRACKET}  { return *yytext; }
@@ -228,15 +229,15 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {LEFT_SHIFT_EQ}  { return LSHIFTEQ; }
 {RIGHT_SHIFT}  { return RSHIFT; }
 {RIGHT_SHIFT_EQ}  { return RSHIFTEQ; }
-.	{yyerror();}
+.	{yyerror(NULL);}
 
 %%
-
+/*
 void yyerror(void){
 	cout << "Error in line: " << yylineno << "\nWrong token encountered: %s\n" << yytext << endl;
 	exit(1);
 }
-
+*/
 int yywrap(void){
 	cout << "==================================================\n";
 	cout << "                   LEXING DONE\n";

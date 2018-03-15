@@ -13,8 +13,14 @@
 
 	using namespace std;
 
+	extern void yyerror(char *c){
+		cout << "Error" << c << endl;
+		exit(1);	
+	}
+
 	int yylex(void);
-	extern void yyerror(char *); // define it in either of the files
+	//extern void yyerror(char *); // define it in either of the files
+	
 %}
 
 %union{
@@ -23,7 +29,7 @@
 	char cVal;	
 };
 
-%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL NULL_LITERAL DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ NEWLINE COMMENT WHERE
+%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ NEWLINE COMMENT WHERE
 
 %%
 
@@ -33,23 +39,6 @@ start :	compilation_unit	{}
 /*B.1.1 Line terminators*/ 
 /*new_line : 	NEWLINE 		{}
 			;
-*/
-/*B.1.2 Comments*/ 
-/*new_line_character : ?Carriage return character (U+000D)? 	{}
-		| ?Line feed character (U+000A)? 	{}
-		| ?Next line character (U+0085)? 	{}
-		| ?Line separator character (U+2028)? 	{}
-		| ?Paragraph separator character (U+2029)?	{}
-		;
-*/
-
-/*B.1.3 White space*/ 
-/*
-whitespace : ?Any character with Unicode class Zs? 	{}
-		| ?Horizontal tab character (U+0009)? 	{}
-		| ?Vertical tab character (U+000B)? 	{}
-		| ?Form feed character (U+000C)?	{}
-		;
 */
 
 /*B.1.6 Identifiers*/
@@ -80,7 +69,7 @@ identifier : 	ID 		{}
 		| LONG 	{}
 		| NAMESPACE 	{}
 		| NEW 	{}
-		| NULL 	{}
+		| NULL_LIT 	{}
 		| OBJECT	{}
 		| PARAMS 	{}
 		| PRIVATE 	{}
@@ -129,7 +118,7 @@ string_literal : REG_STR_LITERAL 	{}
 		| VER_STR_LITERAL	{}
 		;
 
-null_literal :	NULL	{}
+null_literal :	NULL_LIT	{}
 		;
 
 /*B.1.9 Operators and punctuators*/ 
@@ -183,23 +172,7 @@ right_shift : RSHIFT	{}
 		;
 right_shift_assignment : RSHIFTEQ	{}
 		;
-
-/*B.1.10 Pre_processing directives*/
-/* 
-pp_directive :	pp_declaration 	{}
-		;
-
-conditional_symbol : ?Any identifier_or_keyword except true or false?	{}
-		;
-pp_declaration : DEFINE conditional_symbol pp_new_line 	{}
-		| UNDEF conditional_symbol pp_new_line 	{}
-		;
-
-pp_new_line : new_line 	{}
-		| COMMENT	{}
-		;
-*/
-
+		
 /*B.2 Syntactic grammar*/ 
 
 /*B.2.1 Basic concepts*/ 
@@ -207,10 +180,8 @@ namespace_name : namespace_or_type_name	{}
 		;
 type_name : namespace_or_type_name	{}
 		;
-namespace_or_type_name : identifier 	{}
-		| identifier type_argument_list 	{}
-		| namespace_or_type_name '.' identifier 	{}
-		| namespace_or_type_name '.' identifier type_argument_list 	{}
+namespace_or_type_name : qualified_identifier 	{}
+		| qualified_identifier type_argument_list 	{}
 		| qualified_alias_member	{}
 		;
 
@@ -894,6 +865,7 @@ epsilon : 	%empty 		{}
 			;
 
 %%	
+
 
 int main(void){
 	yyparse();
