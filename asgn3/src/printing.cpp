@@ -40,6 +40,7 @@ struct Node{
 
 Node *tail, *head;
 int flag = 0;
+int cnt = 0;
 
 Node* makeNode(string s, bool Val){ 
 	Node* node = new Node;
@@ -74,7 +75,7 @@ Node* appendList(Node* node, Node* _tail){
 void printString(){
 	// change the val to zero for every node
 	Node* _head = head;
-	cout << "\t<p>";
+	cout << "\t<p>" << (cnt++) << ": ";
 	while(_head != NULL){
 		switch(_head -> val){
 			// case 0: cout << "<span style=\"color:LightGray;\"> " << (_head -> str) << " </span>"; 

@@ -136,7 +136,7 @@
 1 relational_expression shift_expression
 1 shift_expression additive_expression
 1 additive_expression multiplicative_expression
-2 multiplicative_expression multiplicative_expression 4249507nary_expression
+3 multiplicative_expression multiplicative_expression % unary_expression
 1 unary_expression postfix_expression
 1 postfix_expression primary_expression
 1 primary_expression primary_no_array_creation_expression

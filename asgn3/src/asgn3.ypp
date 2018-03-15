@@ -247,7 +247,7 @@ cast_expression : '(' type ')' unary_expression	{ printf("cast_expression ( type
 multiplicative_expression :	unary_expression 	{ printf("multiplicative_expression unary_expression\n"); }
 		| multiplicative_expression '*' unary_expression 	{ printf("multiplicative_expression multiplicative_expression * unary_expression\n"); }
 		| multiplicative_expression '/' unary_expression 	{ printf("multiplicative_expression multiplicative_expression / unary_expression\n"); }
-		| multiplicative_expression '%' unary_expression	{ printf("multiplicative_expression multiplicative_expression % unary_expression\n"); }
+		| multiplicative_expression '%' unary_expression	{ printf("multiplicative_expression multiplicative_expression %% unary_expression\n"); }
 		;
 additive_expression : multiplicative_expression 	{ printf("additive_expression multiplicative_expression\n"); }
 		| additive_expression '+' multiplicative_expression 	{ printf("additive_expression additive_expression + multiplicative_expression\n"); }
