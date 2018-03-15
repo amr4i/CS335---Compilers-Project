@@ -28,7 +28,7 @@
 %nonassoc IFX
 %nonassoc ELSE
 
-// %expect 5
+%expect 1
 
 %token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ WHERE
 
@@ -133,9 +133,9 @@ argument_value : expression 	{ printf("argument_value expression\n"); }
 		;
 primary_expression : primary_no_array_creation_expression 	{ printf("primary_expression primary_no_array_creation_expression\n"); }
 		| array_creation_expression	{ printf("primary_expression array_creation_expression\n"); }
+		| parenthesized_expression	{ printf("primary_expression parenthesized_expression\n"); }
 		;
 primary_no_array_creation_expression : literal 	{ printf("primary_no_array_creation_expression literal\n"); }
-		| parenthesized_expression 	{ printf("primary_no_array_creation_expression parenthesized_expression\n"); }
 		| member_access 	{ printf("primary_no_array_creation_expression member_access\n"); }
 		| invocation_expression 	{ printf("primary_no_array_creation_expression invocation_expression\n"); }
 		| element_access 	{ printf("primary_no_array_creation_expression element_access\n"); }
@@ -162,8 +162,8 @@ predefined_type : BOOL 	{ printf("predefined_type BOOL\n"); }
 		| UINT 	{ printf("predefined_type UINT\n"); }
 		| ULONG 	{ printf("predefined_type ULONG\n"); }
 		;
-invocation_expression : primary_expression '(' ')' 	{ printf("invocation_expression primary_expression ( )\n"); }
-		| primary_expression '(' argument_list ')'	{ printf("invocation_expression primary_expression ( argument_list )\n"); }
+invocation_expression : primary_no_array_creation_expression '(' ')' 	{ printf("invocation_expression primary_no_array_creation_expression ( )\n"); }
+		| primary_no_array_creation_expression '(' argument_list ')'	{ printf("invocation_expression primary_no_array_creation_expression ( argument_list )\n"); }
 		| qualified_identifier '(' ')' 	{ printf("invocation_expression qualified_identifier ( )\n"); }
 		| qualified_identifier '(' argument_list ')'	{ printf("invocation_expression qualified_identifier ( argument_list )\n"); }
 		;
@@ -228,21 +228,27 @@ typeof_expression : TYPEOF '(' type ')' 	{ printf("typeof_expression TYPEOF ( ty
 		;
 default_value_expression : DEFAULT '(' type ')'	{ printf("default_value_expression DEFAULT ( type )\n"); }
 		;
-unary_expression : postfix_expression 	{ printf("unary_expression postfix_expression\n"); }
+unary_expression_not_plusminus : postfix_expression 	{ printf("unary_expression_not_plusminus postfix_expression\n"); }
+		| '!' unary_expression 	{ printf("unary_expression_not_plusminus ! unary_expression\n"); }
+		| '~' unary_expression 	{ printf("unary_expression_not_plusminus ~ unary_expression\n"); }
+		| cast_expression	{ printf("unary_expression_not_plusminus cast_expression\n"); }
+		;
+unary_expression : unary_expression_not_plusminus 	{ printf("unary_expression unary_expression_not_plusminus\n"); }
 		| '+' unary_expression 	{ printf("unary_expression + unary_expression\n"); }
 		| '-' unary_expression 	{ printf("unary_expression - unary_expression\n"); }
-		| '!' unary_expression 	{ printf("unary_expression ! unary_expression\n"); }
-		| '~' unary_expression 	{ printf("unary_expression ~ unary_expression\n"); }
 		| pre_increment_expression 	{ printf("unary_expression pre_increment_expression\n"); }
 		| pre_decrement_expression 	{ printf("unary_expression pre_decrement_expression\n"); }
-		| cast_expression	{ printf("unary_expression cast_expression\n"); }
 		;
 pre_increment_expression : INCR unary_expression	{ printf("pre_increment_expression INCR unary_expression\n"); }
 		;
 pre_decrement_expression : DECR unary_expression	{ printf("pre_decrement_expression DECR unary_expression\n"); }
 		;
-cast_expression : '(' type ')' unary_expression	{ printf("cast_expression ( type ) unary_expression\n"); }
-		;
+cast_expression : parenthesized_expression unary_expression_not_plusminus	{printf("cast_expression parenthesized_expression unary_expression_not_plusminus\n"); }
+		| '(' qualified_identifier rank_specifier ')' unary_expression  {printf("cast_expression ( qualified_identifier rank_specifier ) unary_expression\n"); }
+  		| '(' simple_type ')' unary_expression {printf("cast_expression ( simple_type ) unary_expression\n"); }
+  		| '(' VOID ')' unary_expression {printf("cast_expression ( VOID ) unary_expression\n"); }
+  		;
+
 multiplicative_expression :	unary_expression 	{ printf("multiplicative_expression unary_expression\n"); }
 		| multiplicative_expression '*' unary_expression 	{ printf("multiplicative_expression multiplicative_expression * unary_expression\n"); }
 		| multiplicative_expression '/' unary_expression 	{ printf("multiplicative_expression multiplicative_expression / unary_expression\n"); }
