@@ -7,8 +7,8 @@ while IFS= read -r line; do
 			word=${a[0]}
 		fi
 		pre=$(echo "$line" | sed 's\.$\\')
-		post=$(echo "$line" | sed 's\^[^|:]*[|:]\\' | sed 's\..$\\' | awk '{$1=$1;print}')
-		echo "$pre printf(\"$word $post\"); }"
+		post=$(echo "$line" | tr -d \' | sed 's\^[^|:]*[|:]\\' | sed 's\..$\\' | awk '{$1=$1;print}')
+		echo "$pre printf(\"$word $post\n\"); }"
 	else
 		echo "$line"
 	fi

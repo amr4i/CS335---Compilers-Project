@@ -79,14 +79,14 @@ void printString(){
 		switch(_head -> val){
 			// case 0: cout << "<span style=\"color:LightGray;\"> " << (_head -> str) << " </span>"; 
 			// 		break;
-			case 1:	cout << "<span style=\"color:DodgerBlue;\"> " << (_head -> str) << " </span>";
+			case 1:	cout << "<span style=\"color:Red;\"> " << (_head -> str) << " </span>";
 					// else	cout << "<span style=\"color:MediumSeaGreen;\"> " << (_head -> str) << " </span>";
 					break;
 			// case 2: if(flag == 0)	cout << "<span style=\"color:DodgerBlue;\"> " << (_head -> str) << " </span>";
 			// 		else	cout << "<span style=\"color:MediumSeaGreen;\"> " << (_head -> str) << " </span>";
 			// 		break;
 			default: 
-					cout << "<span style=\"color:LightGray;\"> " << (_head -> str) << " </span>";
+					cout << "<span style=\"color:Black;\"> " << (_head -> str) << " </span>";
 					break;
 		}
 		_head -> val = 0;

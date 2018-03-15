@@ -69,7 +69,7 @@ integral_type : INT 	{}
 		| ULONG 	{}
 		| CHAR	{}
 		;
-nullable_type : non_nullable_value_type ?	{}
+nullable_type : non_nullable_value_type '?'	{}
 		;
 non_nullable_value_type : simple_type	{}
 		;
@@ -85,12 +85,12 @@ variable_reference : expression	{}
 
 /*B.2.4 Expressions*/ 
 argument_list : argument 	{}
-		| argument_list , argument	{}
+		| argument_list ',' argument	{}
 		;
 argument : argument_value 	{}
 		| argument_name argument_value	{}
 		;
-argument_name : identifier :	{}
+argument_name : identifier ':'	{}
 		;
 argument_value : expression 	{}
 		| REF variable_reference 	{}
@@ -110,12 +110,12 @@ primary_no_array_creation_expression : literal 	{}
 		| default_value_expression	{}
 		;
 
-parenthesized_expression : ( expression )	{}
+parenthesized_expression : '(' expression ')'	{}
 		;
-member_access : primary_expression . identifier 	{}
+member_access : primary_expression '.' identifier 	{}
 			{}
-		| predefined_type . identifier 	{}
-		| qualified_alias_member . identifier	{}
+		| predefined_type '.' identifier 	{}
+		| qualified_alias_member '.' identifier	{}
 		;
 predefined_type : BOOL 	{}
 		| CHAR 	{}
@@ -126,20 +126,20 @@ predefined_type : BOOL 	{}
 		| UINT 	{}
 		| ULONG 	{}
 		;
-invocation_expression : primary_expression ( ) 	{}
-		| primary_expression ( argument_list )	{}
-		| qualified_identifier ( ) 	{}
-		| qualified_identifier ( argument_list )	{}
+invocation_expression : primary_expression '(' ')' 	{}
+		| primary_expression '(' argument_list ')'	{}
+		| qualified_identifier '(' ')' 	{}
+		| qualified_identifier '(' argument_list ')'	{}
 		;
-element_access : primary_no_array_creation_expression [ expression_list ]	{}
+element_access : primary_no_array_creation_expression '[' expression_list ']'	{}
 		;
 expression_list : expression  	{}
-		| expression_list , expression	{}
+		| expression_list ',' expression	{}
 		;
 this_access : THIS	{}
 		;
-base_access : BASE . identifier 	{}
-		| BASE [ expression_list ]	{}
+base_access : BASE '.' identifier 	{}
+		| BASE '[' expression_list ']'	{}
 		;
 postfix_expression : 	primary_expression 		{}
 		| qualified_identifier 		{}
@@ -150,54 +150,54 @@ post_increment_expression : postfix_expression INCR	{}
 		;
 post_decrement_expression : postfix_expression DECR	{}
 		;
-object_creation_expression : NEW type ( ) 	{}
-		| NEW type ( argument_list ) 	{}
-		| NEW type ( ) object_or_collection_initializer 	{}
-		| NEW type ( argument_list ) object_or_collection_initializer 	{}
+object_creation_expression : NEW type '(' ')' 	{}
+		| NEW type '(' argument_list ')' 	{}
+		| NEW type '(' ')' object_or_collection_initializer 	{}
+		| NEW type '(' argument_list ')' object_or_collection_initializer 	{}
 		| NEW type object_or_collection_initializer	{}
 		;
 object_or_collection_initializer : object_initializer 	{}
 		| collection_initializer	{}
 		;
-object_initializer : { } 	{}
-		| { member_initializer_list } 	{}
-		| { member_initializer_list , }	{}
+object_initializer : '{' '}' 	{}
+		| '{' member_initializer_list '}' 	{}
+		| '{' member_initializer_list ',' '}'	{}
 		;
 member_initializer_list : member_initializer 	{}
-		| member_initializer_list , member_initializer	{}
+		| member_initializer_list ',' member_initializer	{}
 		;
-member_initializer : identifier = initializer_value	{}
+member_initializer : identifier '=' initializer_value	{}
 		;
 initializer_value : expression 	{}
 		| object_or_collection_initializer	{}
 		;
-collection_initializer : { element_initializer_list } 	{}
-		| { element_initializer_list , }	{}
+collection_initializer : '{' element_initializer_list '}' 	{}
+		| '{' element_initializer_list ',' '}'	{}
 		;
 element_initializer_list : element_initializer 	{}
-		| element_initializer_list , element_initializer	{}
+		| element_initializer_list ',' element_initializer	{}
 		;
 element_initializer : non_assignment_expression 	{}
-		| { expression_list }	{}
+		| '{' expression_list '}'	{}
 		;
-array_creation_expression :	NEW non_array_type [ expression_list ] 	{}
-		| NEW non_array_type [ expression_list ] rank_specifier 	{}
-		| NEW non_array_type [ expression_list ] array_initializer 	{}
-		| NEW non_array_type [ expression_list ] rank_specifier array_initializer 	{}
+array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{}
+		| NEW non_array_type '[' expression_list ']' rank_specifier 	{}
+		| NEW non_array_type '[' expression_list ']' array_initializer 	{}
+		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{}
 		| NEW array_type array_initializer 	{}
 		| NEW rank_specifier array_initializer	{}
 		;
 
-typeof_expression : TYPEOF ( type ) 	{}
-		| TYPEOF ( VOID )	{}
+typeof_expression : TYPEOF '(' type ')' 	{}
+		| TYPEOF '(' VOID ')'	{}
 		;
-default_value_expression : DEFAULT ( type )	{}
+default_value_expression : DEFAULT '(' type ')'	{}
 		;
 unary_expression : postfix_expression 	{}
-		| + unary_expression 	{}
-		| - unary_expression 	{}
-		| ! unary_expression 	{}
-		| ~ unary_expression 	{}
+		| '+' unary_expression 	{}
+		| '-' unary_expression 	{}
+		| '!' unary_expression 	{}
+		| '~' unary_expression 	{}
 		| pre_increment_expression 	{}
 		| pre_decrement_expression 	{}
 		| cast_expression	{}
@@ -206,24 +206,24 @@ pre_increment_expression : INCR unary_expression	{}
 		;
 pre_decrement_expression : DECR unary_expression	{}
 		;
-cast_expression : ( type ) unary_expression	{}
+cast_expression : '(' type ')' unary_expression	{}
 		;
 multiplicative_expression :	unary_expression 	{}
-		| multiplicative_expression * unary_expression 	{}
-		| multiplicative_expression / unary_expression 	{}
-		| multiplicative_expression % unary_expression	{}
+		| multiplicative_expression '*' unary_expression 	{}
+		| multiplicative_expression '/' unary_expression 	{}
+		| multiplicative_expression '%' unary_expression	{}
 		;
 additive_expression : multiplicative_expression 	{}
-		| additive_expression + multiplicative_expression 	{}
-		| additive_expression - multiplicative_expression	{}
+		| additive_expression '+' multiplicative_expression 	{}
+		| additive_expression '-' multiplicative_expression	{}
 		;
 shift_expression : additive_expression 	{}
 		| shift_expression LSHIFT additive_expression 	{}
 		| shift_expression right_shift additive_expression	{}
 		;
 relational_expression : shift_expression 	{}
-		| relational_expression < shift_expression 	{}
-		| relational_expression > shift_expression 	{}
+		| relational_expression '<' shift_expression 	{}
+		| relational_expression '>' shift_expression 	{}
 		| relational_expression LE shift_expression 	{}
 		| relational_expression GE shift_expression 	{}
 		;
@@ -232,13 +232,13 @@ equality_expression : relational_expression 	{}
 		| equality_expression RNE relational_expression	{}
 		;
 and_expression : equality_expression 	{}
-		| and_expression & equality_expression	{}
+		| and_expression '&' equality_expression	{}
 		;
 exclusive_or_expression : and_expression 	{}
-		| exclusive_or_expression ^ and_expression	{}
+		| exclusive_or_expression '^' and_expression	{}
 		;
 inclusive_or_expression : exclusive_or_expression 	{}
-		| inclusive_or_expression | exclusive_or_expression	{}
+		| inclusive_or_expression '|' exclusive_or_expression	{}
 		;
 conditional_and_expression : inclusive_or_expression 	{}
 		| conditional_and_expression RAND inclusive_or_expression	{}
@@ -250,11 +250,11 @@ null_coalescing_expression : conditional_or_expression 	{}
 		| conditional_or_expression DQM null_coalescing_expression	{}
 		;
 conditional_expression : null_coalescing_expression 	{}
-		| null_coalescing_expression ? expression : expression	{}
+		| null_coalescing_expression '?' expression ':' expression	{}
 		;
 assignment : unary_expression assignment_operator expression	{}
 		;
-assignment_operator : = 	{}
+assignment_operator : '=' 	{}
 		| APLUS 	{}
 		| AMINUS 	{}
 		| AMULT 	{}
@@ -290,35 +290,35 @@ embedded_statement : block 	{}
 		| try_statement 	{}
 		| using_statement	{}
 		;
-block : { } 	{}
-		| { statement_list }	{}
+block : '{' '}' 	{}
+		| '{' statement_list '}'	{}
 		;
 statement_list : statement 	{}
 		| statement_list statement	{}
 		;
-empty_statement : ;	{}
+empty_statement : ';'	{}
 		;
-labeled_statement :	identifier : statement	{}
+labeled_statement :	identifier ':' statement	{}
 		;
-declaration_statement :	local_variable_declaration ;	 	{}
-		| local_constant_declaration ;	{}
+declaration_statement :	local_variable_declaration ';'	 	{}
+		| local_constant_declaration ';'	{}
 		;
 local_variable_declaration : local_variable_type local_variable_declarators	{}
 		;
 local_variable_type : type 	{}
 		;
 local_variable_declarators : local_variable_declarator 	{}
-		| local_variable_declarators , local_variable_declarator	{}
+		| local_variable_declarators ',' local_variable_declarator	{}
 		;
 local_variable_declarator : identifier 	{}
-		| identifier = local_variable_initializer	{}
+		| identifier '=' local_variable_initializer	{}
 		;
 local_variable_initializer : expression 	{}
 		| array_initializer	{}
 		;
 local_constant_declaration :  CONST type constant_declarators	{}
 		;
-expression_statement : statement_expression ;	{}
+expression_statement : statement_expression ';'	{}
 		;
 statement_expression : invocation_expression 	{}
 		| object_creation_expression 	{}
@@ -331,13 +331,13 @@ statement_expression : invocation_expression 	{}
 selection_statement : if_statement 	{}
 		| switch_statement	{}
 		;
-if_statement : IF ( boolean_expression ) embedded_statement 	{}
-		| IF ( boolean_expression ) embedded_statement ELSE embedded_statement	{}
+if_statement : IF '(' boolean_expression ')' embedded_statement 	{}	%prec IFX	
+		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	{}
 		;
-switch_statement : SWITCH ( expression ) switch_block	{}
+switch_statement : SWITCH '(' expression ')' switch_block	{}
 		;
-switch_block : { } 	{}
-		| { switch_sections }	{}
+switch_block : '{' '}' 	{}
+		| '{' switch_sections '}'	{}
 		;
 switch_sections : switch_section 	{}
 		| switch_sections switch_section	{}
@@ -347,26 +347,26 @@ switch_section : switch_labels statement_list	{}
 switch_labels : switch_label 	{}
 		| switch_labels switch_label	{}
 		;
-switch_label :CASE constant_expression : 	{}
-		| DEFAULT :	{}
+switch_label :CASE constant_expression ':' 	{}
+		| DEFAULT ':'	{}
 		;
 iteration_statement : while_statement 	{}
 		| do_statement 	{}
 		| for_statement 	{}
 		| foreach_statement	{}
 		;
-while_statement : WHILE ( boolean_expression ) embedded_statement	{}
+while_statement : WHILE '(' boolean_expression ')' embedded_statement	{}
 		;
-do_statement : DO embedded_statement WHILE ( boolean_expression ) ;	{}
+do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	{}
 		;
-for_statement : FOR ( ; ; ) embedded_statement 	{}
-		| FOR ( for_initializer ; ; ) embedded_statement 	{}
-		| FOR ( ; for_condition ; ) embedded_statement 	{}
-		| FOR ( ; ; for_iterator ) embedded_statement 	{}
-		| FOR ( for_initializer ; for_condition ; ) embedded_statement 	{}
-		| FOR ( for_initializer ; ; for_iterator ) embedded_statement 	{}
-		| FOR ( ; for_condition ; for_iterator ) embedded_statement 	{}
-		| FOR ( for_initializer ; for_condition ; for_iterator ) embedded_statement	{}
+for_statement : FOR '(' ';' ';' ')' embedded_statement 	{}
+		| FOR '(' for_initializer ';' ';' ')' embedded_statement 	{}
+		| FOR '(' ';' for_condition ';' ')' embedded_statement 	{}
+		| FOR '(' ';' ';' for_iterator ')' embedded_statement 	{}
+		| FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement 	{}
+		| FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement 	{}
+		| FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement 	{}
+		| FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement	{}
 		;
 for_initializer : local_variable_declaration 	{}
 		| statement_expression_list	{}
@@ -376,9 +376,9 @@ for_condition : boolean_expression	{}
 for_iterator : statement_expression_list	{}
 		;
 statement_expression_list : statement_expression 	{}
-		| statement_expression_list , statement_expression	{}
+		| statement_expression_list ',' statement_expression	{}
 		;
-foreach_statement : FOREACH ( local_variable_type identifier IN expression ) embedded_statement	{}
+foreach_statement : FOREACH '(' local_variable_type identifier IN expression ')' embedded_statement	{}
 		;
 jump_statement : break_statement 	{}
 		| continue_statement 	{}
@@ -386,19 +386,19 @@ jump_statement : break_statement 	{}
 		| return_statement 	{}
 		| throw_statement	{}
 		;
-break_statement : BREAK ;	{}
+break_statement : BREAK ';'	{}
 		;
-continue_statement : CONTINUE ;	{}
+continue_statement : CONTINUE ';'	{}
 		;
-goto_statement : GOTO identifier ; 	{}
-		| GOTO CASE constant_expression ; 	{}
-		| GOTO DEFAULT ;	{}
+goto_statement : GOTO identifier ';' 	{}
+		| GOTO CASE constant_expression ';' 	{}
+		| GOTO DEFAULT ';'	{}
 		;
-return_statement : RETURN ; 	{}
-		| RETURN expression ;	{}
+return_statement : RETURN ';' 	{}
+		| RETURN expression ';'	{}
 		;
-throw_statement : THROW ; 	{}
-		| THROW expression ;	{}
+throw_statement : THROW ';' 	{}
+		| THROW expression ';'	{}
 		;
 try_statement : TRY block catch_clauses 	{}
 		| TRY block finally_clause 	{}
@@ -410,7 +410,7 @@ general_catch_clause : CATCH block	{}
 		;
 finally_clause : FINALLY block	{}
 		;
-using_statement : USING ( resource_acquisition ) embedded_statement	{}
+using_statement : USING '(' resource_acquisition ')' embedded_statement	{}
 		;
 resource_acquisition : local_variable_declaration 	{}
 		| expression	{}
@@ -423,15 +423,15 @@ compilation_unit : using_directives namespace_member_declarations 	{}
 		| epsilon	{}
 		;
 namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{}
-		| NAMESPACE qualified_identifier namespace_body ;	{}
+		| NAMESPACE qualified_identifier namespace_body ';'	{}
 		;
 qualified_identifier :	identifier 	{}
-		| qualified_identifier . identifier	{}
+		| qualified_identifier '.' identifier	{}
 		;
-namespace_body : { } 	{}
-		| { namespace_member_declarations } 	{}
-		| { using_directives } 	{}
-		| { using_directives namespace_member_declarations }	{}
+namespace_body : '{' '}' 	{}
+		| '{' namespace_member_declarations '}' 	{}
+		| '{' using_directives '}' 	{}
+		| '{' using_directives namespace_member_declarations '}'	{}
 		;
 using_directives : using_directive 	{}
 		| using_directives using_directive	{}
@@ -439,9 +439,9 @@ using_directives : using_directive 	{}
 using_directive : using_alias_directive 	{}
 		| using_namespace_directive	{}
 		;
-using_alias_directive : USING identifier = namespace_or_type_name ;	{}
+using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{}
 		;
-using_namespace_directive : USING namespace_name ;	{}
+using_namespace_directive : USING namespace_name ';'	{}
 		;
 namespace_member_declarations : namespace_member_declaration 	{}
 		| namespace_member_declarations namespace_member_declaration	{}
@@ -459,11 +459,11 @@ qualified_alias_member : identifier DCLN identifier 	{}
 class_declaration : CLASS identifier class_body 	{}
 		| modifiers CLASS identifier class_body 	{}
 		| CLASS identifier class_base class_body 	{}
-		| CLASS identifier class_body ; 	{}
+		| CLASS identifier class_body ';' 	{}
 		| modifiers CLASS identifier class_base class_body 	{}
-		| modifiers CLASS identifier class_body ; 	{}
-		| CLASS identifier class_base class_body ; 	{}
-		| modifiers CLASS identifier class_base class_body ; 	{}
+		| modifiers CLASS identifier class_body ';' 	{}
+		| CLASS identifier class_base class_body ';' 	{}
+		| modifiers CLASS identifier class_base class_body ';' 	{}
 		;
 modifiers : modifier 	{}
 		| modifiers modifier	{}
@@ -473,10 +473,10 @@ modifier : NEW 	{}
 		| PROTECTED 	{}
 		| PRIVATE	{}
 		;
-class_base : : class_type	{}
+class_base : ':' class_type	{}
 		;
-class_body : { } 	{}
-		| { class_member_declarations }	{}
+class_body : '{' '}' 	{}
+		| '{' class_member_declarations '}'	{}
 		;
 class_member_declarations : class_member_declaration 	{}
 		| class_member_declarations class_member_declaration	{}
@@ -488,57 +488,57 @@ class_member_declaration : constant_declaration 	{}
 		| destructor_declaration 	{}
 		| type_declaration	{}
 		;
-constant_declaration : CONST type constant_declarators ; 	{}
-		| modifiers CONST type constant_declarators ;	{}
+constant_declaration : CONST type constant_declarators ';' 	{}
+		| modifiers CONST type constant_declarators ';'	{}
 		;
 
 constant_declarators : constant_declarator  	{}
-		| constant_declarators , constant_declarator	{}
+		| constant_declarators ',' constant_declarator	{}
 		;
-constant_declarator : identifier = constant_expression	{}
+constant_declarator : identifier '=' constant_expression	{}
 		;
-field_declaration : type variable_declarators ; 	{}
-		| modifiers type variable_declarators ;	{}
+field_declaration : type variable_declarators ';' 	{}
+		| modifiers type variable_declarators ';'	{}
 		;
 
 variable_declarators : variable_declarator 	{}
-		| variable_declarators , variable_declarator	{}
+		| variable_declarators ',' variable_declarator	{}
 		;
 variable_declarator : identifier 	{}
-		| identifier = variable_initializer;	
+		| identifier '=' variable_initializer;	
 variable_initializer : expression 	{}
 		| array_initializer	{}
 		;
 method_declaration : method_header method_body	{}
 		;
-method_header : type member_name ( ) 	{}
-		| modifiers type member_name ( ) 	{}
-		| type member_name ( formal_parameter_list ) 	{}
-		| modifiers type member_name ( formal_parameter_list ) 	{}
-		| VOID member_name ( ) 	{}
-		| modifiers VOID member_name ( ) 	{}
-		| VOID member_name ( formal_parameter_list ) 	{}
-		| modifiers VOID member_name ( formal_parameter_list ) 	{}
+method_header : type member_name '(' ')' 	{}
+		| modifiers type member_name '(' ')' 	{}
+		| type member_name '(' formal_parameter_list ')' 	{}
+		| modifiers type member_name '(' formal_parameter_list ')' 	{}
+		| VOID member_name '(' ')' 	{}
+		| modifiers VOID member_name '(' ')' 	{}
+		| VOID member_name '(' formal_parameter_list ')' 	{}
+		| modifiers VOID member_name '(' formal_parameter_list ')' 	{}
 		;
 
 member_name : qualified_identifier	{}
 		;
 method_body : block 	{}
-		| ;	{}
+		| ';'	{}
 		;
 formal_parameter_list : fixed_parameters 	{}
-		| fixed_parameters , parameter_array 	{}
+		| fixed_parameters ',' parameter_array 	{}
 		| parameter_array	{}
 		;
 fixed_parameters : fixed_parameter 	{}
-		| fixed_parameters , fixed_parameter	{}
+		| fixed_parameters ',' fixed_parameter	{}
 		;
 fixed_parameter : type identifier 	{}
 		| parameter_modifier type identifier 	{}
 		| type identifier default_argument 	{}
 		| parameter_modifier type identifier default_argument	{}
 		;
-default_argument : = expression	{}
+default_argument : '=' expression	{}
 		;
 parameter_modifier : REF 	{}
 		| THIS	{}
@@ -549,34 +549,34 @@ constructor_declaration : constructor_declarator constructor_body 	{}
 		| modifiers constructor_declarator constructor_body	{}
 		;
 		
-constructor_declarator : identifier ( ) 	{}
-		| identifier ( ) constructor_initializer 	{}
-		| identifier ( formal_parameter_list ) 	{}
-		| identifier ( formal_parameter_list ) constructor_initializer	{}
+constructor_declarator : identifier '(' ')' 	{}
+		| identifier '(' ')' constructor_initializer 	{}
+		| identifier '(' formal_parameter_list ')' 	{}
+		| identifier '(' formal_parameter_list ')' constructor_initializer	{}
 		;
-constructor_initializer : : BASE ( ) 	{}
-		| : BASE ( argument_list ) 	{}
-		| : THIS ( ) 	{}
-		| : THIS ( argument_list )	{}
+constructor_initializer : ':' BASE '(' ')' 	{}
+		| ':' BASE '(' argument_list ')' 	{}
+		| ':' THIS '(' ')' 	{}
+		| ':' THIS '(' argument_list ')'	{}
 		;
 constructor_body : block 	{}
-		| ;	{}
+		| ';'	{}
 		;
-destructor_declaration : ~ identifier ( ) destructor_body	{}
+destructor_declaration : '~' identifier '(' ')' destructor_body	{}
 		;
 destructor_body : block 	{}
-		| ;	{}
+		| ';'	{}
 		;
 
 /*B.2.8 Structs*/ 
 struct_declaration : STRUCT identifier struct_body 	{}
 		| modifiers STRUCT identifier struct_body 	{}
-		| STRUCT identifier struct_body ; 	{}
-		| modifiers STRUCT identifier struct_body ; 	{}
+		| STRUCT identifier struct_body ';' 	{}
+		| modifiers STRUCT identifier struct_body ';' 	{}
 		;
 
-struct_body : { } 	{}
-		| { struct_member_declarations }	{}
+struct_body : '{' '}' 	{}
+		| '{' struct_member_declarations '}'	{}
 		;
 struct_member_declarations : struct_member_declaration 	{}
 		| struct_member_declarations struct_member_declaration	{}
@@ -591,13 +591,13 @@ struct_member_declaration : constant_declaration 	{}
 /*B.2.9 Arrays*/ 
 array_type : non_array_type rank_specifier	{}
 		;
-rank_specifier : [ ] 	{}
-		| [ , ]	{}
+rank_specifier : '[' ']' 	{}
+		| '[' ',' ']'	{}
 		;
-array_initializer : { } 	{}
-		| { variable_initializer_list } 	{}
-		| { variable_initializer_list , }	{}
+array_initializer : '{' '}' 	{}
+		| '{' variable_initializer_list '}' 	{}
+		| '{' variable_initializer_list ',' '}'	{}
 		;
 variable_initializer_list : variable_initializer 	{}
-		| variable_initializer_list , variable_initializer	{}
+		| variable_initializer_list ',' variable_initializer	{}
 		;
