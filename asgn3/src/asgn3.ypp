@@ -545,16 +545,16 @@ variable_initializer : expression 	{}
 		;
 method_declaration : method_header method_body	{}
 		;
-method_header : return_type member_name '(' ')' 	{}
-		| modifiers return_type member_name '(' ')' 	{}
-		| return_type member_name '(' formal_parameter_list ')' 	{}
-		| modifiers return_type member_name '(' formal_parameter_list ')' 	{}
+method_header : type member_name '(' ')' 	{}
+		| modifiers type member_name '(' ')' 	{}
+		| type member_name '(' formal_parameter_list ')' 	{}
+		| modifiers type member_name '(' formal_parameter_list ')' 	{}
+		| VOID member_name '(' ')' 	{}
+		| modifiers VOID member_name '(' ')' 	{}
+		| VOID member_name '(' formal_parameter_list ')' 	{}
+		| modifiers VOID member_name '(' formal_parameter_list ')' 	{}
 		;
 
-
-return_type : type 	{}
-		| VOID	{}
-		;
 member_name : qualified_identifier	{}
 		;
 method_body : block 	{}
