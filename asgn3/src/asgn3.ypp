@@ -10,7 +10,7 @@
 	#include <iomanip>
 	#include <stdarg.h>
 	#include <cstdlib>
-
+	#define YYDEBUG 1
 	using namespace std;
 	extern void yyerror(char *c);
 	extern int yylineno;
