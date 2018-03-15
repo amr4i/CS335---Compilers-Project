@@ -232,12 +232,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 .	{yyerror(NULL);}
 
 %%
-/*
-void yyerror(void){
-	cout << "Error in line: " << yylineno << "\nWrong token encountered: %s\n" << yytext << endl;
-	exit(1);
-}
-*/
+
 int yywrap(void){
 	cout << "==================================================\n";
 	cout << "                   LEXING DONE\n";

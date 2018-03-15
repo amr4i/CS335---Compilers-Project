@@ -12,11 +12,8 @@
 	#include <cstdlib>
 
 	using namespace std;
-
-	extern void yyerror(char *c){
-		cout << "Error" << c << endl;
-		exit(1);	
-	}
+	extern void yyerror(char *c);
+	extern int yylineno;
 
 	int yylex(void);
 	//extern void yyerror(char *); // define it in either of the files
@@ -642,8 +639,27 @@ epsilon : 	%empty 		{}
 
 %%	
 
+extern FILE *yyin;
 
-int main(void){
+extern void yyerror(char *c){
+		cout << "Error at line: " << yylineno << "\n" << c << endl;
+		exit(1);	
+	}
+
+
+int main(int argc, char* argv[]){
+	FILE *file;
+	if (argc==2 &&(file=fopen(argv[1],"r")))
+		yyin = file;
+	else if (argc!=2){
+		cerr<< "Exactly one file has to be passed as argument!\n";
+		exit(1);
+	}
+	else{
+		cerr<< "Please specify correct file name\n";
+		exit(1);
+	}
 	yyparse();
+	fclose(file);
 	return 0;
 }
