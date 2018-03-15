@@ -162,6 +162,8 @@ predefined_type : BOOL 	{}
 		;
 invocation_expression : primary_expression '(' ')' 	{}
 		| primary_expression '(' argument_list ')'	{}
+		| qualified_identifier '(' ')' 	{}
+		| qualified_identifier '(' argument_list ')'	{}
 		;
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{}
 		;

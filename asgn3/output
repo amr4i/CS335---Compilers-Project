@@ -1,0 +1,541 @@
+Starting parse
+Entering state 0
+Reading a token: Next token is token USING ()
+Shifting token USING ()
+Entering state 8
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 8
+Entering state 29
+Reading a token: Next token is token ';' ()
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 8
+Entering state 32
+Next token is token ';' ()
+Reducing stack by rule 20 (line 82):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm namespace_or_type_name ()
+Stack now 0 8
+Entering state 31
+Reducing stack by rule 18 (line 78):
+   $1 = nterm namespace_or_type_name ()
+-> $$ = nterm namespace_name ()
+Stack now 0 8
+Entering state 30
+Next token is token ';' ()
+Shifting token ';' ()
+Entering state 52
+Reducing stack by rule 288 (line 476):
+   $1 = token USING ()
+   $2 = nterm namespace_name ()
+   $3 = token ';' ()
+-> $$ = nterm using_namespace_directive ()
+Stack now 0
+Entering state 15
+Reducing stack by rule 286 (line 472):
+   $1 = nterm using_namespace_directive ()
+-> $$ = nterm using_directive ()
+Stack now 0
+Entering state 13
+Reducing stack by rule 283 (line 468):
+   $1 = nterm using_directive ()
+-> $$ = nterm using_directives ()
+Stack now 0
+Entering state 12
+Reading a token: Next token is token USING ()
+Shifting token USING ()
+Entering state 8
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8
+Entering state 29
+Reading a token: Next token is token '.' ()
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Next token is token '.' ()
+Shifting token '.' ()
+Entering state 45
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8 32 45
+Entering state 94
+Reducing stack by rule 278 (line 461):
+   $1 = nterm qualified_identifier ()
+   $2 = token '.' ()
+   $3 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Reading a token: Next token is token '.' ()
+Shifting token '.' ()
+Entering state 45
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8 32 45
+Entering state 94
+Reducing stack by rule 278 (line 461):
+   $1 = nterm qualified_identifier ()
+   $2 = token '.' ()
+   $3 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Reading a token: Next token is token ';' ()
+Reducing stack by rule 20 (line 82):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm namespace_or_type_name ()
+Stack now 0 12 8
+Entering state 31
+Reducing stack by rule 18 (line 78):
+   $1 = nterm namespace_or_type_name ()
+-> $$ = nterm namespace_name ()
+Stack now 0 12 8
+Entering state 30
+Next token is token ';' ()
+Shifting token ';' ()
+Entering state 52
+Reducing stack by rule 288 (line 476):
+   $1 = token USING ()
+   $2 = nterm namespace_name ()
+   $3 = token ';' ()
+-> $$ = nterm using_namespace_directive ()
+Stack now 0 12
+Entering state 15
+Reducing stack by rule 286 (line 472):
+   $1 = nterm using_namespace_directive ()
+-> $$ = nterm using_directive ()
+Stack now 0 12
+Entering state 35
+Reducing stack by rule 284 (line 469):
+   $1 = nterm using_directives ()
+   $2 = nterm using_directive ()
+-> $$ = nterm using_directives ()
+Stack now 0
+Entering state 12
+Reading a token: Next token is token USING ()
+Shifting token USING ()
+Entering state 8
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8
+Entering state 29
+Reading a token: Next token is token '.' ()
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Next token is token '.' ()
+Shifting token '.' ()
+Entering state 45
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8 32 45
+Entering state 94
+Reducing stack by rule 278 (line 461):
+   $1 = nterm qualified_identifier ()
+   $2 = token '.' ()
+   $3 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Reading a token: Next token is token ';' ()
+Reducing stack by rule 20 (line 82):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm namespace_or_type_name ()
+Stack now 0 12 8
+Entering state 31
+Reducing stack by rule 18 (line 78):
+   $1 = nterm namespace_or_type_name ()
+-> $$ = nterm namespace_name ()
+Stack now 0 12 8
+Entering state 30
+Next token is token ';' ()
+Shifting token ';' ()
+Entering state 52
+Reducing stack by rule 288 (line 476):
+   $1 = token USING ()
+   $2 = nterm namespace_name ()
+   $3 = token ';' ()
+-> $$ = nterm using_namespace_directive ()
+Stack now 0 12
+Entering state 15
+Reducing stack by rule 286 (line 472):
+   $1 = nterm using_namespace_directive ()
+-> $$ = nterm using_directive ()
+Stack now 0 12
+Entering state 35
+Reducing stack by rule 284 (line 469):
+   $1 = nterm using_directives ()
+   $2 = nterm using_directive ()
+-> $$ = nterm using_directives ()
+Stack now 0
+Entering state 12
+Reading a token: Next token is token USING ()
+Shifting token USING ()
+Entering state 8
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8
+Entering state 29
+Reading a token: Next token is token '.' ()
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Next token is token '.' ()
+Shifting token '.' ()
+Entering state 45
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 8 32 45
+Entering state 94
+Reducing stack by rule 278 (line 461):
+   $1 = nterm qualified_identifier ()
+   $2 = token '.' ()
+   $3 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 8
+Entering state 32
+Reading a token: Next token is token ';' ()
+Reducing stack by rule 20 (line 82):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm namespace_or_type_name ()
+Stack now 0 12 8
+Entering state 31
+Reducing stack by rule 18 (line 78):
+   $1 = nterm namespace_or_type_name ()
+-> $$ = nterm namespace_name ()
+Stack now 0 12 8
+Entering state 30
+Next token is token ';' ()
+Shifting token ';' ()
+Entering state 52
+Reducing stack by rule 288 (line 476):
+   $1 = token USING ()
+   $2 = nterm namespace_name ()
+   $3 = token ';' ()
+-> $$ = nterm using_namespace_directive ()
+Stack now 0 12
+Entering state 15
+Reducing stack by rule 286 (line 472):
+   $1 = nterm using_namespace_directive ()
+-> $$ = nterm using_directive ()
+Stack now 0 12
+Entering state 35
+Reducing stack by rule 284 (line 469):
+   $1 = nterm using_directives ()
+   $2 = nterm using_directive ()
+-> $$ = nterm using_directives ()
+Stack now 0
+Entering state 12
+Reading a token: Next token is token NAMESPACE ()
+Shifting token NAMESPACE ()
+Entering state 2
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2
+Entering state 26
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 2
+Entering state 27
+Reading a token: Next token is token '{' ()
+Shifting token '{' ()
+Entering state 46
+Reading a token: Next token is token CLASS ()
+Shifting token CLASS ()
+Entering state 1
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1
+Entering state 25
+Reading a token: Next token is token '{' ()
+Shifting token '{' ()
+Entering state 42
+Reading a token: Next token is token VOID ()
+Shifting token VOID ()
+Entering state 65
+Reducing stack by rule 340 (line 554):
+   $1 = token VOID ()
+-> $$ = nterm return_type ()
+Stack now 0 12 2 27 46 1 25 42
+Entering state 87
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1 25 42 87
+Entering state 26
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 2 27 46 1 25 42 87
+Entering state 133
+Reading a token: Next token is token '(' ()
+Reducing stack by rule 341 (line 556):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm member_name ()
+Stack now 0 12 2 27 46 1 25 42 87
+Entering state 134
+Next token is token '(' ()
+Shifting token '(' ()
+Entering state 274
+Reading a token: Next token is token STRING ()
+Shifting token STRING ()
+Entering state 56
+Reducing stack by rule 39 (line 113):
+   $1 = token STRING ()
+-> $$ = nterm class_type ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 78
+Reducing stack by rule 28 (line 95):
+   $1 = nterm class_type ()
+-> $$ = nterm simple_type ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 73
+Reading a token: Next token is token '[' ()
+Reducing stack by rule 25 (line 91):
+   $1 = nterm simple_type ()
+-> $$ = nterm non_array_type ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 72
+Next token is token '[' ()
+Shifting token '[' ()
+Entering state 120
+Reading a token: Next token is token ']' ()
+Shifting token ']' ()
+Entering state 166
+Reducing stack by rule 386 (line 626):
+   $1 = token '[' ()
+   $2 = token ']' ()
+-> $$ = nterm rank_specifier ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274 72
+Entering state 121
+Reducing stack by rule 385 (line 624):
+   $1 = nterm non_array_type ()
+   $2 = nterm rank_specifier ()
+-> $$ = nterm array_type ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 91
+Reducing stack by rule 23 (line 88):
+   $1 = nterm array_type ()
+-> $$ = nterm type ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 156
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274 156
+Entering state 285
+Reading a token: Next token is token ')' ()
+Reducing stack by rule 349 (line 568):
+   $1 = nterm type ()
+   $2 = nterm identifier ()
+-> $$ = nterm fixed_parameter ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 159
+Reducing stack by rule 347 (line 565):
+   $1 = nterm fixed_parameter ()
+-> $$ = nterm fixed_parameters ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 158
+Next token is token ')' ()
+Reducing stack by rule 344 (line 561):
+   $1 = nterm fixed_parameters ()
+-> $$ = nterm formal_parameter_list ()
+Stack now 0 12 2 27 46 1 25 42 87 134 274
+Entering state 393
+Next token is token ')' ()
+Shifting token ')' ()
+Entering state 493
+Reducing stack by rule 337 (line 548):
+   $1 = nterm return_type ()
+   $2 = nterm member_name ()
+   $3 = token '(' ()
+   $4 = nterm formal_parameter_list ()
+   $5 = token ')' ()
+-> $$ = nterm method_header ()
+Stack now 0 12 2 27 46 1 25 42
+Entering state 86
+Reading a token: Next token is token '{' ()
+Shifting token '{' ()
+Entering state 129
+Reading a token: Next token is token INT ()
+Shifting token INT ()
+Entering state 184
+Reading a token: Next token is token ID ()
+Reducing stack by rule 31 (line 100):
+   $1 = token INT ()
+-> $$ = nterm integral_type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 75
+Reducing stack by rule 30 (line 98):
+   $1 = nterm integral_type ()
+-> $$ = nterm numeric_type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 74
+Reducing stack by rule 27 (line 94):
+   $1 = nterm numeric_type ()
+-> $$ = nterm simple_type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 73
+Next token is token ID ()
+Reducing stack by rule 25 (line 91):
+   $1 = nterm simple_type ()
+-> $$ = nterm non_array_type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 72
+Next token is token ID ()
+Reducing stack by rule 22 (line 87):
+   $1 = nterm non_array_type ()
+-> $$ = nterm type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 222
+Reducing stack by rule 197 (line 340):
+   $1 = nterm type ()
+-> $$ = nterm local_variable_type ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 252
+Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1 25 42 86 129 252
+Entering state 386
+Reading a token: Next token is token ';' ()
+Reducing stack by rule 200 (line 345):
+   $1 = nterm identifier ()
+-> $$ = nterm local_variable_declarator ()
+Stack now 0 12 2 27 46 1 25 42 86 129 252
+Entering state 388
+Reducing stack by rule 198 (line 342):
+   $1 = nterm local_variable_declarator ()
+-> $$ = nterm local_variable_declarators ()
+Stack now 0 12 2 27 46 1 25 42 86 129 252
+Entering state 387
+Next token is token ';' ()
+Reducing stack by rule 196 (line 338):
+   $1 = nterm local_variable_type ()
+   $2 = nterm local_variable_declarators ()
+-> $$ = nterm local_variable_declaration ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 251
+Next token is token ';' ()
+Shifting token ';' ()
+Entering state 385
+Reducing stack by rule 194 (line 335):
+   $1 = nterm local_variable_declaration ()
+   $2 = token ';' ()
+-> $$ = nterm declaration_statement ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 250
+Reducing stack by rule 178 (line 313):
+   $1 = nterm declaration_statement ()
+-> $$ = nterm statement ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 244
+Reducing stack by rule 190 (line 328):
+   $1 = nterm statement ()
+-> $$ = nterm statement_list ()
+Stack now 0 12 2 27 46 1 25 42 86 129
+Entering state 247
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247
+Entering state 215
+Reading a token: Next token is token '.' ()
+Reducing stack by rule 277 (line 460):
+   $1 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247
+Entering state 272
+Next token is token '.' ()
+Shifting token '.' ()
+Entering state 45
+Reading a token: Next token is token ID ()
+Shifting token ID ()
+Entering state 24
+Reducing stack by rule 2 (line 39):
+   $1 = token ID ()
+-> $$ = nterm identifier ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247 272 45
+Entering state 94
+Reducing stack by rule 278 (line 461):
+   $1 = nterm qualified_identifier ()
+   $2 = token '.' ()
+   $3 = nterm identifier ()
+-> $$ = nterm qualified_identifier ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247
+Entering state 272
+Reading a token: Next token is token '(' ()
+Reducing stack by rule 82 (line 177):
+   $1 = nterm qualified_identifier ()
+-> $$ = nterm postfix_expression ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247
+Entering state 232
+Next token is token '(' ()
+Reducing stack by rule 117 (line 228):
+   $1 = nterm postfix_expression ()
+-> $$ = nterm unary_expression ()
+Stack now 0 12 2 27 46 1 25 42 86 129 247
+Entering state 239
+Next token is token '(' ()
