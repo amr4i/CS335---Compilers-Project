@@ -1,9 +1,0 @@
-#!/bin/bash
-
-"
-while IFS= read -r line;do
-	a=( $line )
-	echo -n ${a[0]}
-	echo -n " "
-done < $1
-echo "\n"

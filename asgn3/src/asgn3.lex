@@ -234,8 +234,5 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 %%
 
 int yywrap(void){
-	cerr << "\n==================================================\n";
-	cerr << "                   LEXING DONE\n";
-	cerr << "==================================================\n";
 	return 1;
 }
