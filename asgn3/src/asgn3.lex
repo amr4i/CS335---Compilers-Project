@@ -130,7 +130,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 
 {COMMENT} {return COMMENT;}
 {WHITESPACE}  ;
-{NEWLINE}	{return NEWLINE; }
+{NEWLINE} ;	
 {BASE} { return BASE; }
 {BOOL} { return BOOL; }
 {BREAK} { return BREAK; }
