@@ -16,9 +16,9 @@ namespace Program
                 num1 = int.Parse(Console.ReadLine());
                 Console.Write("\nEnter the Second Number : ");
                 num2 = int.Parse(Console.ReadLine());
-                temp = num1;
+                temp.part2 = num1;
                 num1 = num2;
-                num2 = temp;
+                num2 = temp.part2;
                 Console.Write("\nAfter Swapping : ");
                 Console.Write("\nFirst Number : "+num1);
                 Console.Write("\nSecond Number : "+num2);

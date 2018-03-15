@@ -5,7 +5,7 @@ all:
 	g++ src/toHTML.cpp -o bin/toHTML
 	cp src/finalScript.sh bin/parser
 	chmod +x bin/parser
-	rm y.tab.h y.tab.c lex.yy.c y.output
+	rm y.tab.h y.tab.c lex.yy.c #y.output
 clean:
 	rm bin/*
 	rm src/.asgn3.y.swp

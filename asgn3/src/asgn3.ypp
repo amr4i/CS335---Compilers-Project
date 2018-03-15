@@ -190,7 +190,6 @@ object_creation_expression : NEW type '(' ')' 	{ printf("object_creation_express
 		| NEW type '(' argument_list ')' 	{ printf("object_creation_expression NEW type ( argument_list )\n"); }
 		| NEW type '(' ')' object_or_collection_initializer 	{ printf("object_creation_expression NEW type ( ) object_or_collection_initializer\n"); }
 		| NEW type '(' argument_list ')' object_or_collection_initializer 	{ printf("object_creation_expression NEW type ( argument_list ) object_or_collection_initializer\n"); }
-		| NEW type object_or_collection_initializer	{ printf("object_creation_expression NEW type object_or_collection_initializer\n"); }
 		;
 object_or_collection_initializer : object_initializer 	{ printf("object_or_collection_initializer object_initializer\n"); }
 		| collection_initializer	{ printf("object_or_collection_initializer collection_initializer\n"); }
@@ -383,7 +382,7 @@ switch_section : switch_labels statement_list	{ printf("switch_section switch_la
 switch_labels : switch_label 	{ printf("switch_labels switch_label\n"); }
 		| switch_labels switch_label	{ printf("switch_labels switch_labels switch_label\n"); }
 		;
-switch_label :CASE constant_expression ':' 	{ printf("switch_label CASE constant_expression :\n"); }
+switch_label : CASE constant_expression ':' 	{ printf("switch_label CASE constant_expression :\n"); }
 		| DEFAULT ':'	{ printf("| DEFAULT :\n"); }
 		;
 iteration_statement : while_statement 	{ printf("iteration_statement while_statement\n"); }
