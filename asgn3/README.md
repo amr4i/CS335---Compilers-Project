@@ -3,7 +3,7 @@
 $> cd asgn3
 $> make
 ```
-This will create all the needed executables in asgn3/bin subdirectory.
+This will create the executable parser in asgn3/bin subdirectory.
 
 ## Running the executable
 ```bash
