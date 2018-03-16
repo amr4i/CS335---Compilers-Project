@@ -13,7 +13,7 @@ where <file> is the path to the IR code that you want to run the parser on.
 
 Sample test codes have been included under the asgn3/test subdirectory. They can be run as follows:
 ```bash
-$> bin/parser test/test1.ir
+$> bin/parser test/test1.cs
 ```
 
 ##Note:
