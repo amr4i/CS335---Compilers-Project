@@ -5,7 +5,7 @@ $> make
 ```
 This will create all the needed executables in asgn3/bin subdirectory.
 
-## Running the executable"
+## Running the executable
 ```bash
 $> bin/parser <file>
 ```
