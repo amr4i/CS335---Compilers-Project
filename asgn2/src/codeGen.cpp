@@ -50,7 +50,6 @@ int main(int argc, char** argv){
     siz = IR.size();
     fori(0,siz){
         TAC* ir = IR[i];
-        
         if (ir->op == "exit")
         {
             code->addLine("li $v0, 10");
@@ -895,22 +894,30 @@ int main(int argc, char** argv){
         }
         else if (ir->op == "callvoid")
         {
+        	code->addLine("addi $sp, $sp, -4");
+        	code->addLine("sw $ra, 4($sp)");
             code->addLine("jal "+ir->target);
         }
         else if (ir->op == "callint")
         {
+        	code->addLine("addi $sp, $sp, -4");
+        	code->addLine("sw $ra, 4($sp)");
             reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
             code->addLine("jal "+ir->target);
             code->addLine("move "+reg_out+", $v0");
         }
         else if (ir->op == "retint")
         {
+        	code->addLine("lw $ra, 4($sp)");
+        	code->addLine("addi $sp, $sp, 4");
             reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
             code->addLine("move $v0, "+reg_out);
             code->addLine("jr $ra");
         }
         else if (ir->op == "ret")
         {
+        	code->addLine("lw $ra, 4($sp)");
+        	code->addLine("addi $sp, $sp, 4");
             code->addLine("jr $ra");
         }
 
