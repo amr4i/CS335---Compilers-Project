@@ -1,0 +1,21 @@
+1, label, main
+2, =, g, 10
+3, callvoid, myfunc
+4, ret
+5, label, myfunc
+6, =, g0, g
+7, ==, t1, g0, 0
+8, ifgoto, t1, D2046
+9, goto, D2047
+10, label, D2046
+11, ret
+12, label, D2047
+13, =, g1, g
+14, printstr, "Value of g is "
+15, printint, g1
+16, printstr, "\n"
+17, =, g2, g
+18, -, g3, g2, 1
+19, =, g, g3
+20, callvoid, myfunc
+21, ret
