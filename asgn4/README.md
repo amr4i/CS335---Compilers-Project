@@ -1,20 +1,20 @@
 ## Instructions for building an executable:
 ```bash
-$> cd asgn2
+$> cd asgn3
 $> make
 ```
-This will create an executable named "codegen" in the asgn2/bin directory. 
+This will create the executable parser in asgn3/bin subdirectory.
 
-## Running the executable: 
+## Running the executable
 ```bash
-$> bin/code <file>
+$> bin/parser <file>
 ```
-where <file> is the path to the IR code that you want to run the Code_Generator on. 
+where <file> is the path to the C# code that you want to run the parser on.
 
-Sample test codes have been included under the asgn2/test subdirectory. They can be run as follows:
+Sample test codes have been included under the asgn3/test subdirectory. They can be run as follows:
 ```bash
-$> bin/codegen test/test1.ir
+$> bin/parser test/test1.cs
 ```
 
-##Note: 
-The code has been implemented in *C++11*. Please ensure you have g++ available. 
+##Note:
+The code has been implemented in *C++11*. Please ensure you have g++ available.
