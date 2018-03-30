@@ -1,0 +1,56 @@
+1,printstr,"Insert sort:\n"
+2,array,a,5
+3,=,siz,5
+4,=,default_ret,-1
+5,printstr,"Enter elements of array :\n"
+6,=,i,0
+7,label,read_a
+8,scan,c
+9,setarr,a,i,c
+10,+=,i,1
+11,<,x,i,siz
+12,ifgoto,x,read_a
+13,=,i,0
+14,label,outer_loop
+15,callint,source_index,find_replacement
+16,getarr,source,a,source_index
+17,getarr,target,a,i
+18,printint,target
+19,printstr," replaced by "
+20,printint,source_index
+21,printstr,"->"
+22,printint,source
+23,printstr,"\n"
+24,setarr,a,i,source
+25,setarr,a,source_index,target
+26,+=,i,1
+27,-,d_siz,siz,1
+28,<,x,i,d_siz
+29,ifgoto,x,outer_loop
+30,=,i,0
+31,label,print_array
+32,getarr,c,a,i
+33,printint,c
+34,printstr," "
+35,+=,i,1
+36,<,x,i,siz
+37,ifgoto,x,print_array
+38,printstr,"\n"
+39,exit
+40,label,find_replacement
+41,+,j,i,1
+42,=,minIndex,i
+43,getarr,minElement,a,i
+44,label,inner_loop
+45,getarr,temp,a,j
+46,<,x,temp,minElement
+47,ifgoto,x,setMinIndex
+48,label,inner_loop_continued
+49,+=,j,1
+50,<,x,j,siz
+51,ifgoto,x,inner_loop
+52,retint,minIndex
+53,label,setMinIndex
+54,=,minIndex,j
+55,=,minElement,temp
+56,goto,inner_loop_continued

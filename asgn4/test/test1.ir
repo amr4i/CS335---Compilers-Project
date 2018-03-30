@@ -1,0 +1,12 @@
+1, printstr, "sample_code\n"
+2, =, a, 2
+3, label, l
+4, =, b, 7
+5, +, a, a, b
+6, <=, x,  a, 50
+7, ifgoto, x, l
+8, callvoid, foo
+9, exit
+10, label, foo
+11, printint, a
+12, ret

@@ -1,0 +1,40 @@
+1,printstr,"Binary Search:\n"
+2,array,a,10
+3,=,siz,10
+4,=,default_ret,-1
+5,printstr,"Enter elements of array in increasing order:\n"
+6,=,i,0
+7,label,read_a
+8,scan,c
+9,setarr,a,i,c
+10,+=,i,1
+11,<,x,i,siz
+12,ifgoto,x,read_a
+13,printstr,"Enter element to be searched: \n"
+14,scan,elem
+15,callint,ans,bin_search
+16,printstr,"Found at index = "
+17,printint,ans
+18,exit
+19,label,bin_search
+20,=,start,0
+21,-,end,siz,1
+22,label,loop
+23,+,t,start,end
+24,/,mid,t,2
+25,getarr,mid_elem,a,mid
+26,==,x,mid_elem,elem
+27,ifgoto,x,found
+28,<,x,mid_elem,elem
+29,ifgoto,x,lesser_region
+30,+,start,mid,1
+31,<=,x,start,end
+32,ifgoto,x,loop
+33,retint,default_ret
+34,label,found
+35,retint,mid
+36,label,lesser_region
+37,-,end,mid,1
+38,<=,x,start,end
+39,ifgoto,x,loop
+40,retint,default_ret
