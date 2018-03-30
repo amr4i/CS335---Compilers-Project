@@ -25,7 +25,7 @@
 25,getarr,mid_elem,a,mid
 26,==,x,mid_elem,elem
 27,ifgoto,x,found
-28,<,x,mid_elem,elem
+28,>,x,mid_elem,elem
 29,ifgoto,x,lesser_region
 30,+,start,mid,1
 31,<=,x,start,end

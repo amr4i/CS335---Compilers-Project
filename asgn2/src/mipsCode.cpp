@@ -57,8 +57,13 @@ string mipsCode::getReg(string var, int ins, int isDst)
 			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
 				reg = addDesc[tempVarName]["register"];
+				if(reg=="$s7")
+					cerr << regDesc[reg] << var << endl;
 				regDesc[reg] = var;
+				if(reg=="$s7")
+					cerr << regDesc[reg] << var << endl;
 				addDesc[var]["register"] = reg;
+				addDesc[tempVarName]["register"] = "NONE";
 
 				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
 				{

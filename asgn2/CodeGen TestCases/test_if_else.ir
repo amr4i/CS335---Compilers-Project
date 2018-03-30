@@ -1,0 +1,27 @@
+1, label, main
+2, =, j, 1
+3, =, sum, 0
+4, =, i, 0
+5, =, j, 1
+6, goto, D1728
+7, label, D1727
+8, %, D1732, j, 10
+9, ==, t1, D1732, 0
+10, ifgoto, t1, D1733
+11, goto, D1734
+12, label, D1733
+13, printint, j
+14, goto, D1735
+15, label, D1734
+16, +, sum, sum, i
+17, label, D1735
+18, +, i, i, 1
+19, *, j, i, 2
+20, label, D1728
+21, <=, t2, i, 99
+22, ifgoto, t2, D1727
+23, goto, D1729
+24, label, D1729
+25, printint, sum
+26, =, D1736, 0
+27, retint, D1736
