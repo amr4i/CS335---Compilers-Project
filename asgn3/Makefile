@@ -7,4 +7,4 @@ all:
 	chmod +x bin/parser
 	rm y.tab.h y.tab.c lex.yy.c y.output
 clean:
-	rm bin/* src/.asgn3.y.swp *.html
+	rm bin/* *.html
