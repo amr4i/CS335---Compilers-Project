@@ -1,10 +1,11 @@
 #include "config.h"
-#include "Symbol.cpp"
+#include "Env.cpp"
 
 class SymTable{
 	public:
-		map<string, Symbol*> symbols;
-
+		Env* baseEnv;
+		Env* curEnv;
+		
 	SymTable();
 
 	bool insert(Symbol* symbol);
