@@ -19,10 +19,13 @@
 	
 %}
 
+%option yylineno
+
 %union{
 	int iVal;
-	char* sVal;
-	char cVal;	
+	string sVal;
+	char cVal;
+	genNode *node;	
 };
 
 %nonassoc IFX
@@ -30,617 +33,672 @@
 
 %expect 1
 
-%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF UINT ULONG USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ WHERE
+%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ WHERE
 
+%token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID
+
+%token <iVal> DINT_LITERAL HDINT_LITERAL
+
+%token <cVal>
+
+%type <sVal> boolean_literal string_literal right_shift right_shift_assignment null_literal 
+%type <sVal> right_shift_assignment qualified_identifier qualified_alias_member namespace_or_type_name namespace_name type_name
+%type <sVal> integral_type numeric_type class_type simple_type non_nullable_value_type nullable_type
+
+
+%type <iVal> integer_literal
+
+%type <cVal> character_literal 
+
+%type <node> literal
 %%
 
-start :	compilation_unit	{ printf("start compilation_unit\n"); }
+start :	compilation_unit	{ $$->code = $1->code }
 		;
 
 /*B.1.6 Identifiers*/
-identifier : 	ID 		{ printf("identifier ID\n"); }
+identifier : 	ID 		
+				{
+					if(ST.get($1) == NULL) 
+						ST.insert(new Symbol($1, "None"));
+				}
 				;
 
 /*B.1.8 Literals*/ 
-literal : boolean_literal 	{ printf("literal boolean_literal\n"); }
-		| integer_literal 	{ printf("literal integer_literal\n"); }
-		| character_literal 	{ printf("literal character_literal\n"); }
-		| string_literal 	{ printf("literal string_literal\n"); }
-		| null_literal	{ printf("literal null_literal\n"); }
-		;
-boolean_literal : TRUE 	{ printf("boolean_literal TRUE\n"); }
-		| FALSE	{ printf("boolean_literal FALSE\n"); }
-		;
-integer_literal : DINT_LITERAL 	{ printf("integer_literal DINT_LITERAL\n"); }
-		| HDINT_LITERAL	{ printf("integer_literal HDINT_LITERAL\n"); }
+literal : boolean_literal 	
+		{ 
+			$$.type = 'bool';
+			$$.place = $1;
+			$$.isLit = true;
+		}
+		| integer_literal 	
+		{  
+			$$.type = 'int';
+			$$.place = to_string($1);
+			$$.isLit = true;
+		}
+		| character_literal 	
+		{  
+			$$.type = 'char';
+			$$.place = $1;
+			$$.isLit = true;
+		}
+		| string_literal 	
+		{ 
+			$$.type = 'string';
+			$$.place = $1;
+			$$.isLit = true;
+		}
+		| null_literal	
+		{  
+			$$.type = 'null';
+			$$.place = $1;
+			$$.isLit = true;
+		}
 		;
 
-character_literal : CHAR_LITERAL	{ printf("character_literal CHAR_LITERAL\n"); }
+boolean_literal : TRUE 	{	$$ = $1;	}
+		| FALSE		{ 	$$ = $1;	}
+		;
+
+integer_literal : DINT_LITERAL 	{ $$ = $1; }
+		| HDINT_LITERAL	{ $$ = $1; }
+		;
+
+character_literal : CHAR_LITERAL	{ $$ = $1; }
 		;
 		
 /*
-simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{ printf("simple_escape_sequence SIMPLE_ESC_SEQ\n"); }
+simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{  }
 							;
 */
 
-string_literal : REG_STR_LITERAL 	{ printf("string_literal REG_STR_LITERAL\n"); }
-		| VER_STR_LITERAL	{ printf("string_literal VER_STR_LITERAL\n"); }
+string_literal : REG_STR_LITERAL 	{ $$ = $1; }
+		| VER_STR_LITERAL	{ $$ = $1; }
 		;
 
-null_literal :	NULL_LIT	{ printf("null_literal NULL_LIT\n"); }
+null_literal :	NULL_LIT	{ $$ = $1; }
 		;
 
 /*B.1.9 Operators*/ 
-right_shift : RSHIFT	{ printf("right_shift RSHIFT\n"); }
+right_shift : RSHIFT	{ $$ = $1; }
 		;
-right_shift_assignment : RSHIFTEQ	{ printf("right_shift_assignment RSHIFTEQ\n"); }
+right_shift_assignment : RSHIFTEQ	{ $$ = $1; }
 		;
 
 /*B.2.1 Basic concepts*/ 
-namespace_name : namespace_or_type_name	{ printf("namespace_name namespace_or_type_name\n"); }
+namespace_name : namespace_or_type_name	{ $$=$1; }
 		;
-type_name : namespace_or_type_name	{ printf("type_name namespace_or_type_name\n"); }
+type_name : namespace_or_type_name	{ $$=$1; }
 		;
-namespace_or_type_name : qualified_identifier 	{ printf("namespace_or_type_name qualified_identifier\n"); }
-		| qualified_alias_member	{ printf("namespace_or_type_name qualified_alias_member\n"); }
+namespace_or_type_name : qualified_identifier 	{ $$ = $1; }
+		| qualified_alias_member	{ $$ = $1; }
 		;
 
 /*B.2.2 Types*/ 
-type : non_array_type 	{ printf("type non_array_type\n"); }
-		| array_type 	{ printf("type array_type\n"); }
+type : non_array_type 	{ $$=$1; }
+		| array_type 	{  }
 		;		;
-non_array_type : type_name 	{ printf("non_array_type type_name\n"); }
-		| simple_type 	{ printf("non_array_type simple_type\n"); }
-		| nullable_type	{ printf("non_array_type nullable_type\n"); }
+non_array_type : type_name 	{ $$=$1; }
+		| simple_type 	{ $$=$1; }
+		| nullable_type	{ $$=$1; }
 		;
-simple_type : numeric_type 	{ printf("simple_type numeric_type\n"); }
-		| class_type 	{ printf("simple_type class_type\n"); }
-		| BOOL	{ printf("simple_type BOOL\n"); }
+simple_type : numeric_type 	{ $$ = $1; }
+		| class_type 	{ $$ = $1; }
+		| BOOL	{ $$ = $1; }
 		;
-numeric_type : integral_type 	{ printf("numeric_type integral_type\n"); }
+numeric_type : integral_type 	{ $$ = $1; }
 		;
-integral_type : INT 	{ printf("integral_type INT\n"); }
-		| UINT 	{ printf("integral_type UINT\n"); }
-		| LONG 	{ printf("integral_type LONG\n"); }
-		| ULONG 	{ printf("integral_type ULONG\n"); }
-		| CHAR	{ printf("integral_type CHAR\n"); }
+integral_type : INT 	{ $$ = $1;  }
+		| LONG 	{ $$ = $1; }
+		| CHAR	{ $$ = $1; }
 		;
-nullable_type : non_nullable_value_type '?'	{ printf("nullable_type non_nullable_value_type ?\n"); }
+nullable_type : non_nullable_value_type '?'	{ $$=$1+"?"; }
 		;
-non_nullable_value_type : simple_type	{ printf("non_nullable_value_type simple_type\n"); }
+non_nullable_value_type : simple_type	{ $$ = $1; }
 		;
 
 
-class_type : OBJECT 	{ printf("class_type OBJECT\n"); }
-		| STRING	{ printf("class_type STRING\n"); }
+class_type : OBJECT 	{ $$ = $1; }
+		| STRING	{ $$ = $1; }
 		;
 
 /*B.2.3 Variables*/ 
-variable_reference : expression	{ printf("variable_reference expression\n"); }
+variable_reference : expression	{  }
 		;
 
 /*B.2.4 Expressions*/ 
-argument_list : argument 	{ printf("argument_list argument\n"); }
-		| argument_list ',' argument	{ printf("argument_list argument_list , argument\n"); }
+argument_list : argument 	{  }
+		| argument_list ',' argument	{  }
 		;
-argument : argument_value 	{ printf("argument argument_value\n"); }
-		| argument_name argument_value	{ printf("argument argument_name argument_value\n"); }
+argument : argument_value 	{  }
+		| argument_name argument_value	{ }
 		;
-argument_name : identifier ':'	{ printf("argument_name identifier :\n"); }
+argument_name : identifier ':'	{ $$ = $1+":"; }
 		;
-argument_value : expression 	{ printf("argument_value expression\n"); }
-		| REF variable_reference 	{ printf("argument_value REF variable_reference\n"); }
+argument_value : expression 	{ $$ = $1; }
+		| REF variable_reference 	{  }
 		;
-primary_expression : primary_no_array_creation_expression 	{ printf("primary_expression primary_no_array_creation_expression\n"); }
-		| array_creation_expression	{ printf("primary_expression array_creation_expression\n"); }
-		| parenthesized_expression	{ printf("primary_expression parenthesized_expression\n"); }
+primary_expression : primary_no_array_creation_expression 	{  }
+		| array_creation_expression	{  }
+		| parenthesized_expression	{  }
 		;
-primary_no_array_creation_expression : literal 	{ printf("primary_no_array_creation_expression literal\n"); }
-		| member_access 	{ printf("primary_no_array_creation_expression member_access\n"); }
-		| invocation_expression 	{ printf("primary_no_array_creation_expression invocation_expression\n"); }
-		| element_access 	{ printf("primary_no_array_creation_expression element_access\n"); }
-		| this_access 	{ printf("primary_no_array_creation_expression this_access\n"); }
-		| base_access 	{ printf("primary_no_array_creation_expression base_access\n"); }
-		| object_creation_expression 	{ printf("primary_no_array_creation_expression object_creation_expression\n"); }
-		| typeof_expression 	{ printf("primary_no_array_creation_expression typeof_expression\n"); }
-		| default_value_expression	{ printf("primary_no_array_creation_expression default_value_expression\n"); }
-		;
-
-parenthesized_expression : '(' expression ')'	{ printf("parenthesized_expression ( expression )\n"); }
-		;
-member_access : primary_expression '.' identifier 	{ printf("member_access primary_expression . identifier\n"); }
-			{ printf("member_access \n"); }
-		| predefined_type '.' identifier 	{ printf("member_access predefined_type . identifier\n"); }
-		| qualified_alias_member '.' identifier	{ printf("member_access qualified_alias_member . identifier\n"); }
-		;
-predefined_type : BOOL 	{ printf("predefined_type BOOL\n"); }
-		| CHAR 	{ printf("predefined_type CHAR\n"); }
-		| INT 	{ printf("predefined_type INT\n"); }
-		| LONG 	{ printf("predefined_type LONG\n"); }
-		| OBJECT 	{ printf("predefined_type OBJECT\n"); }
-		| STRING 	{ printf("predefined_type STRING\n"); }
-		| UINT 	{ printf("predefined_type UINT\n"); }
-		| ULONG 	{ printf("predefined_type ULONG\n"); }
-		;
-invocation_expression : primary_no_array_creation_expression '(' ')' 	{ printf("invocation_expression primary_no_array_creation_expression ( )\n"); }
-		| primary_no_array_creation_expression '(' argument_list ')'	{ printf("invocation_expression primary_no_array_creation_expression ( argument_list )\n"); }
-		| qualified_identifier '(' ')' 	{ printf("invocation_expression qualified_identifier ( )\n"); }
-		| qualified_identifier '(' argument_list ')'	{ printf("invocation_expression qualified_identifier ( argument_list )\n"); }
-		;
-element_access : primary_no_array_creation_expression '[' expression_list ']'	{ printf("element_access primary_no_array_creation_expression [ expression_list ]\n"); }
-		;
-expression_list : expression  	{ printf("expression_list expression\n"); }
-		| expression_list ',' expression	{ printf("expression_list expression_list , expression\n"); }
-		;
-this_access : THIS	{ printf("this_access THIS\n"); }
-		;
-base_access : BASE '.' identifier 	{ printf("base_access BASE . identifier\n"); }
-		| BASE '[' expression_list ']'	{ printf("base_access BASE [ expression_list ]\n"); }
-		;
-postfix_expression : 	primary_expression 		{ printf("postfix_expression primary_expression\n"); }
-		| qualified_identifier 		{ printf("postfix_expression qualified_identifier\n"); }
-		| post_increment_expression 		{ printf("postfix_expression post_increment_expression\n"); }
-		| post_decrement_expression 		{ printf("postfix_expression post_decrement_expression\n"); }
-		;
-post_increment_expression : postfix_expression INCR	{ printf("post_increment_expression postfix_expression INCR\n"); }
-		;
-post_decrement_expression : postfix_expression DECR	{ printf("post_decrement_expression postfix_expression DECR\n"); }
-		;
-object_creation_expression : NEW type '(' ')' 	{ printf("object_creation_expression NEW type ( )\n"); }
-		| NEW type '(' argument_list ')' 	{ printf("object_creation_expression NEW type ( argument_list )\n"); }
-		| NEW type '(' ')' object_or_collection_initializer 	{ printf("object_creation_expression NEW type ( ) object_or_collection_initializer\n"); }
-		| NEW type '(' argument_list ')' object_or_collection_initializer 	{ printf("object_creation_expression NEW type ( argument_list ) object_or_collection_initializer\n"); }
-		;
-object_or_collection_initializer : object_initializer 	{ printf("object_or_collection_initializer object_initializer\n"); }
-		| collection_initializer	{ printf("object_or_collection_initializer collection_initializer\n"); }
-		;
-object_initializer : '{' '}' 	{ printf("object_initializer { }\n"); }
-		| '{' member_initializer_list '}' 	{ printf("object_initializer { member_initializer_list }\n"); }
-		| '{' member_initializer_list ',' '}'	{ printf("object_initializer { member_initializer_list , }\n"); }
-		;
-member_initializer_list : member_initializer 	{ printf("member_initializer_list member_initializer\n"); }
-		| member_initializer_list ',' member_initializer	{ printf("member_initializer_list member_initializer_list , member_initializer\n"); }
-		;
-member_initializer : identifier '=' initializer_value	{ printf("member_initializer identifier = initializer_value\n"); }
-		;
-initializer_value : expression 	{ printf("initializer_value expression\n"); }
-		| object_or_collection_initializer	{ printf("initializer_value object_or_collection_initializer\n"); }
-		;
-collection_initializer : '{' element_initializer_list '}' 	{ printf("collection_initializer { element_initializer_list }\n"); }
-		| '{' element_initializer_list ',' '}'	{ printf("collection_initializer { element_initializer_list , }\n"); }
-		;
-element_initializer_list : element_initializer 	{ printf("element_initializer_list element_initializer\n"); }
-		| element_initializer_list ',' element_initializer	{ printf("element_initializer_list element_initializer_list , element_initializer\n"); }
-		;
-element_initializer : non_assignment_expression 	{ printf("element_initializer non_assignment_expression\n"); }
-		| '{' expression_list '}'	{ printf("element_initializer { expression_list }\n"); }
-		;
-array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{ printf("array_creation_expression NEW non_array_type [ expression_list ]\n"); }
-		| NEW non_array_type '[' expression_list ']' rank_specifier 	{ printf("array_creation_expression NEW non_array_type [ expression_list ] rank_specifier\n"); }
-		| NEW non_array_type '[' expression_list ']' array_initializer 	{ printf("array_creation_expression NEW non_array_type [ expression_list ] array_initializer\n"); }
-		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{ printf("array_creation_expression NEW non_array_type [ expression_list ] rank_specifier array_initializer\n"); }
-		| NEW array_type array_initializer 	{ printf("array_creation_expression NEW array_type array_initializer\n"); }
-		| NEW rank_specifier array_initializer	{ printf("array_creation_expression NEW rank_specifier array_initializer\n"); }
+primary_no_array_creation_expression : literal 	{ $$ = $1; }
+		| member_access 	{ $$ = $1; }
+		| invocation_expression 	{ $$ = $1; }
+		| element_access 	{ $$ = $1; }
+		| this_access 	{ $$ = $1; }
+		| base_access 	{ $$ = $1; }
+		| object_creation_expression 	{ $$ = $1; }
+		| typeof_expression 	{ $$ = $1; }
+		| default_value_expression	{ $$ = $1; }
 		;
 
-typeof_expression : TYPEOF '(' type ')' 	{ printf("typeof_expression TYPEOF ( type )\n"); }
-		| TYPEOF '(' VOID ')'	{ printf("typeof_expression TYPEOF ( VOID )\n"); }
+parenthesized_expression : '(' expression ')'	{ $$ = $1; $$->code = "("+$1->code+")"; }
 		;
-default_value_expression : DEFAULT '(' type ')'	{ printf("default_value_expression DEFAULT ( type )\n"); }
+member_access : primary_expression '.' identifier 	{  }
+			{  }
+		| predefined_type '.' identifier 	{  }
+		| qualified_alias_member '.' identifier	{  }
 		;
-unary_expression_not_plusminus : postfix_expression 	{ printf("unary_expression_not_plusminus postfix_expression\n"); }
-		| '!' unary_expression 	{ printf("unary_expression_not_plusminus ! unary_expression\n"); }
-		| '~' unary_expression 	{ printf("unary_expression_not_plusminus ~ unary_expression\n"); }
-		| cast_expression	{ printf("unary_expression_not_plusminus cast_expression\n"); }
+predefined_type : BOOL 	{  }
+		| CHAR 	{  }
+		| INT 	{  }
+		| LONG 	{  }
+		| OBJECT 	{  }
+		| STRING 	{  }
 		;
-unary_expression : unary_expression_not_plusminus 	{ printf("unary_expression unary_expression_not_plusminus\n"); }
-		| '+' unary_expression 	{ printf("unary_expression + unary_expression\n"); }
-		| '-' unary_expression 	{ printf("unary_expression - unary_expression\n"); }
-		| pre_increment_expression 	{ printf("unary_expression pre_increment_expression\n"); }
-		| pre_decrement_expression 	{ printf("unary_expression pre_decrement_expression\n"); }
+invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
+		| primary_no_array_creation_expression '(' argument_list ')'	{  }
+		| qualified_identifier '(' ')' 	{  }
+		| qualified_identifier '(' argument_list ')'	{  }
 		;
-pre_increment_expression : INCR unary_expression	{ printf("pre_increment_expression INCR unary_expression\n"); }
+element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
 		;
-pre_decrement_expression : DECR unary_expression	{ printf("pre_decrement_expression DECR unary_expression\n"); }
+expression_list : expression  	{  }
+		| expression_list ',' expression	{  }
 		;
-cast_expression : parenthesized_expression unary_expression_not_plusminus	{printf("cast_expression parenthesized_expression unary_expression_not_plusminus\n"); }
-		| '(' qualified_identifier rank_specifier ')' unary_expression  {printf("cast_expression ( qualified_identifier rank_specifier ) unary_expression\n"); }
-  		| '(' simple_type ')' unary_expression {printf("cast_expression ( simple_type ) unary_expression\n"); }
-  		| '(' VOID ')' unary_expression {printf("cast_expression ( VOID ) unary_expression\n"); }
+this_access : THIS	{  }
+		;
+base_access : BASE '.' identifier 	{  }
+		| BASE '[' expression_list ']'	{  }
+		;
+postfix_expression : 	primary_expression 		{  }
+		| qualified_identifier 		{  }
+		| post_increment_expression 		{  }
+		| post_decrement_expression 		{  }
+		;
+post_increment_expression : postfix_expression INCR	{  }
+		;
+post_decrement_expression : postfix_expression DECR	{  }
+		;
+object_creation_expression : NEW type '(' ')' 	{  }
+		| NEW type '(' argument_list ')' 	{  }
+		| NEW type '(' ')' object_or_collection_initializer 	{  }
+		| NEW type '(' argument_list ')' object_or_collection_initializer 	{  }
+		;
+object_or_collection_initializer : object_initializer 	{  }
+		| collection_initializer	{  }
+		;
+object_initializer : '{' '}' 	{  }
+		| '{' member_initializer_list '}' 	{  }
+		| '{' member_initializer_list ',' '}'	{  }
+		;
+member_initializer_list : member_initializer 	{  }
+		| member_initializer_list ',' member_initializer	{  }
+		;
+member_initializer : identifier '=' initializer_value	{  }
+		;
+initializer_value : expression 	{  }
+		| object_or_collection_initializer	{  }
+		;
+collection_initializer : '{' element_initializer_list '}' 	{  }
+		| '{' element_initializer_list ',' '}'	{  }
+		;
+element_initializer_list : element_initializer 	{  }
+		| element_initializer_list ',' element_initializer	{  }
+		;
+element_initializer : non_assignment_expression 	{  }
+		| '{' expression_list '}'	{  }
+		;
+array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{  }
+		| NEW non_array_type '[' expression_list ']' rank_specifier 	{  }
+		| NEW non_array_type '[' expression_list ']' array_initializer 	{  }
+		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{  }
+		| NEW array_type array_initializer 	{  }
+		| NEW rank_specifier array_initializer	{  }
+		;
+
+typeof_expression : TYPEOF '(' type ')' 	{  }
+		| TYPEOF '(' VOID ')'	{  }
+		;
+default_value_expression : DEFAULT '(' type ')'	{  }
+		;
+unary_expression_not_plusminus : postfix_expression 	{  }
+		| '!' unary_expression 	{  }
+		| '~' unary_expression 	{  }
+		| cast_expression	{  }
+		;
+unary_expression : unary_expression_not_plusminus 	{  }
+		| '+' unary_expression 	{  }
+		| '-' unary_expression 	{  }
+		| pre_increment_expression 	{  }
+		| pre_decrement_expression 	{  }
+		;
+pre_increment_expression : INCR unary_expression	{  }
+		;
+pre_decrement_expression : DECR unary_expression	{  }
+		;
+cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
+		| '(' qualified_identifier rank_specifier ')' unary_expression  { }
+  		| '(' simple_type ')' unary_expression { }
+  		| '(' VOID ')' unary_expression { }
   		;
 
-multiplicative_expression :	unary_expression 	{ printf("multiplicative_expression unary_expression\n"); }
-		| multiplicative_expression '*' unary_expression 	{ printf("multiplicative_expression multiplicative_expression * unary_expression\n"); }
-		| multiplicative_expression '/' unary_expression 	{ printf("multiplicative_expression multiplicative_expression / unary_expression\n"); }
-		| multiplicative_expression '%' unary_expression	{ printf("multiplicative_expression multiplicative_expression %% unary_expression\n"); }
+multiplicative_expression :	unary_expression 	{  }
+		| multiplicative_expression '*' unary_expression 	{  }
+		| multiplicative_expression '/' unary_expression 	{  }
+		| multiplicative_expression '%' unary_expression	{  }
 		;
-additive_expression : multiplicative_expression 	{ printf("additive_expression multiplicative_expression\n"); }
-		| additive_expression '+' multiplicative_expression 	{ printf("additive_expression additive_expression + multiplicative_expression\n"); }
-		| additive_expression '-' multiplicative_expression	{ printf("additive_expression additive_expression - multiplicative_expression\n"); }
+
+additive_expression : multiplicative_expression 	{ $$ = $1 }
+		| additive_expression '+' multiplicative_expression 	
+		{  
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
+			$$->get2OpCode("+", $1, $3, yylineno);
+		}
+		| additive_expression '-' multiplicative_expression	
+		{  
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
+			$$->get2OpCode("-", $1, $3, yylineno);
+		}
 		;
-shift_expression : additive_expression 	{ printf("shift_expression additive_expression\n"); }
-		| shift_expression LSHIFT additive_expression 	{ printf("shift_expression shift_expression LSHIFT additive_expression\n"); }
-		| shift_expression right_shift additive_expression	{ printf("shift_expression shift_expression right_shift additive_expression\n"); }
+
+shift_expression : additive_expression 	{ $$ = $1; }
+		| shift_expression LSHIFT additive_expression 	{  }
+		| shift_expression right_shift additive_expression	{  }
 		;
-relational_expression : shift_expression 	{ printf("relational_expression shift_expression\n"); }
-		| relational_expression '<' shift_expression 	{ printf("relational_expression relational_expression < shift_expression\n"); }
-		| relational_expression '>' shift_expression 	{ printf("relational_expression relational_expression > shift_expression\n"); }
-		| relational_expression LE shift_expression 	{ printf("relational_expression relational_expression LE shift_expression\n"); }
-		| relational_expression GE shift_expression 	{ printf("relational_expression relational_expression GE shift_expression\n"); }
+relational_expression : shift_expression 	{  }
+		| relational_expression '<' shift_expression 	{  }
+		| relational_expression '>' shift_expression 	{  }
+		| relational_expression LE shift_expression 	{  }
+		| relational_expression GE shift_expression 	{  }
 		;
-equality_expression : relational_expression 	{ printf("equality_expression relational_expression\n"); }
-		| equality_expression REQ relational_expression 	{ printf("equality_expression equality_expression REQ relational_expression\n"); }
-		| equality_expression RNE relational_expression	{ printf("equality_expression equality_expression RNE relational_expression\n"); }
+equality_expression : relational_expression 	{  }
+		| equality_expression REQ relational_expression 	{  }
+		| equality_expression RNE relational_expression	{  }
 		;
-and_expression : equality_expression 	{ printf("and_expression equality_expression\n"); }
-		| and_expression '&' equality_expression	{ printf("and_expression and_expression & equality_expression\n"); }
+and_expression : equality_expression 	{  }
+		| and_expression '&' equality_expression	{  }
 		;
-exclusive_or_expression : and_expression 	{ printf("exclusive_or_expression and_expression\n"); }
-		| exclusive_or_expression '^' and_expression	{ printf("exclusive_or_expression exclusive_or_expression ^ and_expression\n"); }
+exclusive_or_expression : and_expression 	{  }
+		| exclusive_or_expression '^' and_expression	{  }
 		;
-inclusive_or_expression : exclusive_or_expression 	{ printf("inclusive_or_expression exclusive_or_expression\n"); }
-		| inclusive_or_expression '|' exclusive_or_expression	{ printf("inclusive_or_expression inclusive_or_expression | exclusive_or_expression\n"); }
+inclusive_or_expression : exclusive_or_expression 	{  }
+		| inclusive_or_expression '|' exclusive_or_expression	{  }
 		;
-conditional_and_expression : inclusive_or_expression 	{ printf("conditional_and_expression inclusive_or_expression\n"); }
-		| conditional_and_expression RAND inclusive_or_expression	{ printf("conditional_and_expression conditional_and_expression RAND inclusive_or_expression\n"); }
+conditional_and_expression : inclusive_or_expression 	{  }
+		| conditional_and_expression RAND inclusive_or_expression	{  }
 		;
-conditional_or_expression : conditional_and_expression 	{ printf("conditional_or_expression conditional_and_expression\n"); }
-		| conditional_or_expression ROR conditional_and_expression	{ printf("conditional_or_expression conditional_or_expression ROR conditional_and_expression\n"); }
+conditional_or_expression : conditional_and_expression 	{  }
+		| conditional_or_expression ROR conditional_and_expression	{  }
 		;
-null_coalescing_expression : conditional_or_expression 	{ printf("null_coalescing_expression conditional_or_expression\n"); }
-		| conditional_or_expression DQM null_coalescing_expression	{ printf("null_coalescing_expression conditional_or_expression DQM null_coalescing_expression\n"); }
+null_coalescing_expression : conditional_or_expression 	{  }
+		| conditional_or_expression DQM null_coalescing_expression	{  }
 		;
-conditional_expression : null_coalescing_expression 	{ printf("conditional_expression null_coalescing_expression\n"); }
-		| null_coalescing_expression '?' expression ':' expression	{ printf("| null_coalescing_expression ? expression : expression\n"); }
+conditional_expression : null_coalescing_expression 	{  }
+		| null_coalescing_expression '?' expression ':' expression	{  }
 		;
-assignment : unary_expression assignment_operator expression	{ printf("assignment unary_expression assignment_operator expression\n"); }
+assignment : unary_expression assignment_operator expression	{  }
 		;
-assignment_operator : '=' 	{ printf("assignment_operator =\n"); }
-		| APLUS 	{ printf("assignment_operator APLUS\n"); }
-		| AMINUS 	{ printf("assignment_operator AMINUS\n"); }
-		| AMULT 	{ printf("assignment_operator AMULT\n"); }
-		| ADIV 	{ printf("assignment_operator ADIV\n"); }
-		| AMOD 	{ printf("assignment_operator AMOD\n"); }
-		| AAND 	{ printf("assignment_operator AAND\n"); }
-		| AOR 	{ printf("assignment_operator AOR\n"); }
-		| ACARET 	{ printf("assignment_operator ACARET\n"); }
-		| LSHIFTEQ 	{ printf("assignment_operator LSHIFTEQ\n"); }
-		| right_shift_assignment	{ printf("assignment_operator right_shift_assignment\n"); }
+assignment_operator : '=' 	{  }
+		| APLUS 	{  }
+		| AMINUS 	{  }
+		| AMULT 	{  }
+		| ADIV 	{  }
+		| AMOD 	{  }
+		| AAND 	{  }
+		| AOR 	{  }
+		| ACARET 	{  }
+		| LSHIFTEQ 	{  }
+		| right_shift_assignment	{  }
 		;
-expression : non_assignment_expression 	{ printf("expression non_assignment_expression\n"); }
-		| assignment	{ printf("expression assignment\n"); }
+expression : non_assignment_expression 	{  }
+		| assignment	{  }
 		;
-non_assignment_expression : conditional_expression	{ printf("non_assignment_expression conditional_expression\n"); }
+non_assignment_expression : conditional_expression	{  }
 		;
-constant_expression : expression	{ printf("constant_expression expression\n"); }
+constant_expression : expression	{  }
 		;
-boolean_expression : expression	{ printf("boolean_expression expression\n"); }
+boolean_expression : expression	{  }
 		;
 
 /*B.2.5 Statements*/ 
-statement :	labeled_statement 	{ printf("statement labeled_statement\n"); }
-		| declaration_statement 	{ printf("statement declaration_statement\n"); }
-		| embedded_statement	{ printf("statement embedded_statement\n"); }
+statement :	labeled_statement 	{  }
+		| declaration_statement 	{  }
+		| embedded_statement	{  }
 		;
-embedded_statement : block 	{ printf("embedded_statement block\n"); }
-		| empty_statement 	{ printf("embedded_statement empty_statement\n"); }
-		| expression_statement 	{ printf("embedded_statement expression_statement\n"); }
-		| selection_statement 	{ printf("embedded_statement selection_statement\n"); }
-		| iteration_statement 	{ printf("embedded_statement iteration_statement\n"); }
-		| jump_statement 	{ printf("embedded_statement jump_statement\n"); }
-		| try_statement 	{ printf("embedded_statement try_statement\n"); }
-		| using_statement	{ printf("embedded_statement using_statement\n"); }
+embedded_statement : block 	{  }
+		| empty_statement 	{  }
+		| expression_statement 	{  }
+		| selection_statement 	{  }
+		| iteration_statement 	{  }
+		| jump_statement 	{  }
+		| try_statement 	{  }
+		| using_statement	{  }
 		;
-block : '{' '}' 	{ printf("block { }\n"); }
-		| '{' statement_list '}'	{ printf("block { statement_list }\n"); }
+block : '{' '}' 	{  }
+		| '{' statement_list '}'	{  }
 		;
-statement_list : statement 	{ printf("statement_list statement\n"); }
-		| statement_list statement	{ printf("statement_list statement_list statement\n"); }
+statement_list : statement 	{  }
+		| statement_list statement	{  }
 		;
-empty_statement : ';'	{ printf("empty_statement ;\n"); }
+empty_statement : ';'	{  }
 		;
-labeled_statement :	identifier ':' statement	{ printf("labeled_statement identifier : statement\n"); }
+labeled_statement :	identifier ':' statement	{  }
 		;
-declaration_statement :	local_variable_declaration ';'	 	{ printf("declaration_statement local_variable_declaration ;\n"); }
-		| local_constant_declaration ';'	{ printf("declaration_statement local_constant_declaration ;\n"); }
+declaration_statement :	local_variable_declaration ';'	 	{  }
+		| local_constant_declaration ';'	{  }
 		;
-local_variable_declaration : local_variable_type local_variable_declarators	{ printf("local_variable_declaration local_variable_type local_variable_declarators\n"); }
+local_variable_declaration : local_variable_type local_variable_declarators	{  }
 		;
-local_variable_type : type 	{ printf("local_variable_type type\n"); }
+local_variable_type : type 	{  }
 		;
-local_variable_declarators : local_variable_declarator 	{ printf("local_variable_declarators local_variable_declarator\n"); }
-		| local_variable_declarators ',' local_variable_declarator	{ printf("local_variable_declarators local_variable_declarators , local_variable_declarator\n"); }
+local_variable_declarators : local_variable_declarator 	{  }
+		| local_variable_declarators ',' local_variable_declarator	{  }
 		;
-local_variable_declarator : identifier 	{ printf("local_variable_declarator identifier\n"); }
-		| identifier '=' local_variable_initializer	{ printf("local_variable_declarator identifier = local_variable_initializer\n"); }
+local_variable_declarator : identifier 	{  }
+		| identifier '=' local_variable_initializer	{  }
 		;
-local_variable_initializer : expression 	{ printf("local_variable_initializer expression\n"); }
-		| array_initializer	{ printf("local_variable_initializer array_initializer\n"); }
+local_variable_initializer : expression 	{  }
+		| array_initializer	{  }
 		;
-local_constant_declaration :  CONST type constant_declarators	{ printf("local_constant_declaration CONST type constant_declarators\n"); }
+local_constant_declaration :  CONST type constant_declarators	{  }
 		;
-expression_statement : statement_expression ';'	{ printf("expression_statement statement_expression ;\n"); }
+expression_statement : statement_expression ';'	{  }
 		;
-statement_expression : invocation_expression 	{ printf("statement_expression invocation_expression\n"); }
-		| object_creation_expression 	{ printf("statement_expression object_creation_expression\n"); }
-		| assignment 	{ printf("statement_expression assignment\n"); }
-		| post_increment_expression	{ printf("statement_expression post_increment_expression\n"); }
-		| post_decrement_expression	{ printf("statement_expression post_decrement_expression\n"); }
-		| pre_increment_expression 	{ printf("statement_expression pre_increment_expression\n"); }
-		| pre_decrement_expression	{ printf("statement_expression pre_decrement_expression\n"); }
+statement_expression : invocation_expression 	{  }
+		| object_creation_expression 	{  }
+		| assignment 	{  }
+		| post_increment_expression	{  }
+		| post_decrement_expression	{  }
+		| pre_increment_expression 	{  }
+		| pre_decrement_expression	{  }
 		;
-selection_statement : if_statement 	{ printf("selection_statement if_statement\n"); }
-		| switch_statement	{ printf("selection_statement switch_statement\n"); }
+selection_statement : if_statement 	{  }
+		| switch_statement	{  }
 		;
-if_statement : IF '(' boolean_expression ')' embedded_statement 	{printf("if_statement IF ( boolean_expression ) embedded_statement\n"); } %prec IFX
-		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	{ printf("if_statement IF ( boolean_expression ) embedded_statement ELSE embedded_statement\n"); }
+if_statement : IF '(' boolean_expression ')' embedded_statement 	{ } %prec IFX
+		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	{  }
 		;
-switch_statement : SWITCH '(' expression ')' switch_block	{ printf("switch_statement SWITCH ( expression ) switch_block\n"); }
+switch_statement : SWITCH '(' expression ')' switch_block	{  }
 		;
-switch_block : '{' '}' 	{ printf("switch_block { }\n"); }
-		| '{' switch_sections '}'	{ printf("switch_block { switch_sections }\n"); }
+switch_block : '{' '}' 	{  }
+		| '{' switch_sections '}'	{  }
 		;
-switch_sections : switch_section 	{ printf("switch_sections switch_section\n"); }
-		| switch_sections switch_section	{ printf("switch_sections switch_sections switch_section\n"); }
+switch_sections : switch_section 	{  }
+		| switch_sections switch_section	{  }
 		;
-switch_section : switch_labels statement_list	{ printf("switch_section switch_labels statement_list\n"); }
+switch_section : switch_labels statement_list	{  }
 		;
-switch_labels : switch_label 	{ printf("switch_labels switch_label\n"); }
-		| switch_labels switch_label	{ printf("switch_labels switch_labels switch_label\n"); }
+switch_labels : switch_label 	{  }
+		| switch_labels switch_label	{  }
 		;
-switch_label : CASE constant_expression ':' 	{ printf("switch_label CASE constant_expression :\n"); }
-		| DEFAULT ':'	{ printf("| DEFAULT :\n"); }
+switch_label : CASE constant_expression ':' 	{  }
+		| DEFAULT ':'	{  }
 		;
-iteration_statement : while_statement 	{ printf("iteration_statement while_statement\n"); }
-		| do_statement 	{ printf("iteration_statement do_statement\n"); }
-		| for_statement 	{ printf("iteration_statement for_statement\n"); }
-		| foreach_statement	{ printf("iteration_statement foreach_statement\n"); }
+iteration_statement : while_statement 	{  }
+		| do_statement 	{  }
+		| for_statement 	{  }
+		| foreach_statement	{  }
 		;
-while_statement : WHILE '(' boolean_expression ')' embedded_statement	{ printf("while_statement WHILE ( boolean_expression ) embedded_statement\n"); }
+while_statement : WHILE '(' boolean_expression ')' embedded_statement	{  }
 		;
-do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	{ printf("do_statement DO embedded_statement WHILE ( boolean_expression ) ;\n"); }
+do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	{  }
 		;
-for_statement : FOR '(' ';' ';' ')' embedded_statement 	{ printf("for_statement FOR ( ; ; ) embedded_statement\n"); }
-		| FOR '(' for_initializer ';' ';' ')' embedded_statement 	{ printf("for_statement FOR ( for_initializer ; ; ) embedded_statement\n"); }
-		| FOR '(' ';' for_condition ';' ')' embedded_statement 	{ printf("for_statement FOR ( ; for_condition ; ) embedded_statement\n"); }
-		| FOR '(' ';' ';' for_iterator ')' embedded_statement 	{ printf("for_statement FOR ( ; ; for_iterator ) embedded_statement\n"); }
-		| FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement 	{ printf("for_statement FOR ( for_initializer ; for_condition ; ) embedded_statement\n"); }
-		| FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement 	{ printf("for_statement FOR ( for_initializer ; ; for_iterator ) embedded_statement\n"); }
-		| FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement 	{ printf("for_statement FOR ( ; for_condition ; for_iterator ) embedded_statement\n"); }
-		| FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement	{ printf("for_statement FOR ( for_initializer ; for_condition ; for_iterator ) embedded_statement\n"); }
+for_statement : FOR '(' ';' ';' ')' embedded_statement 	{  }
+		| FOR '(' for_initializer ';' ';' ')' embedded_statement 	{  }
+		| FOR '(' ';' for_condition ';' ')' embedded_statement 	{  }
+		| FOR '(' ';' ';' for_iterator ')' embedded_statement 	{  }
+		| FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement 	{  }
+		| FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement 	{  }
+		| FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement 	{  }
+		| FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement	{  }
 		;
-for_initializer : local_variable_declaration 	{ printf("for_initializer local_variable_declaration\n"); }
-		| statement_expression_list	{ printf("for_initializer statement_expression_list\n"); }
+for_initializer : local_variable_declaration 	{  }
+		| statement_expression_list	{  }
 		;
-for_condition : boolean_expression	{ printf("for_condition boolean_expression\n"); }
+for_condition : boolean_expression	{  }
 		;
-for_iterator : statement_expression_list	{ printf("for_iterator statement_expression_list\n"); }
+for_iterator : statement_expression_list	{  }
 		;
-statement_expression_list : statement_expression 	{ printf("statement_expression_list statement_expression\n"); }
-		| statement_expression_list ',' statement_expression	{ printf("statement_expression_list statement_expression_list , statement_expression\n"); }
+statement_expression_list : statement_expression 	{  }
+		| statement_expression_list ',' statement_expression	{  }
 		;
-foreach_statement : FOREACH '(' local_variable_type identifier IN expression ')' embedded_statement	{ printf("foreach_statement FOREACH ( local_variable_type identifier IN expression ) embedded_statement\n"); }
+foreach_statement : FOREACH '(' local_variable_type identifier IN expression ')' embedded_statement	{  }
 		;
-jump_statement : break_statement 	{ printf("jump_statement break_statement\n"); }
-		| continue_statement 	{ printf("jump_statement continue_statement\n"); }
-		| goto_statement 	{ printf("jump_statement goto_statement\n"); }
-		| return_statement 	{ printf("jump_statement return_statement\n"); }
-		| throw_statement	{ printf("jump_statement throw_statement\n"); }
+jump_statement : break_statement 	{  }
+		| continue_statement 	{  }
+		| goto_statement 	{  }
+		| return_statement 	{  }
+		| throw_statement	{  }
 		;
-break_statement : BREAK ';'	{ printf("break_statement BREAK ;\n"); }
+break_statement : BREAK ';'	{  }
 		;
-continue_statement : CONTINUE ';'	{ printf("continue_statement CONTINUE ;\n"); }
+continue_statement : CONTINUE ';'	{  }
 		;
-goto_statement : GOTO identifier ';' 	{ printf("goto_statement GOTO identifier ;\n"); }
-		| GOTO CASE constant_expression ';' 	{ printf("goto_statement GOTO CASE constant_expression ;\n"); }
-		| GOTO DEFAULT ';'	{ printf("goto_statement GOTO DEFAULT ;\n"); }
+goto_statement : GOTO identifier ';' 	{  }
+		| GOTO CASE constant_expression ';' 	{  }
+		| GOTO DEFAULT ';'	{  }
 		;
-return_statement : RETURN ';' 	{ printf("return_statement RETURN ;\n"); }
-		| RETURN expression ';'	{ printf("return_statement RETURN expression ;\n"); }
+return_statement : RETURN ';' 	{  }
+		| RETURN expression ';'	{  }
 		;
-throw_statement : THROW ';' 	{ printf("throw_statement THROW ;\n"); }
-		| THROW expression ';'	{ printf("throw_statement THROW expression ;\n"); }
+throw_statement : THROW ';' 	{  }
+		| THROW expression ';'	{  }
 		;
-try_statement : TRY block catch_clauses 	{ printf("try_statement TRY block catch_clauses\n"); }
-		| TRY block finally_clause 	{ printf("try_statement TRY block finally_clause\n"); }
-		| TRY block catch_clauses finally_clause	{ printf("try_statement TRY block catch_clauses finally_clause\n"); }
+try_statement : TRY block catch_clauses 	{  }
+		| TRY block finally_clause 	{  }
+		| TRY block catch_clauses finally_clause	{  }
 		;
-catch_clauses : general_catch_clause	{ printf("catch_clauses general_catch_clause\n"); }
+catch_clauses : general_catch_clause	{  }
 		;
-general_catch_clause : CATCH block	{ printf("general_catch_clause CATCH block\n"); }
+general_catch_clause : CATCH block	{  }
 		;
-finally_clause : FINALLY block	{ printf("finally_clause FINALLY block\n"); }
+finally_clause : FINALLY block	{  }
 		;
-using_statement : USING '(' resource_acquisition ')' embedded_statement	{ printf("using_statement USING ( resource_acquisition ) embedded_statement\n"); }
+using_statement : USING '(' resource_acquisition ')' embedded_statement	{  }
 		;
-resource_acquisition : local_variable_declaration 	{ printf("resource_acquisition local_variable_declaration\n"); }
-		| expression	{ printf("resource_acquisition expression\n"); }
+resource_acquisition : local_variable_declaration 	{  }
+		| expression	{  }
 		;
 
 /*B.2.6 Namespaces*/ 
-compilation_unit : using_directives namespace_member_declarations 	{ printf("compilation_unit using_directives namespace_member_declarations\n"); }
-		| namespace_member_declarations 	{ printf("compilation_unit namespace_member_declarations\n"); }
-		| using_directives 	{ printf("compilation_unit using_directives\n"); }
-		| epsilon	{ printf("compilation_unit epsilon\n"); }
+compilation_unit : using_directives namespace_member_declarations 	{  }
+		| namespace_member_declarations 	{  }
+		| using_directives 	{  }
+		| epsilon	{  }
 		;
-namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{ printf("namespace_declaration NAMESPACE qualified_identifier namespace_body\n"); }
-		| NAMESPACE qualified_identifier namespace_body ';'	{ printf("namespace_declaration NAMESPACE qualified_identifier namespace_body ;\n"); }
+namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{  }
+		| NAMESPACE qualified_identifier namespace_body ';'	{  }
 		;
-qualified_identifier :	identifier 	{ printf("qualified_identifier identifier\n"); }
-		| qualified_identifier '.' identifier	{ printf("qualified_identifier qualified_identifier . identifier\n"); }
+qualified_identifier :	identifier 	{ $$ = $1; }
+		| qualified_identifier '.' identifier	{ $$ = $1+"."+$2; }
 		;
-namespace_body : '{' '}' 	{ printf("namespace_body { }\n"); }
-		| '{' namespace_member_declarations '}' 	{ printf("namespace_body { namespace_member_declarations }\n"); }
-		| '{' using_directives '}' 	{ printf("namespace_body { using_directives }\n"); }
-		| '{' using_directives namespace_member_declarations '}'	{ printf("namespace_body { using_directives namespace_member_declarations }\n"); }
+namespace_body : '{' '}' 	{  }
+		| '{' namespace_member_declarations '}' 	{  }
+		| '{' using_directives '}' 	{  }
+		| '{' using_directives namespace_member_declarations '}'	{  }
 		;
-using_directives : using_directive 	{ printf("using_directives using_directive\n"); }
-		| using_directives using_directive	{ printf("using_directives using_directives using_directive\n"); }
+using_directives : using_directive 	{  }
+		| using_directives using_directive	{  }
 		;
-using_directive : using_alias_directive 	{ printf("using_directive using_alias_directive\n"); }
-		| using_namespace_directive	{ printf("using_directive using_namespace_directive\n"); }
+using_directive : using_alias_directive 	{  }
+		| using_namespace_directive	{  }
 		;
-using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{ printf("using_alias_directive USING identifier = namespace_or_type_name ;\n"); }
+using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{  }
 		;
-using_namespace_directive : USING namespace_name ';'	{ printf("using_namespace_directive USING namespace_name ;\n"); }
+using_namespace_directive : USING namespace_name ';'	{  }
 		;
-namespace_member_declarations : namespace_member_declaration 	{ printf("namespace_member_declarations namespace_member_declaration\n"); }
-		| namespace_member_declarations namespace_member_declaration	{ printf("namespace_member_declarations namespace_member_declarations namespace_member_declaration\n"); }
+namespace_member_declarations : namespace_member_declaration 	{  }
+		| namespace_member_declarations namespace_member_declaration	{  }
 		;
-namespace_member_declaration : namespace_declaration 	{ printf("namespace_member_declaration namespace_declaration\n"); }
-		| type_declaration	{ printf("namespace_member_declaration type_declaration\n"); }
+namespace_member_declaration : namespace_declaration 	{  }
+		| type_declaration	{  }
 		;
-type_declaration : class_declaration 	{ printf("type_declaration class_declaration\n"); }
-		| struct_declaration	{ printf("type_declaration struct_declaration\n"); }
+type_declaration : class_declaration 	{  }
+		| struct_declaration	{  }
 		;
-qualified_alias_member : identifier DCLN identifier 	{ printf("qualified_alias_member identifier DCLN identifier\n"); }
+qualified_alias_member : identifier DCLN identifier 	{ $$=$1+$2+$3 }
 		;
 
 /*B.2.7 Classes;*/ 
-class_declaration : CLASS identifier class_body 	{ printf("class_declaration CLASS identifier class_body\n"); }
-		| modifiers CLASS identifier class_body 	{ printf("class_declaration modifiers CLASS identifier class_body\n"); }
-		| CLASS identifier class_base class_body 	{ printf("class_declaration CLASS identifier class_base class_body\n"); }
-		| CLASS identifier class_body ';' 	{ printf("class_declaration CLASS identifier class_body ;\n"); }
-		| modifiers CLASS identifier class_base class_body 	{ printf("class_declaration modifiers CLASS identifier class_base class_body\n"); }
-		| modifiers CLASS identifier class_body ';' 	{ printf("class_declaration modifiers CLASS identifier class_body ;\n"); }
-		| CLASS identifier class_base class_body ';' 	{ printf("class_declaration CLASS identifier class_base class_body ;\n"); }
-		| modifiers CLASS identifier class_base class_body ';' 	{ printf("class_declaration modifiers CLASS identifier class_base class_body ;\n"); }
+class_declaration : CLASS identifier class_body 	{  }
+		| modifiers CLASS identifier class_body 	{  }
+		| CLASS identifier class_base class_body 	{  }
+		| CLASS identifier class_body ';' 	{  }
+		| modifiers CLASS identifier class_base class_body 	{  }
+		| modifiers CLASS identifier class_body ';' 	{  }
+		| CLASS identifier class_base class_body ';' 	{  }
+		| modifiers CLASS identifier class_base class_body ';' 	{  }
 		;
-modifiers : modifier 	{ printf("modifiers modifier\n"); }
-		| modifiers modifier	{ printf("modifiers modifiers modifier\n"); }
+modifiers : modifier 	{  }
+		| modifiers modifier	{  }
 		;
-modifier : NEW 	{ printf("modifier NEW\n"); }
-		| PUBLIC 		{ printf("modifier PUBLIC\n"); }
-		| PROTECTED 	{ printf("modifier PROTECTED\n"); }
-		| PRIVATE	{ printf("modifier PRIVATE\n"); }
+modifier : NEW 	{  }
+		| PUBLIC 		{  }
+		| PROTECTED 	{  }
+		| PRIVATE	{  }
 		;
-class_base : ':' class_type	{ printf("class_base : class_type\n"); }
+class_base : ':' class_type	{  }
 		;
-class_body : '{' '}' 	{ printf("class_body { }\n"); }
-		| '{' class_member_declarations '}'	{ printf("class_body { class_member_declarations }\n"); }
+class_body : '{' '}' 	{  }
+		| '{' class_member_declarations '}'	{  }
 		;
-class_member_declarations : class_member_declaration 	{ printf("class_member_declarations class_member_declaration\n"); }
-		| class_member_declarations class_member_declaration	{ printf("class_member_declarations class_member_declarations class_member_declaration\n"); }
+class_member_declarations : class_member_declaration 	{  }
+		| class_member_declarations class_member_declaration	{  }
 		;
-class_member_declaration : constant_declaration 	{ printf("class_member_declaration constant_declaration\n"); }
-		| field_declaration 	{ printf("class_member_declaration field_declaration\n"); }
-		| method_declaration 	{ printf("class_member_declaration method_declaration\n"); }
-		| constructor_declaration 	{ printf("class_member_declaration constructor_declaration\n"); }
-		| destructor_declaration 	{ printf("class_member_declaration destructor_declaration\n"); }
-		| type_declaration	{ printf("class_member_declaration type_declaration\n"); }
+class_member_declaration : constant_declaration 	{  }
+		| field_declaration 	{  }
+		| method_declaration 	{  }
+		| constructor_declaration 	{  }
+		| destructor_declaration 	{  }
+		| type_declaration	{  }
 		;
-constant_declaration : CONST type constant_declarators ';' 	{ printf("constant_declaration CONST type constant_declarators ;\n"); }
-		| modifiers CONST type constant_declarators ';'	{ printf("constant_declaration modifiers CONST type constant_declarators ;\n"); }
-		;
-
-constant_declarators : constant_declarator  	{ printf("constant_declarators constant_declarator\n"); }
-		| constant_declarators ',' constant_declarator	{ printf("constant_declarators constant_declarators , constant_declarator\n"); }
-		;
-constant_declarator : identifier '=' constant_expression	{ printf("constant_declarator identifier = constant_expression\n"); }
-		;
-field_declaration : type variable_declarators ';' 	{ printf("field_declaration type variable_declarators ;\n"); }
-		| modifiers type variable_declarators ';'	{ printf("field_declaration modifiers type variable_declarators ;\n"); }
+constant_declaration : CONST type constant_declarators ';' 	{  }
+		| modifiers CONST type constant_declarators ';'	{  }
 		;
 
-variable_declarators : variable_declarator 	{ printf("variable_declarators variable_declarator\n"); }
-		| variable_declarators ',' variable_declarator	{ printf("variable_declarators variable_declarators , variable_declarator\n"); }
+constant_declarators : constant_declarator  	{  }
+		| constant_declarators ',' constant_declarator	{  }
 		;
-variable_declarator : identifier 	{ printf("variable_declarator identifier\n"); }
+constant_declarator : identifier '=' constant_expression	{  }
+		;
+field_declaration : type variable_declarators ';' 	{  }
+		| modifiers type variable_declarators ';'	{  }
+		;
+
+variable_declarators : variable_declarator 	{  }
+		| variable_declarators ',' variable_declarator	{  }
+		;
+variable_declarator : identifier 	{  }
 		| identifier '=' variable_initializer;	
-variable_initializer : expression 	{ printf("variable_initializer expression\n"); }
-		| array_initializer	{ printf("variable_initializer array_initializer\n"); }
+variable_initializer : expression 	{  }
+		| array_initializer	{  }
 		;
-method_declaration : method_header method_body	{ printf("method_declaration method_header method_body\n"); }
+method_declaration : method_header method_body	{  }
 		;
-method_header : type member_name '(' ')' 	{ printf("method_header type member_name ( )\n"); }
-		| modifiers type member_name '(' ')' 	{ printf("method_header modifiers type member_name ( )\n"); }
-		| type member_name '(' formal_parameter_list ')' 	{ printf("method_header type member_name ( formal_parameter_list )\n"); }
-		| modifiers type member_name '(' formal_parameter_list ')' 	{ printf("method_header modifiers type member_name ( formal_parameter_list )\n"); }
-		| VOID member_name '(' ')' 	{ printf("method_header VOID member_name ( )\n"); }
-		| modifiers VOID member_name '(' ')' 	{ printf("method_header modifiers VOID member_name ( )\n"); }
-		| VOID member_name '(' formal_parameter_list ')' 	{ printf("method_header VOID member_name ( formal_parameter_list )\n"); }
-		| modifiers VOID member_name '(' formal_parameter_list ')' 	{ printf("method_header modifiers VOID member_name ( formal_parameter_list )\n"); }
+method_header : type member_name '(' ')' 	{  }
+		| modifiers type member_name '(' ')' 	{  }
+		| type member_name '(' formal_parameter_list ')' 	{  }
+		| modifiers type member_name '(' formal_parameter_list ')' 	{  }
+		| VOID member_name '(' ')' 	{  }
+		| modifiers VOID member_name '(' ')' 	{  }
+		| VOID member_name '(' formal_parameter_list ')' 	{  }
+		| modifiers VOID member_name '(' formal_parameter_list ')' 	{  }
 		;
 
-member_name : qualified_identifier	{ printf("member_name qualified_identifier\n"); }
+member_name : qualified_identifier	{  }
 		;
-method_body : block 	{ printf("method_body block\n"); }
-		| ';'	{ printf("method_body ;\n"); }
+method_body : block 	{  }
+		| ';'	{  }
 		;
-formal_parameter_list : fixed_parameters 	{ printf("formal_parameter_list fixed_parameters\n"); }
-		| fixed_parameters ',' parameter_array 	{ printf("formal_parameter_list fixed_parameters , parameter_array\n"); }
-		| parameter_array	{ printf("formal_parameter_list parameter_array\n"); }
+formal_parameter_list : fixed_parameters 	{  }
+		| fixed_parameters ',' parameter_array 	{  }
+		| parameter_array	{  }
 		;
-fixed_parameters : fixed_parameter 	{ printf("fixed_parameters fixed_parameter\n"); }
-		| fixed_parameters ',' fixed_parameter	{ printf("fixed_parameters fixed_parameters , fixed_parameter\n"); }
+fixed_parameters : fixed_parameter 	{  }
+		| fixed_parameters ',' fixed_parameter	{  }
 		;
-fixed_parameter : type identifier 	{ printf("fixed_parameter type identifier\n"); }
-		| parameter_modifier type identifier 	{ printf("fixed_parameter parameter_modifier type identifier\n"); }
-		| type identifier default_argument 	{ printf("fixed_parameter type identifier default_argument\n"); }
-		| parameter_modifier type identifier default_argument	{ printf("fixed_parameter parameter_modifier type identifier default_argument\n"); }
+fixed_parameter : type identifier 	{  }
+		| parameter_modifier type identifier 	{  }
+		| type identifier default_argument 	{  }
+		| parameter_modifier type identifier default_argument	{  }
 		;
-default_argument : '=' expression	{ printf("default_argument = expression\n"); }
+default_argument : '=' expression	{  }
 		;
-parameter_modifier : REF 	{ printf("parameter_modifier REF\n"); }
-		| THIS	{ printf("parameter_modifier THIS\n"); }
+parameter_modifier : REF 	{  }
+		| THIS	{  }
 		;
-parameter_array : PARAMS array_type identifier	{ printf("parameter_array PARAMS array_type identifier\n"); }
+parameter_array : PARAMS array_type identifier	{  }
 		;
-constructor_declaration : constructor_declarator constructor_body 	{ printf("constructor_declaration constructor_declarator constructor_body\n"); }
-		| modifiers constructor_declarator constructor_body	{ printf("constructor_declaration modifiers constructor_declarator constructor_body\n"); }
+constructor_declaration : constructor_declarator constructor_body 	{  }
+		| modifiers constructor_declarator constructor_body	{  }
 		;
 		
-constructor_declarator : identifier '(' ')' 	{ printf("constructor_declarator identifier ( )\n"); }
-		| identifier '(' ')' constructor_initializer 	{ printf("constructor_declarator identifier ( ) constructor_initializer\n"); }
-		| identifier '(' formal_parameter_list ')' 	{ printf("constructor_declarator identifier ( formal_parameter_list )\n"); }
-		| identifier '(' formal_parameter_list ')' constructor_initializer	{ printf("constructor_declarator identifier ( formal_parameter_list ) constructor_initializer\n"); }
+constructor_declarator : identifier '(' ')' 	{  }
+		| identifier '(' ')' constructor_initializer 	{  }
+		| identifier '(' formal_parameter_list ')' 	{  }
+		| identifier '(' formal_parameter_list ')' constructor_initializer	{  }
 		;
-constructor_initializer : ':' BASE '(' ')' 	{ printf("constructor_initializer : BASE ( )\n"); }
-		| ':' BASE '(' argument_list ')' 	{ printf("| : BASE ( argument_list )\n"); }
-		| ':' THIS '(' ')' 	{ printf("| : THIS ( )\n"); }
-		| ':' THIS '(' argument_list ')'	{ printf("| : THIS ( argument_list )\n"); }
+constructor_initializer : ':' BASE '(' ')' 	{  }
+		| ':' BASE '(' argument_list ')' 	{  }
+		| ':' THIS '(' ')' 	{  }
+		| ':' THIS '(' argument_list ')'	{  }
 		;
-constructor_body : block 	{ printf("constructor_body block\n"); }
-		| ';'	{ printf("constructor_body ;\n"); }
+constructor_body : block 	{  }
+		| ';'	{  }
 		;
-destructor_declaration : '~' identifier '(' ')' destructor_body	{ printf("destructor_declaration ~ identifier ( ) destructor_body\n"); }
+destructor_declaration : '~' identifier '(' ')' destructor_body	{  }
 		;
-destructor_body : block 	{ printf("destructor_body block\n"); }
-		| ';'	{ printf("destructor_body ;\n"); }
+destructor_body : block 	{  }
+		| ';'	{  }
 		;
 
 /*B.2.8 Structs*/ 
-struct_declaration : STRUCT identifier struct_body 	{ printf("struct_declaration STRUCT identifier struct_body\n"); }
-		| modifiers STRUCT identifier struct_body 	{ printf("struct_declaration modifiers STRUCT identifier struct_body\n"); }
-		| STRUCT identifier struct_body ';' 	{ printf("struct_declaration STRUCT identifier struct_body ;\n"); }
-		| modifiers STRUCT identifier struct_body ';' 	{ printf("struct_declaration modifiers STRUCT identifier struct_body ;\n"); }
+struct_declaration : STRUCT identifier struct_body 	{  }
+		| modifiers STRUCT identifier struct_body 	{  }
+		| STRUCT identifier struct_body ';' 	{  }
+		| modifiers STRUCT identifier struct_body ';' 	{  }
 		;
 
-struct_body : '{' '}' 	{ printf("struct_body { }\n"); }
-		| '{' struct_member_declarations '}'	{ printf("struct_body { struct_member_declarations }\n"); }
+struct_body : '{' '}' 	{  }
+		| '{' struct_member_declarations '}'	{  }
 		;
-struct_member_declarations : struct_member_declaration 	{ printf("struct_member_declarations struct_member_declaration\n"); }
-		| struct_member_declarations struct_member_declaration	{ printf("struct_member_declarations struct_member_declarations struct_member_declaration\n"); }
+struct_member_declarations : struct_member_declaration 	{  }
+		| struct_member_declarations struct_member_declaration	{  }
 		;
-struct_member_declaration : constant_declaration 	{ printf("struct_member_declaration constant_declaration\n"); }
-		| field_declaration 	{ printf("struct_member_declaration field_declaration\n"); }
-		| method_declaration 	{ printf("struct_member_declaration method_declaration\n"); }
-		| constructor_declaration 	{ printf("struct_member_declaration constructor_declaration\n"); }
-		| type_declaration	{ printf("struct_member_declaration type_declaration\n"); }
+struct_member_declaration : constant_declaration 	{  }
+		| field_declaration 	{  }
+		| method_declaration 	{  }
+		| constructor_declaration 	{  }
+		| type_declaration	{  }
 		;
 
 /*B.2.9 Arrays*/ 
-array_type : non_array_type rank_specifier	{ printf("array_type non_array_type rank_specifier\n"); }
+array_type : non_array_type rank_specifier	{  }
 		;
-rank_specifier : '[' ']' 	{ printf("rank_specifier [ ]\n"); }
-		| '[' ',' ']'	{ printf("rank_specifier [ , ]\n"); }
+rank_specifier : '[' ']' 	{ $$ = "[]";  }
+		| '[' ',' ']'	{ $$ = "[,]" }
 		;
-array_initializer : '{' '}' 	{ printf("array_initializer { }\n"); }
-		| '{' variable_initializer_list '}' 	{ printf("array_initializer { variable_initializer_list }\n"); }
-		| '{' variable_initializer_list ',' '}'	{ printf("array_initializer { variable_initializer_list , }\n"); }
+array_initializer : '{' '}' 	{  }
+		| '{' variable_initializer_list '}' 	{  }
+		| '{' variable_initializer_list ',' '}'	{  }
 		;
-variable_initializer_list : variable_initializer 	{ printf("variable_initializer_list variable_initializer\n"); }
-		| variable_initializer_list ',' variable_initializer	{ printf("variable_initializer_list variable_initializer_list , variable_initializer\n"); }
+variable_initializer_list : variable_initializer 	{  }
+		| variable_initializer_list ',' variable_initializer	{  }
 
 
 

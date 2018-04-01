@@ -17,7 +17,7 @@
 
 %}
 
-%option yylineno
+
 
 COMMENT			\/\/[^\n]*\n	
 WHITESPACE		[\t\v ]+
@@ -61,8 +61,6 @@ THROW			throw
 TRUE			true
 TRY				try
 TYPEOF			typeof
-UINT			uint
-ULONG			ulong
 USING 			using
 VOID 			void
 WHILE 			while
@@ -170,8 +168,6 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {TRUE} { return TRUE; }
 {TRY} { return TRY; }
 {TYPEOF} { return TYPEOF; }
-{UINT} { return UINT; }
-{ULONG} { return ULONG; }
 {USING} { return USING; }
 {VOID} { return VOID; }
 {WHILE} { return WHILE; }
@@ -220,7 +216,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {ASSIGN_PLUS}  { return APLUS; }
 {ASSIGN_MINUS}  { return AMINUS; }
 {ASSIGN_STAR}  { return AMULT; }
-{ASSIGN_DIV}  { return ADIV; }
+{ASSIGN_DIV}  { return ADIV; }''
 {ASSIGN_MOD}  { return AMOD; }
 {ASSIGN_AND}  { return AAND; }
 {ASSIGN_OR}  { return AOR; }
