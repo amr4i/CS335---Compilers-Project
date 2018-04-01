@@ -4,31 +4,42 @@
 class Env{
 private:
 	// if it is a method
-	string type;
 	string returnType;
 	int argNum;
 	vector <string> argTypeList;
-	string name;
 
 	// if it is a class
 	string _class;
 	string _parentClass;
-	vector <string> varList;
-	vector <string> methodList;
+	map <string, Symbol*> varList;
+	map <string, Symbol*> methodList;
 
-	vector <Env*> children;
-	Env *prevEnv;
-	map <string, Symbol*> table;
+	map <string, Symbol*> addTable;
+
 	int width;
 	int offset;
 	int maxWidth;	
 
 public:
-
+	string name;
+	Env *prevEnv;
+	string type;
+	vector <Env*> children;
 
 	Env();
 	Env(Env *prev_env);
 
-	bool insert(Symbol* symbol);
-	Symbol* get(string symName);
+	string getMethodType();
+	string genTemp(string varType, string genericType, int _width);
+	void addVar(string varName, string varType, string genericType, int _width);
+	int getWidth(string varType, string genericType, int _width);
+	Symbol* getVar(string varName);
+	Symbol* getVarInClass(string varName, string className);
+	Symbol* getVarEnv(string varName);
+	vector <string> setArgTypeList(vector <string> args);
+	Env* findClass(string className);
+	Env* getBaseEnvClass();
+	Env* getMethod(string methodName);
+	Env* getMethodFromClass(string methodName, string className);
+	void printTableEnv();
 };
