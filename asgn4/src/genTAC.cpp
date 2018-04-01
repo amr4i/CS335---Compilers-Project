@@ -170,3 +170,5 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	d->code.pb(tac6);
 	return;
 }
+
+
