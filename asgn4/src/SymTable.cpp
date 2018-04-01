@@ -48,8 +48,12 @@ Symbol* SymTable::GenTemp(string varType){
 	return curEnv->genTemp(varType);
 }
 
-Env* SymTable::BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class){
-	
+Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "blockType", string returnType = "void", string Class = "None", string Parent_Class = "None"){
+	Env* newEnv = new Env(scopeName, scopeType, curEnv, returnType, Class, Parent_Class);
+	(curEnv->children).pb(newEnv);
+	if(scopeType == "blockType") { newEnv->offset = offset; }
+	curEnv = newEnv;
+	return newEnv;
 }
 
 string SymTable::GetEnvName(){
@@ -72,7 +76,14 @@ Env* SymTable::FindClass(string className){
 	return curEnv->findClass(className);
 }
 
-Env* SymTable::EndScope();
+Env* SymTable::EndScope(){
+	//////////////////////////////////////////// Not implemented exactly as apeeyush ///////////////////////////////////////////
+	int cur_width = max(curEnv->maxWidth, curEnv->width);
+	curEnv->maxWidth = cur_width;
+	curEnv = curEnv->prevEnv;
+	curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
+	return curEnv;
+}
 
 vector <string> SymTable::SetArgTypeList(vector <string> args){
 	return curEnv->setArTypeList(args);

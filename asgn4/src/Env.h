@@ -17,7 +17,6 @@ private:
 	map <string, Symbol*> addTable;
 
 	int width;
-	int offset;
 	int maxWidth;	
 
 public:
@@ -25,9 +24,9 @@ public:
 	Env *prevEnv;
 	string type;
 	vector <Env*> children;
+	int offset;
 
-	Env();
-	Env(Env *prev_env);
+	Env(string _name, string _type, Env *prev_env, string _return_type, string Class, string ParentClass);
 
 	string getMethodType();
 	string genTemp(string varType, string genericType, int _width);

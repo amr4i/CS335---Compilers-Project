@@ -1,12 +1,12 @@
 #include "Env.h"
 
-Env(){
-	type = "None";
-	returnType = "None";
-	name = "";
-	prevEnv = curEnv;
-	_class = "None";
-	_parentClass = "None";
+Env::Env(string _name = "None", string _type = "blockType", Env *prev_env = NULL, string _return_type = "Void", string Class = "None", string ParentClass = "None"){
+	type = _type;
+	returnType = _return_type;
+	name = _name;
+	prevEnv = prev_env;
+	_class = Class;
+	_parentClass = ParentClass;
 	width = 0;
 	offset = 0;
 	maxWidth = 0;
