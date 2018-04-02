@@ -14,29 +14,29 @@ Env::Env(string _name = "None", string _type = "blockType", Env *prev_env = NULL
 }
 
 string Env::getMethodType(){
-	Env* tmpEnv = curEnv;
+	Env* tmpEnv = this;
 	while(tmpEnv != NULL && tmpEnv->type != "classType"){
-		if(tmpEnv->type == "methodType")	return methodList[methodName].returnType;
+		if(tmpEnv->type == "methodType")	return tmpEnv->returnType;
 		tmpEnv = tmpEnv->prevEnv;
 	}
 	return "None";
 }
 
 string Env::genTemp(string varType, string genericType = "simple", int _width = 0){
-	string place = "tVar_"+stoi(tempCounter);
+	string place = "tVar_"+ to_string(tempCounter);
 	tempCounter+=1;
 	_width = getWidth(varType, genericType, _width);
-	Symbol* symbol = new Symbol(place, varType, _width, offset);
+	Symbol* symbol = new Symbol(place, varType, _width, "simple", offset);
 	addTable[place] = symbol;
 	offset += _width;
 	width += _width;
 	return place;
 }
 
-void Env::addVar(string varName, string varType, string genericType, int _width){
+Symbol* Env::addVar(string varName, string varType, string genericType, int _width){
 	_width = getWidth(varType, genericType, _width);
 	string place = varName;
-	Symbol* symbol = new Symbol(varName, varType, _width, offset);
+	Symbol* symbol = new Symbol(varName, varType, _width, "simple", offset);
 	addTable[place] = symbol;
 	varList[varName] = symbol;
 	offset += _width;
@@ -66,9 +66,9 @@ int Env::getWidth(string varType, string genericType, int _width = -1){
 
 Symbol* Env::getVar(string varName){
 	Symbol* temp = NULL;
-	Env* tmpEnv = curEnv;
+	Env* tmpEnv = this;
 	while(tmpEnv != NULL && tmpEnv->type != "classType"){
-		if(tmpEnv->varList[varName] != tmpEnv->varList.end()){
+		if(tmpEnv->varList.find(varName) != tmpEnv->varList.end()){
 			temp = tmpEnv->varList[varName];
 			break;
 		}
@@ -82,13 +82,13 @@ Symbol* Env::getVar(string varName){
 Symbol* Env::getVarInClass(string varName, string className){
 	Env* _class = findClass(className);
 	if(_class != NULL){
-		if(_class->varList[varName]  != _class->varList.end())	return _class->varList[varName];
+		if(_class->varList.find(varName)  != _class->varList.end())	return _class->varList[varName];
 	}
 	return NULL;
 }
 
 Symbol* Env::getVarEnv(string varName){
-	if(curEnv->varList[varName] != curEnv->varList.end())	return curEnv->varList[varName];
+	if(this->varList.find(varName) != this->varList.end())	return this->varList[varName];
 	else	return NULL;
 }
 
@@ -98,14 +98,14 @@ vector <string> Env::setArgTypeList(vector <string> args){
 }
 
 Env* Env::findClass(string className){
-	fori(0, curEnv->children.size()){
-		if((curEnv->children)[i]->type == "classType" && (curEnv->children)[i]->name == className)	return (curEnv->children);
+	fori(0, this->children.size()){
+		if((this->children)[i]->type == "classType" && (this->children)[i]->name == className)	return (this->children)[i];
 	}
 	return NULL;
 }
 
 Env* Env::getBaseEnvClass(){
-	Env* tmpEnv = curEnv;
+	Env* tmpEnv = this;
 	while(tmpEnv != NULL && tmpEnv->type != "classType"){
 		tmpEnv = tmpEnv->prevEnv;
 	}

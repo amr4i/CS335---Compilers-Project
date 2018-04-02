@@ -32,7 +32,7 @@ public:
 
 	string getMethodType();
 	string genTemp(string varType, string genericType, int _width);
-	void addVar(string varName, string varType, string genericType, int _width);
+	Symbol* addVar(string varName, string varType, string genericType, int _width);
 	int getWidth(string varType, string genericType, int _width);
 	Symbol* getVar(string varName);
 	Symbol* getVarInClass(string varName, string className);
@@ -42,5 +42,5 @@ public:
 	Env* getBaseEnvClass();
 	Env* getMethod(string methodName);
 	Env* getMethodFromClass(string methodName, string className);
-	void printTableEnv();
+	void printTableEnv(Env* env);
 };

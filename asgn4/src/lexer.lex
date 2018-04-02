@@ -216,7 +216,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {ASSIGN_PLUS}  { return APLUS; }
 {ASSIGN_MINUS}  { return AMINUS; }
 {ASSIGN_STAR}  { return AMULT; }
-{ASSIGN_DIV}  { return ADIV; }''
+{ASSIGN_DIV}  { return ADIV; }
 {ASSIGN_MOD}  { return AMOD; }
 {ASSIGN_AND}  { return AAND; }
 {ASSIGN_OR}  { return AOR; }

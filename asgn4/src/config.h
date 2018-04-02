@@ -10,6 +10,7 @@
 #include <map>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <queue>
 #include <stack>
 #include <functional>

@@ -14,7 +14,7 @@ public:
 	Symbol* GetVar(string varName);
 	Symbol* GetVarEnv(string varName);
 	Symbol* GetVarInClass(string varName, string className);
-	Symbol* GenTemp(string varType);
+	string GenTemp(string varType);
 	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
 	string GetEnvName();
 	string GetPrevEnvName();

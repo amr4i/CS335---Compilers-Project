@@ -1,10 +1,5 @@
 #include "SymTable.h"
 
-Env* baseEnv;
-Env* curEnv;
-
-SymTable();
-
 
 SymTable::SymTable(){
 	Env* curEnv = new Env(NULL);
@@ -15,7 +10,7 @@ Env* SymTable::GetMainClass(){
 	Env* env = baseEnv;
 	fori(0, (env->children).size()){
 		if((env->children)[i]->type == "classType"){
-			for(vector <Env*> :: iterator it = (env->children)[i].begin() ; it != (env->children)[i].end() ; it++){
+			for(vector <Env*> :: iterator it = (env->children).begin() ; it != (env->children).end() ; it++){
 				if((*it)->type == "methodType" && (*it)->name == "main")	return (*it);
 			}
 		}
@@ -44,14 +39,14 @@ Symbol* SymTable::GetVarInClass(string varName, string className){
 	return curEnv->getVarInClass(varName, className);
 }
 
-Symbol* SymTable::GenTemp(string varType){
+string SymTable::GenTemp(string varType){
 	return curEnv->genTemp(varType);
 }
 
 Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "blockType", string returnType = "void", string Class = "None", string Parent_Class = "None"){
 	Env* newEnv = new Env(scopeName, scopeType, curEnv, returnType, Class, Parent_Class);
 	(curEnv->children).pb(newEnv);
-	if(scopeType == "blockType") { newEnv->offset = offset; }
+	if(scopeType == "blockType") { newEnv->offset = curEnv->offset; }
 	curEnv = newEnv;
 	return newEnv;
 }
@@ -61,7 +56,7 @@ string SymTable::GetEnvName(){
 }
 
 string SymTable::GetPrevEnvName(){
-	return curEnv->prevEnv;
+	return curEnv->prevEnv->name;
 }
 
 Env* SymTable::GetMethod(string methodName){
@@ -69,7 +64,7 @@ Env* SymTable::GetMethod(string methodName){
 }
 
 Env* SymTable::GetMethodInClass(string methodName, string className){
-	return curEnv->getMethodInClass(methodName, className);
+	return curEnv->getMethodFromClass(methodName, className);
 }
 
 Env* SymTable::FindClass(string className){
@@ -86,11 +81,11 @@ Env* SymTable::EndScope(){
 }
 
 vector <string> SymTable::SetArgTypeList(vector <string> args){
-	return curEnv->setArTypeList(args);
+	return curEnv->setArgTypeList(args);
 }
 
 void SymTable::PrintTable(Env* env){
-	printTable(baseEnv);
+	curEnv->printTableEnv(env);
 }
 /*
 	To insert a symbol into the symbol table.
@@ -121,11 +116,11 @@ void SymTable::PrintTable(Env* env){
 /*
 	To remove a symbol from the symbol table. 
 */
-Symbol* SymTable::remove(string symName){
-	if(symbols.find(symName) != symbols.end()){
-		Symbol* sym = symbols[symName];
-		symbols.erase(symbols.find(symName));
-		return sym;
-	}
-	return NULL;
-}
+// Symbol* SymTable::remove(string symName){
+// 	if(symbols.find(symName) != symbols.end()){
+// 		Symbol* sym = symbols[symName];
+// 		symbols.erase(symbols.find(symName));
+// 		return sym;
+// 	}
+// 	return NULL;
+// }

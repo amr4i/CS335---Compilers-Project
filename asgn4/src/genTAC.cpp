@@ -1,7 +1,5 @@
 #include "IR.h"
 
-
-
 struct genNode{
 
 	string place;
@@ -9,13 +7,13 @@ struct genNode{
 	bool isLit;
 
 	genNode(){
-		string = "";
-		string = "";
+		place = "";
+		type = "";
 		isLit = false;
 	}
 
 	vector <TAC*> code;
-}
+};
 
 
 string getNewLabel(){
@@ -27,8 +25,8 @@ string getNewLabel(){
 }
 
 
-void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = NULL){
-	if(op=='+' || op=='-'){
+void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, int lineNum = -1, genNode* s2 = NULL){
+	if(op=="+" || op=="-"){
 		TAC* tac = new TAC();
 		Symbol* temp = getTemp();
 		d->place = temp->name;
@@ -47,7 +45,7 @@ void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = N
 			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place)
-				exit();
+				exit(1);
 			}
 			tac->opd2 = symTable.get(sym2);	
 		}
@@ -57,7 +55,7 @@ void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = N
 			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place)
-				exit();
+				exit(1);
 			}
 			tac->opd1 = symTable.get(sym1);	
 		}	
@@ -65,13 +63,13 @@ void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = N
 			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place)
-				exit();
+				exit(1);
 			}
 			tac->opd1 = symTable.get(sym1);	
 			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place)
-				exit();
+				exit(1);
 			}
 			tac->opd2 = symTable.get(sym2);	
 		}			
@@ -82,7 +80,7 @@ void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = N
 			else if(s2->type == "long")		temp->type=="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-				exit();
+				exit(1);
 			}
 		}
 		else if(s1->type == "int"){
@@ -90,14 +88,14 @@ void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = N
 			else if(s2->type=="long")		temp->type="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-				exit();
+				exit(1);
 			}
 		}	
 		else if(s1->type == "long"){
 			if(s2->type=="char" || s2->type=="int" || s2->type=="long")	temp->type="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-				exit();
+				exit(1);
 			}
 		}
 		d->type = temp->type;
@@ -119,19 +117,19 @@ string equal_compatible(string s1, string s2){
 		if(s2=="char")	return "char";
 		else if(s2=="int") return "int";
 		else if(s2=="long") return "long";
-		else return NULL;
+		else return "None";
 	}
 	else if(s1=="int"){
 		if (s2=="char" || s2=="int") return "int";
 		else if(s2=="long") return "long";
-		else return NULL;
+		else return "None";
 	}
 	else if(s1=="long"){
 		if(s2=="char"||s2=="int"||s2=="long") return "long";
-		else return NULL;
+		else return "None";
 	}
 	else if(s1==s2)	return s1;
-	else return NULL;
+	else return "None";
 }
 
 void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
@@ -139,9 +137,9 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	Symbol* temp = getTemp();
 	d->place = temp->name;
 	d->type = equal_compatible(s1->type, s2->type);
-	if(d->type==NULL){
+	if(d->type=="None" || d->type==""){
 		printf("Error: Incompatible types to conditional expression near line %d", op, lineNum);
-		exit();
+		exit(1);
 	}
 	TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
 	TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
@@ -174,11 +172,11 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 
 	d->code.pb(tac3); d->code.pb(tac4);
 	d->code.pb(tac1);
-	d->code.insert(d->code.end(), s1->code.start(), s1->code.end());
+	d->code.insert(d->code.end(), s1->code.begin(), s1->code.end());
 	d->code.pb(tac7);
 	d->code.pb(tac5);
 	d->code.pb(tac2);
-	d->code.insert(d->code.end(), s1->code.start(), s1->code.end());
+	d->code.insert(d->code.end(), s1->code.begin(), s1->code.end());
 	d->code.pb(tac8);
 	d->code.pb(tac6);
 	return;

@@ -10,6 +10,6 @@ public:
 	int offset;
 	map<string, string> attr;
 
-	Symbol(string name,string Type, int width);
+	Symbol(string symName, string Type, int Width, string BaseType, int Offset);
 
 };
