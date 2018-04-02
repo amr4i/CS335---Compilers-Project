@@ -116,10 +116,11 @@ void gen2OpCode(genNode* d, string op, genNode* s1, genNode* s2, int lineNum){
 	
 	}
 
-	//TO DO: ALL OTHER CASES.
+	// TO DO: ALL OTHER CASES WHERE get2OpCode() HAS BEEN USED. 
 	return;
 }
 
+// helper function used in getCEcode()
 string equal_compatible(string s1, string s2){
 	if(s1=="char"){
 		if(s2=="char")	return "char";
