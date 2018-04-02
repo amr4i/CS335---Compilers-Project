@@ -201,4 +201,3 @@ void getPreUnaryOpCode(string op, genNode* d, genNode* s, int lineNum){
 	d->code.insert(d->code.begin(), tac);
 }
 
-

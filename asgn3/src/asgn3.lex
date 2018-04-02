@@ -73,7 +73,7 @@ ID 				@?[a-zA-Z_][a-zA-Z0-9_]*
 DINT_LITERAL	[0-9]+(UL|Ul|uL|ul|LU|Lu|lU|lu|u|U|l|L)?
 HDINT_LITERAL	0[xX][0-9a-fA-F]+(UL|Ul|uL|ul|LU|Lu|lU|lu|u|U|l|L)?	
 SIMPLE_ESC_SEQ	\'|\"|\\|\0|\n|\r|\t
-CHAR_LITERAL	'([^'\\(\n)]|{SIMPLE_ESC_SEQ})'
+CHAR_LITERAL	\'([^\'\\\n]|{SIMPLE_ESC_SEQ})\'
 REG_STR_LITERAL	\"([^(\")(\\)(\n)]|{SIMPLE_ESC_SEQ}|(\\x[0-9a-fA-F]{1,4})|(\\u[0-9a-fA-F]{4,4})|(\\U[0-9a-fA-F]{8,8}))+\"
 VER_STR_LITERAL	@\"([^\"]|\"\")+\"
 LBRACE			\}
@@ -180,7 +180,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
 {HDINT_LITERAL}  { yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }
 {SIMPLE_ESC_SEQ}  { return SIMPLE_ESC_SEQ; }
-{CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
+{CHAR_LITERAL}  { yylval.sVal = strdup(yytext); return CHAR_LITERAL; }
 {REG_STR_LITERAL}  { yylval.sVal = strdup(yytext); return REG_STR_LITERAL; }
 {VER_STR_LITERAL}  { yylval.sVal = strdup(yytext); return VER_STR_LITERAL; }
 {LBRACE}  { return *yytext; }

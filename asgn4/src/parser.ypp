@@ -217,9 +217,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
 		;
 expression_list : expression  	{  }
-		| expression_list ',' expression	{  }
+		| expression ',' expression	{  }
 		;
-this_access : THIS	{  }
+this_access : THIS	{ $$ = $1; }
 		;
 base_access : BASE '.' identifier 	{  }
 		| BASE '[' expression_list ']'	{  }

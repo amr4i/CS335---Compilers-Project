@@ -12,6 +12,8 @@ namespace check1
             void Main(string[] args)
             {
                 int i;
+                char j;
+                j = 'c';
                 Console.Write("Enter a Number : ");
                 i = int.Parse(Console.ReadLine());
                 if (i % 2 == 0)
