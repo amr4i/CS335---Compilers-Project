@@ -1,5 +1,8 @@
 #include "IR.h"
 
+static int labelCounter = 0;
+static int tempCounter = 0;
+
 struct genNode{
 
 	string place;
@@ -14,6 +17,22 @@ struct genNode{
 
 	vector<TAC*> code;
 }
+
+Symbol* getTemp(){
+	string tempName = "tVar_"+stoi(tempCounter);
+	tempCounter+=1;
+	Symbol* sym = new Symbol(tempName, "None");
+	return sym;
+}
+
+string getNewLabel(){
+	string labelName = "label_"+stoi(labelCounter);
+	labelCounter+=1;
+	Symbol* sym = new Symbol(labelName, "label");
+	symTable.insert(sym);
+	return labelName;
+}
+
 
 void gen2OpCode(genNode* d, string op, genNode* s1, genNode* s2, int lineNum){
 	if(op=='+' || op=='-'){
@@ -32,36 +51,36 @@ void gen2OpCode(genNode* d, string op, genNode* s1, genNode* s2, int lineNum){
 		else if(s1->isLit && !s2->isLit){
 			tac->isInt1 = true;
 			tac->l1 = s1->place;
-			Symbol* sym2 = ST.get(s2->place);
+			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place)
 				exit();
 			}
-			tac->opd2 = ST.get(sym2);	
+			tac->opd2 = symTable.get(sym2);	
 		}
 		else if(!s1->isLit && s2->isLit){
 			tac->isInt2 = true;
 			tac->l2 = s2->place;
-			Symbol* sym1 = ST.get(s1->place);
+			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place)
 				exit();
 			}
-			tac->opd1 = ST.get(sym1);	
+			tac->opd1 = symTable.get(sym1);	
 		}	
 		else{
-			Symbol* sym1 = ST.get(s1->place);
+			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place)
 				exit();
 			}
-			tac->opd1 = ST.get(sym1);	
-			Symbol* sym2 = ST.get(s2->place);
+			tac->opd1 = symTable.get(sym1);	
+			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place)
 				exit();
 			}
-			tac->opd2 = ST.get(sym2);	
+			tac->opd2 = symTable.get(sym2);	
 		}			
 		
 		// Type-Checking
@@ -90,7 +109,7 @@ void gen2OpCode(genNode* d, string op, genNode* s1, genNode* s2, int lineNum){
 		}
 		d->type = temp->type;
 		d->code.pb(tac);
-		ST.insert(temp);			
+		symTable.insert(temp);			
 	}
 	
 	else if(op == "*" || op=="/" || op==="%"){
@@ -141,7 +160,7 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	string newLabel3 = new getNewLabel();
 	tac1->op = "label"; tac1->target = newLabel1;
 	tac2->op = "label"; tac2->target = newLabel2;
-	tac3->op = "ifgoto"; tac3->dest = ST.get(c->place); tac3->target = newLabel1;
+	tac3->op = "ifgoto"; tac3->dest = symTable.get(c->place); tac3->target = newLabel1;
 	tac4->op = "goto"; tac4->target = newLabel2;
 	tac5->op = "goto"; tac5->target = newLabel3;
 	tac6->op = "label"; tac6->target = newLabel3;
@@ -150,14 +169,14 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 		tac7->IsInt1=true;
 		tac7->l1=s1->place;
 	}
-	else 	tac7->opd1 = ST.get(s1->place);
+	else 	tac7->opd1 = symTable.get(s1->place);
 
 	tac8->op = "="; tac8->dest=temp;
 	if(s2->isLit){
 		tac8->IsInt1=true;
 		tac8->l1=s2->place;
 	}
-	else 	tac8->opd1 = ST.get(s2->place);
+	else 	tac8->opd1 = symTable.get(s2->place);
 
 	d->code.pb(tac3); d->code.pb(tac4);
 	d->code.pb(tac1);
@@ -169,6 +188,16 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	d->code.pb(tac8);
 	d->code.pb(tac6);
 	return;
+}
+
+void getPreUnaryOpCode(string op, genNode* d, genNode* s, int lineNum){
+	TAC* tac = new TAC();
+	Symbol* sym = symTable.get(d->place);
+	tac->opd1 = sym;
+	tac->dest = sym;
+	tac->isInt2 = true; tac->l2 = "1";
+	if(op=="++")	tac->op="+"; else	tac->op="-";
+	d->code.insert(d->code.begin(), tac);
 }
 
 
