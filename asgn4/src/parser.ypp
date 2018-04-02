@@ -14,17 +14,18 @@
 	#define YYDEBUG 1
 	using namespace std;
 	extern void yyerror(char *c);
-	extern int yylineno;
+	//extern int 1234555;
 
 	int yylex(void);
-	
-%}
 
-%option yylineno
+	SymTable* ST = new SymTable();
+%}
+// yylineno replaced by 1234555
+//%option 1234555
 
 %union{
 	int iVal;
-	string sVal;
+	char *sVal;
 	char cVal;
 	genNode *node;	
 };
@@ -34,7 +35,7 @@
 
 %expect 1
 
-%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT RSHIFTEQ WHERE
+%token BASE BOOL BREAK CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO ELSE FALSE FINALLY FOR FOREACH GOTO IF IN INT LONG NAMESPACE NEW NULL_LIT OBJECT PARAMS PRIVATE PROTECTED PUBLIC REF RETURN STRING STRUCT SWITCH THIS THROW TRUE TRY TYPEOF USING VOID WHILE ID DINT_LITERAL HDINT_LITERAL SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL  DQM DCLN INCR DECR RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ RSHIFT WHERE
 
 %token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID
 
@@ -42,7 +43,7 @@
 
 %token <cVal>
 
-%type <sVal> boolean_literal string_literal right_shift right_shift_assignment null_literal 
+%type <sVal> boolean_literal string_literal right_shift null_literal 
 %type <sVal> right_shift_assignment qualified_identifier qualified_alias_member namespace_or_type_name namespace_name type_name
 %type <sVal> integral_type numeric_type class_type simple_type non_nullable_value_type nullable_type
 
@@ -54,59 +55,83 @@
 %type <node> literal
 %%
 
-start :	compilation_unit	{ $$->code = $1->code }
+start :	compilation_unit	{ $$ = $1; }
 		;
 
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
 				{
-					if(ST.get($1) == NULL) 
-						ST.insert(new Symbol($1, "None"));
+					if((curEnv->extras).find(string($1)) == (curEnv->extras).end()){
+						(curEnv->extras)[string($1)] = new Symbol(string($1), "None");
+					}
+					genNode* newNode = new genNode();
+					newNode->place = string($1);
+					$$ = newNode;
 				}
 				;
 
 /*B.1.8 Literals*/ 
 literal : boolean_literal 	
-		{ 
-			$$.type = 'bool';
-			$$.place = $1;
-			$$.isLit = true;
+		{  
+			$$ = $1;
 		}
 		| integer_literal 	
 		{  
-			$$.type = 'int';
-			$$.place = to_string($1);
-			$$.isLit = true;
+			$$ = $1;
 		}
 		| character_literal 	
 		{  
-			$$.type = 'char';
-			$$.place = $1;
-			$$.isLit = true;
+			$$ = $1;
 		}
 		| string_literal 	
-		{ 
-			$$.type = 'string';
-			$$.place = $1;
-			$$.isLit = true;
+		{  
+			$$ = $1;
 		}
 		| null_literal	
 		{  
-			$$.type = 'null';
-			$$.place = $1;
-			$$.isLit = true;
+			$$ = $1;
 		}
 		;
 
-boolean_literal : TRUE 	{	$$ = $1;	}
-		| FALSE		{ 	$$ = $1;	}
+boolean_literal : TRUE 	{	
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "bool";
+			$$->place = string($1);
+			$$->isLit = true;	
+		}
+		| FALSE		{ 	
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "bool";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
 		;
 
-integer_literal : DINT_LITERAL 	{ $$ = $1; }
-		| HDINT_LITERAL	{ $$ = $1; }
+integer_literal : DINT_LITERAL 	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "int";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
+		| HDINT_LITERAL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "int";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
 		;
 
-character_literal : CHAR_LITERAL	{ $$ = $1; }
+character_literal : CHAR_LITERAL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "char";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
 		;
 		
 /*
@@ -114,75 +139,144 @@ simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{  }
 							;
 */
 
-string_literal : REG_STR_LITERAL 	{ $$ = $1; }
-		| VER_STR_LITERAL	{ $$ = $1; }
+string_literal : REG_STR_LITERAL 	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "string";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
+		| VER_STR_LITERAL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "string";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
 		;
 
-null_literal :	NULL_LIT	{ $$ = $1; }
+null_literal :	NULL_LIT	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "null";
+			$$->place = string($1);
+			$$->isLit = true;
+		}
 		;
 
 /*B.1.9 Operators*/ 
-right_shift : RSHIFT	{ $$ = $1; }
+right_shift : RSHIFT	{}
 		;
-right_shift_assignment : RSHIFTEQ	{ $$ = $1; }
+right_shift_assignment : RSHIFTEQ	{}
 		;
 
 /*B.2.1 Basic concepts*/ 
-namespace_name : namespace_or_type_name	{ $$=$1; }
+namespace_name : namespace_or_type_name	{ $$ = $1; }
 		;
-type_name : namespace_or_type_name	{ $$=$1; }
+type_name : namespace_or_type_name	{ $$ = $1; }
 		;
 namespace_or_type_name : qualified_identifier 	{ $$ = $1; }
 		| qualified_alias_member	{ $$ = $1; }
 		;
 
 /*B.2.2 Types*/ 
-type : non_array_type 	{ $$=$1; }
-		| array_type 	{  }
+type : non_array_type 	{ $$ = $1;}
+		| array_type 	{ 
+			$$ = $1;
+			$$ -> baseType = "arrayType"; 
+		}
 		;		;
-non_array_type : type_name 	{ $$=$1; }
-		| simple_type 	{ $$=$1; }
-		| nullable_type	{ $$=$1; }
+non_array_type : type_name 	{ 
+			$$ = $1; 
+		}
+		| simple_type 	{ 
+			$$ = $1; 
+		}
+		| nullable_type	{ 
+			$$ = $1; 
+		}
 		;
-simple_type : numeric_type 	{ $$ = $1; }
-		| class_type 	{ $$ = $1; }
-		| BOOL	{ $$ = $1; }
+simple_type : numeric_type 	{ 
+			$$ = $1; 
+			$$->baseType = "simple";
+		}
+		| class_type 	{ 
+			$$ = $1; 
+		}
+		| BOOL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "bool"; 
+			$$->baseType = "simple";
+			$$->type = "bool";
+		}
 		;
 numeric_type : integral_type 	{ $$ = $1; }
 		;
-integral_type : INT 	{ $$ = $1;  }
-		| LONG 	{ $$ = $1; }
-		| CHAR	{ $$ = $1; }
+integral_type : INT 	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "int"; 
+			$$->baseType = "simple";
+			$$->type = "int";
+		}
+		| LONG 	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "long"; 
+			$$->baseType = "simple";
+			$$->type = "long";
+		}
+		| CHAR	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "char"; 
+			$$->baseType = "simple";
+			$$->type = "char";
+		}
 		;
-nullable_type : non_nullable_value_type '?'	{ $$=$1+"?"; }
+nullable_type : non_nullable_value_type '?'	{
+			$$ = $1;
+			$$->place += " ?"; 
+			$$->baseType = "simple";
+			// Consider the type of this node
+		}
 		;
 non_nullable_value_type : simple_type	{ $$ = $1; }
 		;
 
 
-class_type : OBJECT 	{ $$ = $1; }
-		| STRING	{ $$ = $1; }
+class_type : OBJECT 	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
+		| STRING	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
 		;
 
 /*B.2.3 Variables*/ 
-variable_reference : expression	{  }
+variable_reference : expression	{ $$ = $1; }
 		;
 
 /*B.2.4 Expressions*/ 
-argument_list : argument 	{  }
-		| argument_list ',' argument	{  }
+argument_list : argument 	{ }
+		| argument_list ',' argument	{ }
 		;
-argument : argument_value 	{  }
+argument : argument_value 	{ }
 		| argument_name argument_value	{ }
 		;
-argument_name : identifier ':'	{ $$ = $1+":"; }
+argument_name : identifier ':'	{ }
 		;
-argument_value : expression 	{ $$ = $1; }
-		| REF variable_reference 	{  }
+argument_value : expression 	{ }
+		| REF variable_reference 	{ }
 		;
-primary_expression : primary_no_array_creation_expression 	{  }
-		| array_creation_expression	{  }
-		| parenthesized_expression	{  }
+primary_expression : primary_no_array_creation_expression 	{ $$ = $1; }
+		| array_creation_expression	{ $$ = $1; }
+		| parenthesized_expression	{ $$ = $1; }
 		;
 primary_no_array_creation_expression : literal 	{ $$ = $1; }
 		| member_access 	{ $$ = $1; }
@@ -195,7 +289,13 @@ primary_no_array_creation_expression : literal 	{ $$ = $1; }
 		| default_value_expression	{ $$ = $1; }
 		;
 
-parenthesized_expression : '(' expression ')'	{ $$ = $1; $$->code = "("+$1->code+")"; }
+parenthesized_expression : '(' expression ')'	{ 
+			string tmpVar = curEnv->GenTemp($2->type, "simple", -1);
+			$$ = $2;
+			$$ -> place = tmpVar;
+			gen2OpCode($$, "=", $2);
+			$$ = $1; 
+		}
 		;
 member_access : primary_expression '.' identifier 	{  }
 			{  }
@@ -224,10 +324,10 @@ this_access : THIS	{ $$ = $1; }
 base_access : BASE '.' identifier 	{  }
 		| BASE '[' expression_list ']'	{  }
 		;
-postfix_expression : 	primary_expression 		{  }
-		| qualified_identifier 		{  }
-		| post_increment_expression 		{  }
-		| post_decrement_expression 		{  }
+postfix_expression : 	primary_expression 		{ $$ = $1; }
+		| qualified_identifier 		{ $$ = $1; }
+		| post_increment_expression 		{ $$ = $1; }
+		| post_decrement_expression 		{ $$ = $1; }
 		;
 post_increment_expression : postfix_expression INCR	{  }
 		;
@@ -275,27 +375,25 @@ typeof_expression : TYPEOF '(' type ')' 	{  }
 		;
 default_value_expression : DEFAULT '(' type ')'	{  }
 		;
-unary_expression_not_plusminus : postfix_expression 	{  }
+unary_expression_not_plusminus : postfix_expression 	{ $$ = $1; }
 		| '!' unary_expression 	{  }
 		| '~' unary_expression 	{  }
 		| cast_expression	{  }
 		;
-unary_expression : unary_expression_not_plusminus 	{  }
-		| '+' unary_expression 	{  }
-		| '-' unary_expression 	{  }
-		| pre_increment_expression 	{  }
-		| pre_decrement_expression 	{  }
-		;
-pre_increment_expression : INCR unary_expression	
-		{  
-			$$ = $1;
-			getPreUnaryOpCode("++", $$, $1, yylineno);
+unary_expression : unary_expression_not_plusminus 	{ $$ = $1; }
+		| '+' unary_expression 	{ $$ = $2; }
+		| '-' unary_expression 	{ 
+			$$ = $2;
+			//string tmpVar = GenTemp($2->type, "simple", curEnv->addTable[$2->place]->width);
+			//$$->place = tmpVar;
+			////////////////// I guess this function will carry out the above mentioned statements ////////////////////////////
+			getPreUnaryOpCode("-", $$, $2, 1234555);
 		}
 		;
 pre_decrement_expression : DECR unary_expression	
 		{  
 			$$ = $1;
-			getPreUnaryOpCode("--", $$, $1, yylineno);
+			getPreUnaryOpCode("--", $$, $1, 1234555);
 		}
 		;
 cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
@@ -307,226 +405,249 @@ cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
 multiplicative_expression :	unary_expression 	{ $$ = $1 }
 		| multiplicative_expression '*' unary_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
-			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "*", $1, $3, yylineno);
+			get2OpCode($$, "*", $1, $3, 1234555);
+			//$$->code.pb($$->code.end(), $3->code.start(), $3->code.end());
 		}
 		| multiplicative_expression '/' unary_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "/", $1, $3, yylineno);
+			get2OpCode($$, "/", $1, $3, 1234555);
 		}
 		| multiplicative_expression '%' unary_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "%", $1, $3, yylineno);
+			get2OpCode($$, "%", $1, $3, 1234555);
 		}
 		;
 
 additive_expression : multiplicative_expression 	{ $$ = $1 }
 		| additive_expression '+' multiplicative_expression 	
 		{  
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "+", $1, $3, yylineno);
+			get2OpCode($$, "+", $1, $3, 1234555);
 		}
 		| additive_expression '-' multiplicative_expression	
 		{  
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "-", $1, $3, yylineno);
+			get2OpCode($$, "-", $1, $3, 1234555);
 		}
 		;
 
 shift_expression : additive_expression 	{ $$ = $1; }
 		| shift_expression LSHIFT additive_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "<<", $1, $3, yylineno);
+			get2OpCode($$, "<<", $1, $3, 1234555);
 		}
 		| shift_expression right_shift additive_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, ">>", $1, $3, yylineno);
+			get2OpCode($$, ">>", $1, $3, 1234555);
 		}
 		;
 relational_expression : shift_expression 	{ $$ = $1; }
 		| relational_expression '<' shift_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "<", $1, $3, yylineno);
+			get2OpCode($$, "<", $1, $3, 1234555);
 		}
 		| relational_expression '>' shift_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, ">", $1, $3, yylineno);
+			get2OpCode($$, ">", $1, $3, 1234555);
 		}
 		| relational_expression LE shift_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "<=", $1, $3, yylineno);
+			get2OpCode($$, "<=", $1, $3, 1234555);
 		}
 		| relational_expression GE shift_expression 	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, ">=", $1, $3, yylineno);
+			get2OpCode($$, ">=", $1, $3, 1234555);
 		}
 equality_expression : relational_expression 	{ $$ = $1; }
 		| equality_expression REQ relational_expression 	{  }
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "==", $1, $3, yylineno);
+			get2OpCode($$, "==", $1, $3, 1234555);
 		}
 		| equality_expression RNE relational_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "!=", $1, $3, yylineno);
+			get2OpCode($$, "!=", $1, $3, 1234555);
 		}
 		;
 and_expression : equality_expression 	{ $$ = $1; }
 		| and_expression '&' equality_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "&", $1, $3, yylineno);
+			get2OpCode($$, "&", $1, $3, 1234555);
 		}
 		;
 exclusive_or_expression : and_expression 	{ $$ = $1; }
 		| exclusive_or_expression '^' and_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "^", $1, $3, yylineno);
+			get2OpCode($$, "^", $1, $3, 1234555);
 		}
 		;
 inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
 		| inclusive_or_expression '|' exclusive_or_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "|", $1, $3, yylineno);
+			get2OpCode($$, "|", $1, $3, 1234555);
 		}
 		;
 conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
 		| conditional_and_expression RAND inclusive_or_expression
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "&&", $1, $3, yylineno);
+			get2OpCode($$, "&&", $1, $3, 1234555);
 		}
 		;
 conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
 		| conditional_or_expression ROR conditional_and_expression
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "||", $1, $3, yylineno);
+			get2OpCode($$, "||", $1, $3, 1234555);
 		}
 		;
 null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
 		| conditional_or_expression DQM null_coalescing_expression	
 		{ 
-			$$ = new genNode();
+			genNode* newNode = new genNode();
+			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.start(), $3->code.end());
-			get2OpCode($$, "??", $1, $3, yylineno);
+			get2OpCode($$, "??", $1, $3, 1234555);
 		}
 		;
 conditional_expression : null_coalescing_expression 	{ $$ = $1; }
 		| null_coalescing_expression '?' expression ':' expression	
 		{ 
-			$$ = new genNode();
-			getCECode($$, $1, $2, $3, yylineno);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			getCECode($$, $1, $2, $3, 1234555);
 		}
 		;
-assignment : unary_expression assignment_operator expression	{  }
+assignment : unary_expression assignment_operator expression	{  
+			// assignment_operator is a string
+			$$ = $1;	
+		}
 		;
-assignment_operator : '=' 	{  }
-		| APLUS 	{  }
-		| AMINUS 	{  }
-		| AMULT 	{  }
-		| ADIV 	{  }
-		| AMOD 	{  }
-		| AAND 	{  }
-		| AOR 	{  }
-		| ACARET 	{  }
-		| LSHIFTEQ 	{  }
-		| right_shift_assignment	{  }
+assignment_operator : '=' 	{ $$ = "="; }
+		| APLUS 	{ $$ = "+="; }
+		| AMINUS 	{ $$ = "-="; }
+		| AMULT 	{ $$ = "*="; }
+		| ADIV 	{ $$ = "/="; }
+		| AMOD 	{ $$ = "%="; }
+		| AAND 	{ $$ = "&="; }
+		| AOR 	{ $$ = "|="; }
+		| ACARET 	{ $$ = "^="; }
+		| LSHIFTEQ 	{ $$ = "<<="; }
+		| right_shift_assignment	{ $$ = ">>="; }
 		;
-expression : non_assignment_expression 	{  }
-		| assignment	{  }
+expression : non_assignment_expression 	{ $$ = $1; }
+		| assignment	{ $$ = $1; }
 		;
 non_assignment_expression : conditional_expression	{  }
 		;
-constant_expression : expression	{  }
+constant_expression : expression	{ $$ = $1; }
 		;
-boolean_expression : expression	{  }
+boolean_expression : expression	{ $$ = $1; }
 		;
 
 /*B.2.5 Statements*/ 
-statement :	labeled_statement 	{  }
-		| declaration_statement 	{  }
-		| embedded_statement	{  }
+statement :	labeled_statement 	{  $$ = $1;  }
+		| declaration_statement 	{ $$ = $1; }
+		| embedded_statement	{ $$ = $1; }
 		;
-embedded_statement : block 	{  }
-		| empty_statement 	{  }
-		| expression_statement 	{  }
-		| selection_statement 	{  }
-		| iteration_statement 	{  }
-		| jump_statement 	{  }
-		| try_statement 	{  }
-		| using_statement	{  }
+embedded_statement : block 	{ $$ = $1; }
+		| empty_statement 	{ $$ = $1; }
+		| expression_statement 	{ $$ = $1; }
+		| selection_statement 	{ $$ = $1; }
+		| iteration_statement 	{ $$ = $1; }
+		| jump_statement 	{ $$ = $1; }
+		| try_statement 	{ $$ = $1; }
+		| using_statement	{ $$ = $1; }
 		;
-block : '{' '}' 	{  }
-		| '{' statement_list '}'	{  }
+block : '{' '}' 	{ $$ = $1; }
+		| '{' statement_list '}'	{ $$ = $1; }
 		;
-statement_list : statement 	{  }
-		| statement_list statement	{  }
+statement_list : statement 	{ $$ = $1; }
+		| statement_list statement	{ $$ = $1; }
 		;
 empty_statement : ';'	{  }
 		;
 labeled_statement :	identifier ':' statement	{  }
 		;
-declaration_statement :	local_variable_declaration ';'	 	{  }
+declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
 		| local_constant_declaration ';'	{  }
 		;
-local_variable_declaration : local_variable_type local_variable_declarators	{  }
+local_variable_declaration : local_variable_type local_variable_declarators	{ $$ = $1; }
 		;
-local_variable_type : type 	{  }
+local_variable_type : type 	{ $$ = $1; }
 		;
-local_variable_declarators : local_variable_declarator 	{  }
+local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 		| local_variable_declarators ',' local_variable_declarator	{  }
 		;
-local_variable_declarator : identifier 	{  }
-		| identifier '=' local_variable_initializer	{  }
+local_variable_declarator : identifier 	{ $$ = $1; }
+		| identifier '=' local_variable_initializer	{ $$ = $1; }
 		;
 local_variable_initializer : expression 	{  }
 		| array_initializer	{  }
@@ -632,31 +753,31 @@ resource_acquisition : local_variable_declaration 	{  }
 		;
 
 /*B.2.6 Namespaces*/ 
-compilation_unit : using_directives namespace_member_declarations 	{  }
-		| namespace_member_declarations 	{  }
+compilation_unit : using_directives namespace_member_declarations 	{ $$ = $2; }
+		| namespace_member_declarations 	{ $$ = $1; }
 		| using_directives 	{  }
 		| epsilon	{  }
 		;
-namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{  }
-		| NAMESPACE qualified_identifier namespace_body ';'	{  }
+namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{ $$ = $2; }
+		| NAMESPACE qualified_identifier namespace_body ';'	{ $$ = $2; }
 		;
 qualified_identifier :	identifier 	{ $$ = $1; }
-		| qualified_identifier '.' identifier	{ $$ = $1+"."+$2; }
+		| qualified_identifier '.' identifier	{ $$ = $3; }
 		;
 namespace_body : '{' '}' 	{  }
 		| '{' namespace_member_declarations '}' 	{  }
-		| '{' using_directives '}' 	{  }
+		| '{' using_directives '}' 	{ $$ = $2; }
 		| '{' using_directives namespace_member_declarations '}'	{  }
 		;
-using_directives : using_directive 	{  }
+using_directives : using_directive 	{ $$ = $1; }
 		| using_directives using_directive	{  }
 		;
 using_directive : using_alias_directive 	{  }
-		| using_namespace_directive	{  }
+		| using_namespace_directive	{ $$ = $1; }
 		;
 using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{  }
 		;
-using_namespace_directive : USING namespace_name ';'	{  }
+using_namespace_directive : USING namespace_name ';'	{ $$ = $2; }
 		;
 namespace_member_declarations : namespace_member_declaration 	{  }
 		| namespace_member_declarations namespace_member_declaration	{  }
@@ -671,7 +792,7 @@ qualified_alias_member : identifier DCLN identifier 	{ $$=$1+$2+$3 }
 		;
 
 /*B.2.7 Classes;*/ 
-class_declaration : CLASS identifier class_body 	{  }
+class_declaration : CLASS identifier class_body 	{ $$ = $2; }
 		| modifiers CLASS identifier class_body 	{  }
 		| CLASS identifier class_base class_body 	{  }
 		| CLASS identifier class_body ';' 	{  }
@@ -680,18 +801,34 @@ class_declaration : CLASS identifier class_body 	{  }
 		| CLASS identifier class_base class_body ';' 	{  }
 		| modifiers CLASS identifier class_base class_body ';' 	{  }
 		;
-modifiers : modifier 	{  }
+modifiers : modifier 	{ $$ = $1; }
 		| modifiers modifier	{  }
 		;
-modifier : NEW 	{  }
-		| PUBLIC 		{  }
-		| PROTECTED 	{  }
-		| PRIVATE	{  }
+modifier : NEW 	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
+		| PUBLIC 		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
+		| PROTECTED 	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
+		| PRIVATE	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = string($1);
+		}
 		;
-class_base : ':' class_type	{  }
+class_base : ':' class_type	{ $$ = $1; }
 		;
-class_body : '{' '}' 	{  }
-		| '{' class_member_declarations '}'	{  }
+class_body : '{' '}' 	{ $$ = "{}" }
+		| '{' class_member_declarations '}'	{ $$ = $1; }
 		;
 class_member_declarations : class_member_declaration 	{  }
 		| class_member_declarations class_member_declaration	{  }
@@ -729,26 +866,26 @@ method_declaration : method_header method_body	{  }
 method_header : type member_name '(' ')' 	{  }
 		| modifiers type member_name '(' ')' 	{  }
 		| type member_name '(' formal_parameter_list ')' 	{  }
-		| modifiers type member_name '(' formal_parameter_list ')' 	{  }
+		| modifiers type member_name '(' formal_parameter_list ')' 	{ $$ = $2; }
 		| VOID member_name '(' ')' 	{  }
 		| modifiers VOID member_name '(' ')' 	{  }
 		| VOID member_name '(' formal_parameter_list ')' 	{  }
 		| modifiers VOID member_name '(' formal_parameter_list ')' 	{  }
 		;
 
-member_name : qualified_identifier	{  }
+member_name : qualified_identifier	{ $$ = $1; }
 		;
-method_body : block 	{  }
-		| ';'	{  }
+method_body : block 	{ $$ = $1; }
+		| ';'	{ $$ = ";"; }
 		;
-formal_parameter_list : fixed_parameters 	{  }
+formal_parameter_list : fixed_parameters 	{ $$ = $1; }
 		| fixed_parameters ',' parameter_array 	{  }
 		| parameter_array	{  }
 		;
-fixed_parameters : fixed_parameter 	{  }
+fixed_parameters : fixed_parameter 	{ $$ = $1; }
 		| fixed_parameters ',' fixed_parameter	{  }
 		;
-fixed_parameter : type identifier 	{  }
+fixed_parameter : type identifier 	{ $$ = $1; }
 		| parameter_modifier type identifier 	{  }
 		| type identifier default_argument 	{  }
 		| parameter_modifier type identifier default_argument	{  }
@@ -804,7 +941,10 @@ struct_member_declaration : constant_declaration 	{  }
 		;
 
 /*B.2.9 Arrays*/ 
-array_type : non_array_type rank_specifier	{  }
+array_type : non_array_type rank_specifier	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+		}
 		;
 rank_specifier : '[' ']' 	{ $$ = "[]";  }
 		| '[' ',' ']'	{ $$ = "[,]" }
@@ -826,7 +966,7 @@ epsilon : 	%empty 		{}
 extern FILE *yyin;
 
 extern void yyerror(char *c){
-		cout << "Error at line: " << yylineno << "\n" << c << endl;
+		cout << "Error at line: " << 1234555 << "\n" << c << endl;
 		exit(1);	
 	}
 

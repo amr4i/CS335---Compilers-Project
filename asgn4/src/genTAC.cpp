@@ -1,7 +1,6 @@
 #include "IR.h"
 
-static int labelCounter = 0;
-static int tempCounter = 0;
+
 
 struct genNode{
 
@@ -15,15 +14,9 @@ struct genNode{
 		isLit = false;
 	}
 
-	vector<TAC*> code;
+	vector <TAC*> code;
 }
 
-Symbol* getTemp(){
-	string tempName = "tVar_"+stoi(tempCounter);
-	tempCounter+=1;
-	Symbol* sym = new Symbol(tempName, "None");
-	return sym;
-}
 
 string getNewLabel(){
 	string labelName = "label_"+stoi(labelCounter);
@@ -34,7 +27,7 @@ string getNewLabel(){
 }
 
 
-void gen2OpCode(genNode* d, string op, genNode* s1, genNode* s2, int lineNum){
+void gen2OpCode(genNode* d, string op, genNode* s1, int lineNum, genNode* s2 = NULL){
 	if(op=='+' || op=='-'){
 		TAC* tac = new TAC();
 		Symbol* temp = getTemp();

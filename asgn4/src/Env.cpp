@@ -10,6 +10,7 @@ Env::Env(string _name = "None", string _type = "blockType", Env *prev_env = NULL
 	width = 0;
 	offset = 0;
 	maxWidth = 0;
+	argNum = 0;
 }
 
 string Env::getMethodType(){
@@ -22,7 +23,8 @@ string Env::getMethodType(){
 }
 
 string Env::genTemp(string varType, string genericType = "simple", int _width = 0){
-	string place = generateTemperory();
+	string place = "tVar_"+stoi(tempCounter);
+	tempCounter+=1;
 	_width = getWidth(varType, genericType, _width);
 	Symbol* symbol = new Symbol(place, varType, _width, offset);
 	addTable[place] = symbol;
@@ -49,6 +51,7 @@ int Env::getWidth(string varType, string genericType, int _width = -1){
 	typeMap["char"] = 1;
 	typeMap["bool"] = 1;
 	typeMap["void"] = 0;
+	typeMap["null"] = 0;
 
 	// To be confirmed
 	typeMap["ulong"] = 8;      

@@ -135,7 +135,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {CASE} { return CASE; }
 {CATCH} { return CATCH; }
 {CHAR} { return CHAR; }
-{CLASS} { return CLASS; }
+{CLASS} { yylval.sVal = yytext; return CLASS; }
 {CONST} { return CONST; }
 {CONTINUE}  { return CONTINUE; }
 {DEFAULT} { return DEFAULT; }
@@ -148,19 +148,19 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {GOTO} { return GOTO; }
 {IF} { return IF; }
 {IN} { return IN; }
-{INT} { return INT; }
+{INT} { yylval.sVal = yytext; return INT; }
 {LONG} { return LONG; }
-{NAMESPACE} { return NAMESPACE; }
-{NEW} { return NEW; }
+{NAMESPACE} { yylval.sVal = yytext; return NAMESPACE; }
+{NEW} { yylval.sVal = yytext; return NEW; }
 {NULL_LIT} { return NULL_LIT; }
-{OBJECT} { return OBJECT; }
+{OBJECT} { yylval.sVal = yytext; return OBJECT; }
 {PARAMS} { return PARAMS; }
 {PRIVATE} { return PRIVATE; }
 {PROTECTED} { return PROTECTED; }
-{PUBLIC} { return PUBLIC; }
+{PUBLIC} { yylval.sVal = yytext; return PUBLIC; }
 {REF} { return REF; }
 {RETURN} { return RETURN; }
-{STRING} { return STRING; }
+{STRING} { yylval.sVal = yytext; return STRING; }
 {STRUCT} { return STRUCT; }
 {SWITCH} { return SWITCH; }
 {THIS} { return THIS; }
@@ -168,17 +168,17 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {TRUE} { return TRUE; }
 {TRY} { return TRY; }
 {TYPEOF} { return TYPEOF; }
-{USING} { return USING; }
-{VOID} { return VOID; }
+{USING} { yylval.sVal = yytext; return USING; }
+{VOID} { yylval.sVal = yytext; return VOID; }
 {WHILE} { return WHILE; }
 {WHERE}	{return WHERE; }
-{ID}  { yylval.sVal = strdup(yytext); return ID; }
+{ID}  { yylval.sVal = yytext; return ID; }
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
 {HDINT_LITERAL}  { yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }
 {SIMPLE_ESC_SEQ}  { return SIMPLE_ESC_SEQ; }
 {CHAR_LITERAL}  { yylval.cVal = *yytext; return CHAR_LITERAL; }
-{REG_STR_LITERAL}  { yylval.sVal = strdup(yytext); return REG_STR_LITERAL; }
-{VER_STR_LITERAL}  { yylval.sVal = strdup(yytext); return VER_STR_LITERAL; }
+{REG_STR_LITERAL}  { yylval.sVal = yytext; return REG_STR_LITERAL; }
+{VER_STR_LITERAL}  { yylval.sVal = yytext; return VER_STR_LITERAL; }
 {LBRACE}  { return *yytext; }
 {RBRACE}  { return *yytext; }
 {LBRACKET}  { return *yytext; }

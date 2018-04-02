@@ -1,8 +1,11 @@
 #include "config.h"
 #include "Symbol.cpp"
 
+static int labelCounter = 0;
+static int tempCounter = 0;
+
 class Env{
-private:
+public:
 	// if it is a method
 	string returnType;
 	int argNum;
@@ -13,13 +16,12 @@ private:
 	string _parentClass;
 	map <string, Symbol*> varList;
 	map <string, Symbol*> methodList;
-
+	map <string, Symbol*> extras;
 	map <string, Symbol*> addTable;
 
 	int width;
 	int maxWidth;	
 
-public:
 	string name;
 	Env *prevEnv;
 	string type;
