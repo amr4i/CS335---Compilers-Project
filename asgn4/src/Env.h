@@ -3,6 +3,7 @@
 
 static int labelCounter = 0;
 static int tempCounter = 0;
+enum typeEnum { CLASSTYPE, METHODTYPE, BLOCKTYPE };
 
 class Env{
 public:
@@ -26,7 +27,6 @@ public:
 	int offset;
 
 	// string type;
-	enum typeEnum { CLASSTYPE, METHODTYPE, BLOCKTYPE };
 	typeEnum type; 
 
 	vector <Env*> children;

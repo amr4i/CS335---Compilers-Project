@@ -12,10 +12,10 @@ public:
 	Symbol* AddVar(string varName, string varType, string genericType, int _width);
 	string GetMethodType();
 	Symbol* GetVar(string varName);
-	Symbol* GetVarEnv(string varName);
-	Symbol* GetVarInClass(string varName, string className);
-	string GenTemp(string varType);
-	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
+	// Symbol* GetVarEnv(string varName);
+	// Symbol* GetVarInClass(string varName, string className);
+	string GenTemp();
+	Env* BeginScope(string scopeName, typeEnum scopeType, string returnType, string Class, string Parent_Class);
 	string GetEnvName();
 	string GetPrevEnvName();
 	Env* GetMethod(string methodName);
@@ -25,7 +25,4 @@ public:
 	vector <string> SetArgTypeList(vector <string> args);
 	void PrintTable(Env* env);
 
-	// bool insert(Symbol* symbol);
-	// Symbol* get(string symName);
-	// Symbol* remove(string symName);
 };
