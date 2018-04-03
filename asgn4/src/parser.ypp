@@ -999,6 +999,7 @@ extern void yyerror(char *c){
 
 
 int main(int argc, char* argv[]){
+	cerr << "anything\n";
 	FILE *file;
 	if (argc==2 &&(file=fopen(argv[1],"r")))
 		yyin = file;

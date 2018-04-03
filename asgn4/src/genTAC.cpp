@@ -59,7 +59,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->l1 = s1->place;
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
-				printf("Error: Symbol %s not defined in scope.", s2->place);
+				// printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -69,7 +69,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->l2 = s2->place;
 			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
-				printf("Error: Symbol %s not defined in scope.", s1->place);
+				// printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
@@ -77,13 +77,13 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		else{
 			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
-				printf("Error: Symbol %s not defined in scope.", s1->place);
+				// printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
-				printf("Error: Symbol %s not defined in scope.", s2->place);
+				// printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -94,7 +94,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
 			else if(s2->type == "long")		temptype=="long";
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
@@ -102,19 +102,19 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
 			else if(s2->type=="long")		temptype="long";
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}	
 		else if(s1->type == "long"){
 			if(s2->type=="char" || s2->type=="int" || s2->type=="long")	temptype="long";
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
 		else {
-			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 			exit(1);
 		}
 
@@ -143,7 +143,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 		tac->l1 = s1->place;
 	// 		Symbol* sym2 = ST->GetVar(s2->place);
 	// 		if(sym2==NULL){
-	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
+				printf("Error: Symbol %s not defined in scope.", s2->place);
 	// 			exit(1);
 	// 		}
 	// 		tac->opd2 = ST->GetVar(sym2->name);	
@@ -153,7 +153,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 		tac->l2 = s2->place;
 	// 		Symbol* sym1 = ST->GetVar(s1->place);
 	// 		if(sym1==NULL){
-	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
+				printf("Error: Symbol %s not defined in scope.", s1->place);
 	// 			exit(1);
 	// 		}
 	// 		tac->opd1 = ST->GetVar(sym1->name);	
@@ -161,13 +161,13 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 	else{
 	// 		Symbol* sym1 = ST->GetVar(s1->place);
 	// 		if(sym1==NULL){
-	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
+				printf("Error: Symbol %s not defined in scope.", s1->place);
 	// 			exit(1);
 	// 		}
 	// 		tac->opd1 = ST->GetVar(sym1->name);	
 	// 		Symbol* sym2 = ST->GetVar(s2->place);
 	// 		if(sym2==NULL){
-	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
+				printf("Error: Symbol %s not defined in scope.", s2->place);
 	// 			exit(1);
 	// 		}
 	// 		tac->opd2 = ST->GetVar(sym2->name);	
@@ -178,19 +178,19 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 		if(s2->type=="int")				temptype="int";
 	// 		else if(s2->type=="long")		temptype="long";
 	// 		else{
-	// 			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 	// 			exit(1);
 	// 		}
 	// 	}	
 	// 	else if(s1->type == "long"){
 	// 		if(s2->type=="int" || s2->type=="long")	temptype="long";
 	// 		else{
-	// 			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 	// 			exit(1);
 	// 		}
 	// 	}
 	// 	else {
-	// 		printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 	// 		exit(1);	
 	// 	}
 		
@@ -207,12 +207,12 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		tac->op = op;
 		tac->opType = 2;
 		if(s1->isLit){
-			printf("Error: in Line %d\nLHS of an expression should not be a literal\n",lineNum);
+			// printf("Error: in Line %d\nLHS of an expression should not be a literal\n",lineNum);
 		}
 		else{
 			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
-				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
+				// printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
 				exit(1);
 			}
 			tac->dest=symd;
@@ -224,7 +224,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		else{
 			Symbol* sym1 = ST->GetVar(s2->place);
 			if(sym1==NULL){
-				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s2->place);
+				// printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s2->place);
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
@@ -234,26 +234,26 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		if (s1->type == "char"){
 			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
 		else if (s1->type == "int"){
 			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
 		else if (s1->type == "long"){
 			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
 			else{
-				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
 		else {
-			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 			exit(1);
 		}
 
@@ -267,12 +267,12 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		tac->op = op;
 		tac->opType = 1;
 		if(s1->isLit){
-			printf("Error: in Line %d\nDo not use a literal in this expression\n",lineNum);
+			// printf("Error: in Line %d\nDo not use a literal in this expression\n",lineNum);
 		}
 		else{
 			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
-				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
+				// printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
 				exit(1);
 			}
 			tac->dest=symd;
@@ -280,7 +280,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 
 		// Type-Checking
 		if(!(s1->type=="char" || s1->type=="int" ||s1->type=="long")){
-			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 			exit(1);
 		}
 
@@ -321,7 +321,7 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	d->place = temp->name;
 	d->type = equal_compatible(s1->type, s2->type);
 	if(d->type=="None" || d->type==""){
-		printf("Error: Incompatible types to conditional expression near line %d", lineNum);
+		// printf("Error: Incompatible types to conditional expression near line %d", lineNum);
 		exit(1);
 	}
 	TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
