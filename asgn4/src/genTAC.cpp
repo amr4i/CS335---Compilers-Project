@@ -18,20 +18,58 @@ struct genNode{
 
 void printTAC(genNode* node){
 	int siz = node->code.size();
+	TAC *t;
+	// fori(0,siz){
+	// 	cout << "\t" << node->code[i]->op << " ";
+
+	// 	if(node->code[i]->dest != NULL)
+	// 	cout << node->code[i]->dest->name << " ";
+
+	// 	if(node->code[i]->isInt1)	cout << node->code[i]->l1 << " ";
+	// 	else if(node->code[i]->opd1 != NULL)	cout << node->code[i]->opd1->name << " ";
+
+	// 	if(node->code[i]->isInt2)	cout << node->code[i]->l2 << " ";
+	// 	else if(node->code[i]->opd2 !=NULL)	cout << node->code[i]->opd2->name << " ";
+
+	// 	cerr<< "maa chod do\n" ;
+	// 	cout << "\n";
+	// }
 	fori(0, siz){
-		cout << "\t" << node->code[i]->op << " ";
+		t=node->code[i];
+		if(!t){
+			cerr<<"line number %d has the tac struct empty\n";
+			exit(1);
+		}
+		cout<<t->opType<<" ";
+		switch(t->opType){
+			case 3: 
+				if(!t->isInt1 && !t->isInt2)
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
+				else if(t->isInt1 && !t->isInt2)
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->opd2->name;
+				else if(!t->isInt1 && t->isInt2)
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->l2;
+				else
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->l2;
+				break;
+			case 2:
+				if(!t->isInt1)
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name;
+				else
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1;
+				break;
+			case 1:
+				cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+				break;
+			case 0:
+				cout<<t->lineNum<<", "<<t->op;
+				break;
+			default:
+				cerr<<"Error: Wrong opType\n";
+				exit(1);
+		}
 
-		if(node->code[i]->dest != NULL)
-		cout << node->code[i]->dest->name << " ";
-
-		if(node->code[i]->isInt1)	cout << node->code[i]->l1 << " ";
-		else if(node->code[i]->opd1 != NULL)	cout << node->code[i]->opd1->name << " ";
-
-		if(node->code[i]->isInt2)	cout << node->code[i]->l2 << " ";
-		else if(node->code[i]->opd2 !=NULL)	cout << node->code[i]->opd2->name << " ";
-
-		cerr<< "maa chod do\n" ;
-		cout << "\n";
+		cout<<endl;
 	}
 }
 
@@ -211,6 +249,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		tac->opType = 2;
 		if(s1->isLit){
 			// printf("Error: in Line %d\nLHS of an expression should not be a literal\n",lineNum);
+			exit(1);
 		}
 		else{
 			Symbol* symd = ST->GetVar(s1->place);
