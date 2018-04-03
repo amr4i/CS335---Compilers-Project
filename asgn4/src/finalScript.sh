@@ -1,5 +1,5 @@
 #!/bin/bash
-bin/asgn3 $1 >test.txt
+bin/asgn4 $1 >test.txt
 # cat test.txt
 tac test.txt >der.txt
 n=$(wc -l < der.txt)

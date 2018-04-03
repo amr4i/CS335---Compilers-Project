@@ -22,10 +22,10 @@ void printTAC(genNode* node){
 
 		cout << node->code[i]->dest->name << " ";
 
-		if(isInt1)	cout << node->code[i]->l1 << " ";
+		if(node->code[i]->isInt1)	cout << node->code[i]->l1 << " ";
 		else	cout << node->code[i]->opd1->name << " ";
 
-		if(isInt2)	cout << node->code[i]->l2 << " ";
+		if(node->code[i]->isInt2)	cout << node->code[i]->l2 << " ";
 		else	cout << node->code[i]->opd2->name << " ";
 
 		cout << "\n";
