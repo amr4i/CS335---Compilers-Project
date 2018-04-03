@@ -129,106 +129,106 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {COMMENT} ;
 {WHITESPACE}  ;
 {NEWLINE} ;	
-{BASE} { return BASE; }
-{BOOL} { return BOOL; }
-{BREAK} { return BREAK; }
-{CASE} { return CASE; }
-{CATCH} { return CATCH; }
-{CHAR} { return CHAR; }
+{BASE} { yylval.sVal = yytext; return BASE; }
+{BOOL} { yylval.sVal = yytext; return BOOL; }
+{BREAK} { yylval.sVal = yytext; return BREAK; }
+{CASE} { yylval.sVal = yytext; return CASE; }
+{CATCH} { yylval.sVal = yytext; return CATCH; }
+{CHAR} { yylval.sVal = yytext; return CHAR; }
 {CLASS} { yylval.sVal = yytext; return CLASS; }
-{CONST} { return CONST; }
-{CONTINUE}  { return CONTINUE; }
-{DEFAULT} { return DEFAULT; }
-{DO} { return DO; }
-{ELSE} { return ELSE; }
-{FALSE} { return FALSE; }
-{FINALLY} { return FINALLY; }
-{FOR} { return FOR; }
-{FOREACH} { return FOREACH; }
-{GOTO} { return GOTO; }
-{IF} { return IF; }
-{IN} { return IN; }
+{CONST} { yylval.sVal = yytext; return CONST; }
+{CONTINUE}  { yylval.sVal = yytext; return CONTINUE; }
+{DEFAULT} { yylval.sVal = yytext; return DEFAULT; }
+{DO} { yylval.sVal = yytext; return DO; }
+{ELSE} { yylval.sVal = yytext; return ELSE; }
+{FALSE} { yylval.sVal = yytext; return FALSE; }
+{FINALLY} { yylval.sVal = yytext; return FINALLY; }
+{FOR} { yylval.sVal = yytext; return FOR; }
+{FOREACH} { yylval.sVal = yytext; return FOREACH; }
+{GOTO} { yylval.sVal = yytext; return GOTO; }
+{IF} { yylval.sVal = yytext; return IF; }
+{IN} { yylval.sVal = yytext; return IN; }
 {INT} { yylval.sVal = yytext; return INT; }
-{LONG} { return LONG; }
+{LONG} { yylval.sVal = yytext; return LONG; }
 {NAMESPACE} { yylval.sVal = yytext; return NAMESPACE; }
 {NEW} { yylval.sVal = yytext; return NEW; }
-{NULL_LIT} { return NULL_LIT; }
+{NULL_LIT} { yylval.sVal = yytext; return NULL_LIT; }
 {OBJECT} { yylval.sVal = yytext; return OBJECT; }
-{PARAMS} { return PARAMS; }
-{PRIVATE} { return PRIVATE; }
-{PROTECTED} { return PROTECTED; }
+{PARAMS} { yylval.sVal = yytext; return PARAMS; }
+{PRIVATE} { yylval.sVal = yytext; return PRIVATE; }
+{PROTECTED} { yylval.sVal = yytext; return PROTECTED; }
 {PUBLIC} { yylval.sVal = yytext; return PUBLIC; }
-{REF} { return REF; }
-{RETURN} { return RETURN; }
+{REF} { yylval.sVal = yytext; return REF; }
+{RETURN} { yylval.sVal = yytext; return RETURN; }
 {STRING} { yylval.sVal = yytext; return STRING; }
-{STRUCT} { return STRUCT; }
-{SWITCH} { return SWITCH; }
-{THIS} { return THIS; }
-{THROW} { return THROW; }
-{TRUE} { return TRUE; }
-{TRY} { return TRY; }
-{TYPEOF} { return TYPEOF; }
+{STRUCT} { yylval.sVal = yytext; return STRUCT; }
+{SWITCH} { yylval.sVal = yytext; return SWITCH; }
+{THIS} { yylval.sVal = yytext; return THIS; }
+{THROW} { yylval.sVal = yytext; return THROW; }
+{TRUE} { yylval.sVal = yytext; return TRUE; }
+{TRY} { yylval.sVal = yytext; return TRY; }
+{TYPEOF} { yylval.sVal = yytext; return TYPEOF; }
 {USING} { yylval.sVal = yytext; return USING; }
 {VOID} { yylval.sVal = yytext; return VOID; }
-{WHILE} { return WHILE; }
-{WHERE}	{return WHERE; }
+{WHILE} { yylval.sVal = yytext; return WHILE; }
+{WHERE}	{yylval.sVal = yytext; return WHERE; }
 {ID}  { yylval.sVal = yytext; return ID; }
 {DINT_LITERAL}  { yylval.iVal = atoi(yytext); return DINT_LITERAL; }
 {HDINT_LITERAL}  { yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }
-{SIMPLE_ESC_SEQ}  { return SIMPLE_ESC_SEQ; }
+{SIMPLE_ESC_SEQ}  { yylval.sVal = yytext; return SIMPLE_ESC_SEQ; }
 {CHAR_LITERAL}  { yylval.sVal = yytext; return CHAR_LITERAL; }
 {REG_STR_LITERAL}  { yylval.sVal = yytext; return REG_STR_LITERAL; }
 {VER_STR_LITERAL}  { yylval.sVal = yytext; return VER_STR_LITERAL; }
-{LBRACE}  { return *yytext; }
-{RBRACE}  { return *yytext; }
-{LBRACKET}  { return *yytext; }
-{RBRACKET}  { return *yytext; }
-{LPARENTHESES}  { return *yytext; }
-{RPARENTHESES}  { return *yytext; }
-{DOT}  { return *yytext; }
-{COMMA}  { return *yytext; }
-{COLON}  { return *yytext; }
-{SEMICOLON}  { return *yytext; }
-{PLUS}  { return *yytext; }
-{MINUS}  { return *yytext; }
-{STAR}  { return *yytext; }
-{DIVIDE}  { return *yytext; }
-{MODULO}  { return *yytext; }
-{AMPERSAND}  { return *yytext; }
-{OR}  { return *yytext; }
-{CARET}  { return *yytext; }
-{EXCLAMATION}  { return *yytext; }
-{TILDE}  { return *yytext; }
-{EQUALS}  { return *yytext; }
-{LESS_THAN}  { return *yytext; }
-{GREATER_THAN}  { return *yytext; }
-{QUESTION_MARK}  { return *yytext; }
-{DOUBLE_QM}  { return DQM; }
-{DOUBLE_COLON}  { return DCLN; }
-{INCREMENT}  { return INCR; }
-{DECREMENT}  { return DECR; }
-{REL_AND} { return RAND; }
-{REL_OR} { return ROR; }
-{REL_EQUALS}  { return REQ; }
-{REL_NOT_EQ}  { return RNE; }
-{LESS_EQUALS}  { return LE; }
-{GREATER_EQUALS}  { return GE; }
-{ASSIGN_PLUS}  { return APLUS; }
-{ASSIGN_MINUS}  { return AMINUS; }
-{ASSIGN_STAR}  { return AMULT; }
-{ASSIGN_DIV}  { return ADIV; }
-{ASSIGN_MOD}  { return AMOD; }
-{ASSIGN_AND}  { return AAND; }
-{ASSIGN_OR}  { return AOR; }
-{ASSIGN_CARET}  { return ACARET; }
-{LEFT_SHIFT}  { return LSHIFT; }
-{LEFT_SHIFT_EQ}  { return LSHIFTEQ; }
-{RIGHT_SHIFT}  { return RSHIFT; }
-{RIGHT_SHIFT_EQ}  { return RSHIFTEQ; }
+{LBRACE}  { yylval.sVal = yytext; return *yytext; }
+{RBRACE}  { yylval.sVal = yytext; return *yytext; }
+{LBRACKET}  { yylval.sVal = yytext; return *yytext; }
+{RBRACKET}  { yylval.sVal = yytext; return *yytext; }
+{LPARENTHESES}  { yylval.sVal = yytext; return *yytext; }
+{RPARENTHESES}  { yylval.sVal = yytext; return *yytext; }
+{DOT}  { yylval.sVal = yytext; return *yytext; }
+{COMMA}  { yylval.sVal = yytext; return *yytext; }
+{COLON}  { yylval.sVal = yytext; return *yytext; }
+{SEMICOLON}  { yylval.sVal = yytext; return *yytext; }
+{PLUS}  { yylval.sVal = yytext; return *yytext; }
+{MINUS}  { yylval.sVal = yytext; return *yytext; }
+{STAR}  { yylval.sVal = yytext; return *yytext; }
+{DIVIDE}  { yylval.sVal = yytext; return *yytext; }
+{MODULO}  { yylval.sVal = yytext; return *yytext; }
+{AMPERSAND}  { yylval.sVal = yytext; return *yytext; }
+{OR}  { yylval.sVal = yytext; return *yytext; }
+{CARET}  { yylval.sVal = yytext; return *yytext; }
+{EXCLAMATION}  { yylval.sVal = yytext; return *yytext; }
+{TILDE}  { yylval.sVal = yytext; return *yytext; }
+{EQUALS}  { yylval.sVal = yytext; return *yytext; }
+{LESS_THAN}  { yylval.sVal = yytext; return *yytext; }
+{GREATER_THAN}  { yylval.sVal = yytext; return *yytext; }
+{QUESTION_MARK}  { yylval.sVal = yytext; return *yytext; }
+{DOUBLE_QM}  { yylval.sVal = yytext; return DQM; }
+{DOUBLE_COLON}  { yylval.sVal = yytext; return DCLN; }
+{INCREMENT}  { yylval.sVal = yytext; return INCR; }
+{DECREMENT}  { yylval.sVal = yytext; return DECR; }
+{REL_AND} { yylval.sVal = yytext; return RAND; }
+{REL_OR} { yylval.sVal = yytext; return ROR; }
+{REL_EQUALS}  { yylval.sVal = yytext; return REQ; }
+{REL_NOT_EQ}  { yylval.sVal = yytext; return RNE; }
+{LESS_EQUALS}  { yylval.sVal = yytext; return LE; }
+{GREATER_EQUALS}  { yylval.sVal = yytext; return GE; }
+{ASSIGN_PLUS}  { yylval.sVal = yytext; return APLUS; }
+{ASSIGN_MINUS}  { yylval.sVal = yytext; return AMINUS; }
+{ASSIGN_STAR}  { yylval.sVal = yytext; return AMULT; }
+{ASSIGN_DIV}  { yylval.sVal = yytext; return ADIV; }
+{ASSIGN_MOD}  { yylval.sVal = yytext; return AMOD; }
+{ASSIGN_AND}  { yylval.sVal = yytext; return AAND; }
+{ASSIGN_OR}  { yylval.sVal = yytext; return AOR; }
+{ASSIGN_CARET}  { yylval.sVal = yytext; return ACARET; }
+{LEFT_SHIFT}  { yylval.sVal = yytext; return LSHIFT; }
+{LEFT_SHIFT_EQ}  { yylval.sVal = yytext; return LSHIFTEQ; }
+{RIGHT_SHIFT}  { yylval.sVal = yytext; return RSHIFT; }
+{RIGHT_SHIFT_EQ}  { yylval.sVal = yytext; return RSHIFTEQ; }
 .	{yyerror(NULL);}
 
 %%
 
 int yywrap(void){
-	return 1;
+	yylval.sVal = yytext; return 1;
 }
