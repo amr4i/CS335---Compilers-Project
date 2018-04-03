@@ -30,6 +30,7 @@ string Env::genTemp(string varType = "None", string genericType = "simple", int 
 	_width = getWidth(varType, genericType, _width);
 
 	Symbol* symbol = new Symbol(place, varType, _width, genericType, offset);
+	place = symbol->name;
 	addTable[place] = symbol;
 
 	offset += _width;
@@ -62,7 +63,7 @@ Symbol* Env::addVar(string varName, string varType = "None" , string genericType
 	_width = getWidth(varType, genericType, _width);
 
 	Symbol* symbol = new Symbol(varName, varType, _width, genericType, offset);
-	addTable[varName] = symbol;
+	addTable[symbol->name] = symbol;
 
 	offset += _width;
 	width += _width;

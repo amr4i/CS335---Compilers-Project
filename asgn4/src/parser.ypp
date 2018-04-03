@@ -52,7 +52,7 @@
 //%type <sVal> integral_type numeric_type class_type simple_type non_nullable_value_type nullable_type
 
 
-%type <node> literal boolean_literal integer_literal string_literal character_literal null_literal modifiers
+%type <node> literal boolean_literal integer_literal string_literal character_literal null_literal modifiers array_initializer
 %type <node> namespace_name namespace_or_type_name type_name qualified_identifier identifier start
 
 %type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
@@ -69,7 +69,7 @@
 %type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list statement_expression
 %type <node> method_header fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
-%type <node> statement class_declaration class_base class_body method_body member_name
+%type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration 
 %type <sVal> assignment_operator rank_specifier 
 %%
 
@@ -80,13 +80,16 @@ start :	compilation_unit	{ $$ = $1; printTAC($$);}
 identifier : 	ID 		
 				{
 					string s1($1);
-					Symbol* sym = ST->GetVar(s1);
+					Symbol* sym = ST->GetVar("_" + s1);
+					
 					if(sym == NULL){
-						ST->AddVar(s1);
+						sym = ST->AddVar(s1);
 					}
+
 					genNode* newNode = new genNode();
-					newNode->place = s1;
+					newNode->place = sym->name;
 					$$ = newNode;
+					$$->type = sym->type;
 				}
 				;
 
@@ -469,7 +472,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			cerr<<"fuck" << endl;
+			cerr<<"fuck <-" << endl;
 			gen2OpCode($$, "+", $1, $3, 1234555);
 		}
 		| additive_expression '-' multiplicative_expression	
@@ -658,7 +661,9 @@ assignment_operator : '=' 	{ $$ = "="; }
 		| LSHIFTEQ 	{ $$ = "<<="; }
 		| right_shift_assignment	{ $$ = ">>="; }
 		;
-expression : non_assignment_expression 	{ $$ = $1; }
+expression : non_assignment_expression 	{ $$ = $1; 
+			
+		}
 		| assignment	{ $$ = $1; }
 		;
 non_assignment_expression : conditional_expression	{ $$ = $1; }
@@ -703,9 +708,11 @@ local_variable_declaration : local_variable_type local_variable_declarators
 		{ 
 			$$ = $2;
 			string typeName = $1->place;
+			cerr << "\t" << typeName << "\n";
 			int siz = $$->varDecs.size();
 			fori(0, siz){
 				($$->varDecs)[i]->type = typeName;
+				cerr << "Name: " << ($$->varDecs)[i]->name << ($$->varDecs)[i]->type << "\n" ;
 			}
 			$$->type = typeName;
 		}
@@ -727,12 +734,31 @@ local_variable_declarator : identifier
 		| identifier '=' local_variable_initializer	
 		{
 			$$ = $3;
+			
 			TAC* tac = new TAC();
+			Symbol* sym;
+			
+			sym = ST->GetVar($1->place);
+			tac->dest = sym;
+			tac->op = "=";
 
+			if($3->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+			}
+			else{
+				Symbol* sym_ = ST->GetVar($3->place);
+				tac->opd1 = sym_;
+				sym -> baseType = sym_->baseType;
+			}
+
+			$$->code.pb(tac);
+			$$->varDecs.pb(ST->GetVar($1->place));
+				
 		}
 		;
-local_variable_initializer : expression 	{  }
-		| array_initializer	{  }
+local_variable_initializer : expression 	{ $$ = $1; }
+		| array_initializer	{ $$ = $1; }
 		;
 local_constant_declaration :  CONST type constant_declarators	{  }
 		;
@@ -842,7 +868,7 @@ namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{ $$ = $2
 		| NAMESPACE qualified_identifier namespace_body ';'	{ $$ = $2; }
 		;
 qualified_identifier :	identifier 	{ $$ = $1; }
-		| qualified_identifier '.' identifier	{ $$ = $3; }
+		| qualified_identifier '.' identifier	{ }
 		;
 namespace_body : '{' '}' 	{  }
 		| '{' namespace_member_declarations '}' 	{  }
@@ -1033,7 +1059,10 @@ array_type : non_array_type rank_specifier	{
 rank_specifier : '[' ']' 	{   }
 		| '[' ',' ']'	{  }
 		;
-array_initializer : '{' '}' 	{  }
+array_initializer : '{' '}' 	
+		{ 
+
+		}
 		| '{' variable_initializer_list '}' 	{  }
 		| '{' variable_initializer_list ',' '}'	{  }
 		;

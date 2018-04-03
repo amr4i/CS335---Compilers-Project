@@ -121,6 +121,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		string tempName = ST->GenTemp();
 		Symbol* temp = ST->GetVar(tempName);
 		d->place = temp->name;
+		cerr << "Here\n";
 		temp->type = temptype;
 		d->type = temp->type;
 		tac->dest = temp;
