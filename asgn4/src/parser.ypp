@@ -55,6 +55,8 @@
 %type <node> literal boolean_literal integer_literal string_literal character_literal null_literal modifiers array_initializer
 %type <node> namespace_name namespace_or_type_name type_name qualified_identifier identifier start
 
+%type <sVal> assignment_operator rank_specifier
+
 %type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
 %type <node> variable_reference expression argument_list argument argument_value argument_name primary_no_array_creation_expression
 %type <node> primary_expression array_creation_expression parenthesized_expression postfix_expression
@@ -69,9 +71,12 @@
 %type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list statement_expression
 %type <node> method_header fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
-%type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration 
-%type <sVal> assignment_operator rank_specifier 
+%type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
+%type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
+%type <node> namespace_member_declaration using_alias_directive class_member_declaration 
+
 %%
+
 
 start :	compilation_unit	{ $$ = $1; printTAC($$);}
 		;
@@ -687,15 +692,19 @@ embedded_statement : block 	{ $$ = $1; }
 		| try_statement 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
-block : block_start '{' '}' block_end 	{ 	}
-		| block_start '{' statement_list '}' block_end	{   }
+block : block_start '{' '}' block_end 	{ $$ = NULL;	}
+		| block_start '{' statement_list '}' block_end	{  $$ = $3;   }
 		;
 block_start : epsilon	{	}
 		;
 block_end : epsilon	{	}
 		;
 statement_list : statement 	{ $$ = $1; }
-		| statement_list statement	{ $$ = $1;}
+		| statement_list statement	
+		{ 
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
 		;
 empty_statement : ';'	{  }
 		;
@@ -864,47 +873,82 @@ compilation_unit : using_directives namespace_member_declarations 	{ $$ = $2; }
 		| using_directives 	{  }
 		| epsilon	{  }
 		;
-namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	{ $$ = $2; }
-		| NAMESPACE qualified_identifier namespace_body ';'	{ $$ = $2; }
+namespace_declaration :	NAMESPACE qualified_identifier namespace_body 	
+		{
+			$$ = $2; 
+			$$->code.pb(genLabelTAC($2->place));
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
+		| NAMESPACE qualified_identifier namespace_body ';'	
+		{
+			$$ = $2; 
+			$$->code.pb(genLabelTAC($2->place));
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
 		;
 qualified_identifier :	identifier 	{ $$ = $1; }
 		| qualified_identifier '.' identifier	{ }
 		;
-namespace_body : '{' '}' 	{  }
-		| '{' namespace_member_declarations '}' 	{  }
+namespace_body : '{' '}' 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+		}
+		| '{' namespace_member_declarations '}' 	{ $$ = $2; }
 		| '{' using_directives '}' 	{ $$ = $2; }
-		| '{' using_directives namespace_member_declarations '}'	{  }
+		| '{' using_directives namespace_member_declarations '}'	{ $$ = $3; }
 		;
 using_directives : using_directive 	{ $$ = $1; }
-		| using_directives using_directive	{  }
+		| using_directives using_directive	{ $$ = $1; }
 		;
-using_directive : using_alias_directive 	{  }
+using_directive : using_alias_directive 	{ $$ = $1; }
 		| using_namespace_directive	{ $$ = $1; }
 		;
-using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{  }
+using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{ $$ = $2; }
 		;
 using_namespace_directive : USING namespace_name ';'	{ $$ = $2; }
 		;
-namespace_member_declarations : namespace_member_declaration 	{  }
+namespace_member_declarations : namespace_member_declaration 	{ $$ = $1; }
 		| namespace_member_declarations namespace_member_declaration	{  }
 		;
-namespace_member_declaration : namespace_declaration 	{  }
-		| struct_declaration	{  }
-		| class_declaration     {  }
+namespace_member_declaration : namespace_declaration 	{ $$ = $1; }
+		| struct_declaration	{ $$ = $1; }
+		| class_declaration     { $$ = $1; }
 		;
 qualified_alias_member : identifier DCLN identifier 	{ $$ = $1; }
 		;
 
 /*B.2.7 Classes;*/ 
-class_declaration : CLASS identifier class_body 	{ $$ = $2; }
-		| modifiers CLASS identifier class_body 	{  }
+class_declaration : CLASS identifier class_body 	
+		{ 
+			$$ = $2;
+			$$->type = "class";
+			$$->code = $3->code;
+		}
+		| modifiers CLASS identifier class_body 	
+		{ 
+			$$ = $3;
+			$$->type = "class";
+			$$->code = $4->code;
+		}
 		| CLASS identifier class_base class_body 	{  }
-		| CLASS identifier class_body ';' 	{  }
+		| CLASS identifier class_body ';' 	
+		{ 
+			$$ = $2;
+			$$->type = "class";
+			$$->code = $3->code;
+		}
 		| modifiers CLASS identifier class_base class_body 	{  }
-		| modifiers CLASS identifier class_body ';' 	{  }
+		| modifiers CLASS identifier class_body ';' 	
+		{ 
+			$$ = $3;
+			$$->type = "class";
+			$$->code = $4->code;
+		}
 		| CLASS identifier class_base class_body ';' 	{  }
 		| modifiers CLASS identifier class_base class_body ';' 	{  }
 		;
+
 modifiers : modifier 	{ $$ = $1; }
 		| modifiers modifier	{  }
 		;
@@ -941,15 +985,19 @@ class_body : '{' '}' 	{
 		}
 		| '{' class_member_declarations '}'	{ $$ = $2; }
 		;
-class_member_declarations : class_member_declaration 	{  }
-		| class_member_declarations class_member_declaration	{  }
+class_member_declarations : class_member_declaration 	{ $$ = $1; }
+		| class_member_declarations class_member_declaration	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
 		;
-class_member_declaration : constant_declaration 	{  }
-		| field_declaration 	{  }
-		| method_declaration 	{  }
-		| constructor_declaration 	{  }
-		| destructor_declaration 	{  }
-		| struct_declaration	{  }
+class_member_declaration : constant_declaration 	{ $$ = $1; }
+		| field_declaration 	{ $$ = $1; }
+		| method_declaration 	{ $$ = $1; }
+		| constructor_declaration 	{ $$ = $1; }
+		| destructor_declaration 	{  $$ = $1;  }
+		| struct_declaration	{  $$ = $1;  }
 		;
 constant_declaration : CONST type constant_declarators ';' 	{  }
 		| modifiers CONST type constant_declarators ';'	{  }
@@ -972,7 +1020,7 @@ variable_declarator : identifier 	{  }
 variable_initializer : expression 	{  }
 		| array_initializer	{  }
 		;
-method_declaration : method_header method_body	{  }
+method_declaration : method_header method_body	{ $$ = $2; }
 		;
 method_header : type member_name '(' ')' 	{  }
 		| modifiers type member_name '(' ')' 	{  }

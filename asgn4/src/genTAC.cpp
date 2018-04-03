@@ -21,14 +21,16 @@ void printTAC(genNode* node){
 	fori(0, siz){
 		cout << "\t" << node->code[i]->op << " ";
 
+		if(node->code[i]->dest != NULL)
 		cout << node->code[i]->dest->name << " ";
 
 		if(node->code[i]->isInt1)	cout << node->code[i]->l1 << " ";
-		else	cout << node->code[i]->opd1->name << " ";
+		else if(node->code[i]->opd1 != NULL)	cout << node->code[i]->opd1->name << " ";
 
 		if(node->code[i]->isInt2)	cout << node->code[i]->l2 << " ";
-		else	cout << node->code[i]->opd2->name << " ";
+		else if(node->code[i]->opd2 !=NULL)	cout << node->code[i]->opd2->name << " ";
 
+		cerr<< "maa chod do\n" ;
 		cout << "\n";
 	}
 }
@@ -371,3 +373,9 @@ void getPreUnaryOpCode(string op, genNode* d, genNode* s, int lineNum){
 	d->code.insert(d->code.begin(), tac);
 }
 
+TAC* genLabelTAC(string labelName){
+	TAC* tac = new TAC();
+	tac->op = "label";
+	tac->target = labelName;
+	return tac;
+}
