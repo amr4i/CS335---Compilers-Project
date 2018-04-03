@@ -14,10 +14,13 @@
 	#include "src/genTAC.cpp"
 	#include "y.tab.h"
 	using namespace std;
-	extern void yyerror(char *c);
+
+	extern "C" int yylex();
+	// extern "C" int yyparse();
+	extern "C" FILE *yyin;
+	extern void yyerror(const char *c);
 	//extern int 1234555;
 
-	int yylex(void);
 
 	// SymTable* ST = new SymTable();
 %}
@@ -26,7 +29,7 @@
 
 %union{
 	int iVal;
-	const char *sVal;
+	char *sVal;
 	struct genNode* node;	
 };
 
@@ -77,15 +80,15 @@ start :	compilation_unit	{ $$ = $1; printTAC($$);}
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
 				{
-					cerr << "here" << endl;
-					if(ST->GetVar(string($1)) == NULL){
-						ST->AddVar(string($1));
+					string s1($1);
+					cerr << typeid(s1).name() << endl;
+					Symbol* sym = ST->GetVar(s1);
+					cerr << "fuck it!" << endl;
+					if(sym == NULL){
+						ST->AddVar(s1);
 					}
-					cerr << "here" << endl;
 					genNode* newNode = new genNode();
-					cerr << "here" << endl;
-					newNode->place = string($1);
-					cerr << "here" << endl;
+					newNode->place = s1;
 					$$ = newNode;
 				}
 				;
@@ -114,17 +117,19 @@ literal : boolean_literal
 		;
 
 boolean_literal : TRUE 	{	
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "bool";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;	
 		}
 		| FALSE		{ 	
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "bool";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;
 		}
 		;
@@ -146,10 +151,11 @@ integer_literal : DINT_LITERAL 	{
 		;
 
 character_literal : CHAR_LITERAL	{
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "char";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;
 		}
 		;
@@ -160,26 +166,29 @@ simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{  }
 */
 
 string_literal : REG_STR_LITERAL 	{
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "string";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;
 		}
 		| VER_STR_LITERAL	{
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "string";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;
 		}
 		;
 
 null_literal :	NULL_LIT	{
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->type = "null";
-			$$->place = string($1);
+			$$->place = s1;
 			$$->isLit = true;
 		}
 		;
@@ -260,14 +269,16 @@ non_nullable_value_type : simple_type	{ $$ = $1; }
 
 
 class_type : OBJECT 	{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		| STRING	{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		;
 
@@ -830,24 +841,28 @@ modifiers : modifier 	{ $$ = $1; }
 		| modifiers modifier	{  }
 		;
 modifier : NEW 	{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		| PUBLIC 		{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		| PROTECTED 	{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		| PRIVATE	{ 
+			string s1($1);
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = string($1);
+			$$->place = s1;
 		}
 		;
 class_base : ':' class_type	{ $$ = $2; }
@@ -973,8 +988,8 @@ array_type : non_array_type rank_specifier	{
 			$$ = newNode;
 		}
 		;
-rank_specifier : '[' ']' 	{ $$ = "[]";  }
-		| '[' ',' ']'	{ $$ = "[,]" ;}
+rank_specifier : '[' ']' 	{   }
+		| '[' ',' ']'	{  }
 		;
 array_initializer : '{' '}' 	{  }
 		| '{' variable_initializer_list '}' 	{  }
@@ -990,10 +1005,9 @@ epsilon : 	%empty 		{}
 
 %%	
 
-extern FILE *yyin;
-
-extern void yyerror(char *c){
-		cout << "Error at line: " << 1234555 << "\n" << c << endl;
+extern void yyerror(const char *c){
+		string str(c);
+		cout << "Error at line: " << 1234555 << "\n" << str << endl;
 		exit(1);	
 	}
 
@@ -1011,8 +1025,10 @@ int main(int argc, char* argv[]){
 		cerr<< "Please specify correct file name\n";
 		exit(1);
 	}
+
 	yydebug = 0;
 	yyparse();
+	
 	/*
 	cerr << "==================================================\n";
 	cerr << "                 PARSING COMPLETE\n";

@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iterator>
 #include <regex>
+#include <typeinfo>
 
 using namespace std;
 
