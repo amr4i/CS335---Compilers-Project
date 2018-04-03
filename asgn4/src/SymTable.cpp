@@ -18,7 +18,7 @@ Env* SymTable::GetMainClass(){
 	return NULL;
 }
 
-Symbol* SymTable::AddVar(string varName, string varType, string genericType, int _width){
+Symbol* SymTable::AddVar(string varName, string varType = "None", string genericType = "simple", int _width = -1){
 	return curEnv->addVar(varName, varType, genericType, _width);
 }
 

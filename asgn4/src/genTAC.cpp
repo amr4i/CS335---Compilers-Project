@@ -19,7 +19,7 @@ struct genNode{
 string getNewLabel(){
 	string labelName = "label_"+to_string(labelCounter);
 	labelCounter+=1;
-	symTable.AddVar(labelName, "label", "label", labelName.size());
+	ST->AddVar(labelName, "label", "label", labelName.size());
 	return labelName;
 }
 
@@ -40,36 +40,36 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		else if(s1->isLit && !s2->isLit){
 			tac->isInt1 = true;
 			tac->l1 = s1->place;
-			Symbol* sym2 = symTable.get(s2->place);
+			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
-			tac->opd2 = symTable.get(sym2);	
+			tac->opd2 = ST->GetVar(sym2->name);	
 		}
 		else if(!s1->isLit && s2->isLit){
 			tac->isInt2 = true;
 			tac->l2 = s2->place;
-			Symbol* sym1 = symTable.get(s1->place);
+			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
-			tac->opd1 = symTable.get(sym1);	
+			tac->opd1 = ST->GetVar(sym1->name);	
 		}	
 		else{
-			Symbol* sym1 = symTable.get(s1->place);
+			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
 				printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
-			tac->opd1 = symTable.get(sym1);	
-			Symbol* sym2 = symTable.get(s2->place);
+			tac->opd1 = ST->GetVar(sym1->name);	
+			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
 				printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
-			tac->opd2 = symTable.get(sym2);	
+			tac->opd2 = ST->GetVar(sym2->name);	
 		}			
 		
 		// Type-Checking
@@ -101,10 +101,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			exit(1);
 		}
 
-
-		string tempName = symTable.curEnv->genTemp(temptype);
-		Symbol* temp = symTable.get(tempName);
+		string tempName = ST->GenTemp();
+		Symbol* temp = ST->GetVar(tempName);
 		d->place = temp->name;
+		temp->type = temptype;
 		d->type = temp->type;
 		tac->dest = temp;
 		d->code.pb(tac);
@@ -121,39 +121,39 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 		tac->l1 = s1->place;
 	// 		tac->l2 = s2->place;
 	// 	}
-	// 	else if(s1->isLit && !s2->isLit){
+	// 	else if(s1->isLit &.& !s2->isLit){
 	// 		tac->isInt1 = true;
 	// 		tac->l1 = s1->place;
-	// 		Symbol* sym2 = symTable.get(s2->place);
+	// 		Symbol* sym2 = ST->GetVar(s2->place);
 	// 		if(sym2==NULL){
 	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
 	// 			exit(1);
 	// 		}
-	// 		tac->opd2 = symTable.get(sym2);	
+	// 		tac->opd2 = ST->GetVar(sym2->name);	
 	// 	}
 	// 	else if(!s1->isLit && s2->isLit){
 	// 		tac->isInt2 = true;
 	// 		tac->l2 = s2->place;
-	// 		Symbol* sym1 = symTable.get(s1->place);
+	// 		Symbol* sym1 = ST->GetVar(s1->place);
 	// 		if(sym1==NULL){
 	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
 	// 			exit(1);
 	// 		}
-	// 		tac->opd1 = symTable.get(sym1);	
+	// 		tac->opd1 = ST->GetVar(sym1->name);	
 	// 	}	
 	// 	else{
-	// 		Symbol* sym1 = symTable.get(s1->place);
+	// 		Symbol* sym1 = ST->GetVar(s1->place);
 	// 		if(sym1==NULL){
 	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
 	// 			exit(1);
 	// 		}
-	// 		tac->opd1 = symTable.get(sym1);	
-	// 		Symbol* sym2 = symTable.get(s2->place);
+	// 		tac->opd1 = ST->GetVar(sym1->name);	
+	// 		Symbol* sym2 = ST->GetVar(s2->place);
 	// 		if(sym2==NULL){
 	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
 	// 			exit(1);
 	// 		}
-	// 		tac->opd2 = symTable.get(sym2);	
+	// 		tac->opd2 = ST->GetVar(sym2->name);	
 	// 	}			
 		
 	// 	// Type-Checking
@@ -177,8 +177,8 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 	// 		exit(1);	
 	// 	}
 		
-	// 	string tempName = symTable.curEnv->genTemp(temptype);
-	// 	Symbol* temp = symTable.get(tempName);
+	// 	string tempName = ST.curEnv->genTemp(temptype);
+	// 	Symbol* temp = ST->GetVar(tempName);
 	// 	d->place = temp->name;
 	// 	d->type = temp->type;
 	// 	tac->dest = temp;
@@ -193,7 +193,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			printf("Error: in Line %d\nLHS of an expression should not be a literal\n",lineNum);
 		}
 		else{
-			Symbol* symd = symTable.get(s1->place);
+			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
 				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
 				exit(1);
@@ -205,12 +205,12 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->l1 = s2->place;
 		}
 		else{
-			Symbol* sym1 = symTable.get(s2->place);
+			Symbol* sym1 = ST->GetVar(s2->place);
 			if(sym1==NULL){
 				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s2->place);
 				exit(1);
 			}
-			tac->opd1 = symTable.get(sym1);	
+			tac->opd1 = ST->GetVar(sym1->name);	
 		}			
 		
 		// Type-Checking
@@ -240,7 +240,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			exit(1);
 		}
 
-		d->place = s1->name;
+		d->place = s1->place;
 		d->type = s1->type;
 		d->code.pb(tac);	
 	}
@@ -253,7 +253,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			printf("Error: in Line %d\nDo not use a literal in this expression\n",lineNum);
 		}
 		else{
-			Symbol* symd = symTable.get(s1->place);
+			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
 				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
 				exit(1);
@@ -267,7 +267,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			exit(1);
 		}
 
-		d->place = s1->name;
+		d->place = s1->place;
 		d->type = s1->type;
 		d->code.pb(tac);	
 	}
@@ -299,11 +299,12 @@ string equal_compatible(string s1, string s2){
 
 void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	d->code = c->code;
-	Symbol* temp = genTemp();
+	string tempName = ST->GenTemp();
+	Symbol* temp = ST->GetVar(tempName);
 	d->place = temp->name;
 	d->type = equal_compatible(s1->type, s2->type);
 	if(d->type=="None" || d->type==""){
-		printf("Error: Incompatible types to conditional expression near line %d", op, lineNum);
+		printf("Error: Incompatible types to conditional expression near line %d", lineNum);
 		exit(1);
 	}
 	TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
@@ -317,7 +318,7 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	string newLabel3 = getNewLabel();
 	tac1->op = "label"; tac1->target = newLabel1;
 	tac2->op = "label"; tac2->target = newLabel2;
-	tac3->op = "ifgoto"; tac3->dest = symTable.get(c->place); tac3->target = newLabel1;
+	tac3->op = "ifgoto"; tac3->dest = ST->GetVar(c->place); tac3->target = newLabel1;
 	tac4->op = "goto"; tac4->target = newLabel2;
 	tac5->op = "goto"; tac5->target = newLabel3;
 	tac6->op = "label"; tac6->target = newLabel3;
@@ -326,14 +327,14 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 		tac7->isInt1=true;
 		tac7->l1=s1->place;
 	}
-	else 	tac7->opd1 = symTable.get(s1->place);
+	else 	tac7->opd1 = ST->GetVar(s1->place);
 
 	tac8->op = "="; tac8->dest=temp;
 	if(s2->isLit){
 		tac8->isInt1=true;
 		tac8->l1=s2->place;
 	}
-	else 	tac8->opd1 = symTable.get(s2->place);
+	else 	tac8->opd1 = ST->GetVar(s2->place);
 
 	d->code.pb(tac3); d->code.pb(tac4);
 	d->code.pb(tac1);
@@ -349,7 +350,7 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 
 void getPreUnaryOpCode(string op, genNode* d, genNode* s, int lineNum){
 	TAC* tac = new TAC();
-	Symbol* sym = symTable.get(d->place);
+	Symbol* sym = ST->GetVar(d->place);
 	tac->opd1 = sym;
 	tac->dest = sym;
 	tac->isInt2 = true; tac->l2 = "1";

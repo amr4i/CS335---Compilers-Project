@@ -19,7 +19,7 @@
 
 	int yylex(void);
 
-	SymTable* ST = new SymTable();
+	// SymTable* ST = new SymTable();
 %}
 // yylineno replaced by 1234555
 //%option 1234555
@@ -55,7 +55,7 @@
 %type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
 %type <node> variable_reference expression argument_list argument argument_value argument_name primary_no_array_creation_expression
 %type <node> primary_expression array_creation_expression parenthesized_expression postfix_expression
-%type <node> post_increment_expression post_decrement_expression unary_expression_not_plusminus
+%type <node> unary_expression_not_plusminus
 %type <node> pre_decrement_expression pre_increment_expression multiplicative_expression unary_expression additive_expression shift_expression
 %type <node> relational_expression equality_expression and_expression exclusive_or_expression 
 %type <node> inclusive_or_expression conditional_and_expression conditional_or_expression null_coalescing_expression
@@ -71,14 +71,14 @@
 
 %%
 
-start :	compilation_unit	{ $$ = $1; }
+start :	compilation_unit	{ $$ = $1;}
 		;
 
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
 				{
-					if((curEnv->extras).find(string($1)) == (curEnv->extras).end()){
-						(curEnv->extras)[string($1)] = new Symbol(string($1), "None");
+					if(ST->GetVar(string($1)) == NULL){
+						ST->AddVar(string($1));
 					}
 					genNode* newNode = new genNode();
 					newNode->place = string($1);
@@ -299,10 +299,10 @@ primary_no_array_creation_expression : literal 	{ $$ = $1; }
 		;
 
 parenthesized_expression : '(' expression ')'	{ 
-			string tmpVar = symTable->GenTemp($2->type, "simple", -1);
+			// string tmpVar = symTable->GenTemp($2->type, "simple", -1);
 			$$ = $2;
-			$$ -> place = tmpVar;
-			gen2OpCode($$, "=", $2);
+			// $$ -> place = tmpVar;
+			// gen2OpCode($$, "=", $2);
 		}
 		;
 member_access : primary_expression '.' identifier 	{  }
@@ -310,20 +310,28 @@ member_access : primary_expression '.' identifier 	{  }
 		| predefined_type '.' identifier 	{  }
 		| qualified_alias_member '.' identifier	{  }
 		;
-predefined_type : BOOL 	{  }
+
+predefined_type : BOOL 	
+		{
+			genNode* newNode = new genNode();
+			
+  		}
 		| CHAR 	{  }
 		| INT 	{  }
 		| LONG 	{  }
 		| OBJECT 	{  }
 		| STRING 	{  }
 		;
+
 invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		| primary_no_array_creation_expression '(' argument_list ')'	{  }
 		| qualified_identifier '(' ')' 	{  }
 		| qualified_identifier '(' argument_list ')'	{  }
 		;
+
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
 		;
+
 expression_list : expression  	{  }
 		| expression ',' expression	{  }
 		;
@@ -338,13 +346,8 @@ base_access : BASE '.' identifier 	{  }
 		;
 postfix_expression : 	primary_expression 		{ $$ = $1; }
 		| qualified_identifier 		{ $$ = $1; }
-		| post_increment_expression 		{ $$ = $1; }
-		| post_decrement_expression 		{ $$ = $1; }
 		;
-post_increment_expression : postfix_expression INCR	{  }
-		;
-post_decrement_expression : postfix_expression DECR	{  }
-		;
+
 object_creation_expression : NEW type '(' ')' 	{  }
 		| NEW type '(' argument_list ')' 	{  }
 		| NEW type '(' ')' object_or_collection_initializer 	{  }
@@ -644,11 +647,12 @@ embedded_statement : block 	{ $$ = $1; }
 		| try_statement 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
-block : '{' '}' 	{ 
-			genNode* newNode = new genNode();
-			$$ = newNode; 
-		}
-		| '{' statement_list '}'	{ $$ = $2; }
+block : block_start '{' '}' block_end 	{ 	}
+		| block_start '{' statement_list '}' block_end	{   }
+		;
+block_start : epsilon	{	}
+		;
+block_end : epsilon	{	}
 		;
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	{ $$ = $1; }
@@ -680,8 +684,6 @@ expression_statement : statement_expression ';'	{  }
 statement_expression : invocation_expression 	{  }
 		| object_creation_expression 	{  }
 		| assignment 	{  }
-		| post_increment_expression	{  }
-		| post_decrement_expression	{  }
 		| pre_increment_expression 	{  }
 		| pre_decrement_expression	{  }
 		;

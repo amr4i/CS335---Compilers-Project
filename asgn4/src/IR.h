@@ -50,7 +50,9 @@ struct TAC
 };
 
 vector < TAC* > IR;
-SymTable symTable;
+// SymTable symTable;
+SymTable* ST = new SymTable();
+
 
 void readFile(char* fileName);
 void fillTAC(vector <string> instr);
