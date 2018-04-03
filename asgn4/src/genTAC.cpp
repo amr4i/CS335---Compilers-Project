@@ -41,6 +41,7 @@ string getNewLabel(){
 
 
 void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NULL, int lineNum = -1){
+	cerr << "here" << endl;
 	if(op=="+" || op=="-" || op=="*" || op=="/" || op=="%" || op=="&" || op=="|" ||
 	 op=="^" || op=="<<" || op==">>" || op=="==" || op=="<" || op==">" || op=="!=" || op=="<=" || op==">="){
 		TAC* tac = new TAC();

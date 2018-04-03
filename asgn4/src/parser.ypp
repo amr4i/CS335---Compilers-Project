@@ -77,11 +77,15 @@ start :	compilation_unit	{ $$ = $1; printTAC($$);}
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
 				{
+					cerr << "here" << endl;
 					if(ST->GetVar(string($1)) == NULL){
 						ST->AddVar(string($1));
 					}
+					cerr << "here" << endl;
 					genNode* newNode = new genNode();
+					cerr << "here" << endl;
 					newNode->place = string($1);
+					cerr << "here" << endl;
 					$$ = newNode;
 				}
 				;
