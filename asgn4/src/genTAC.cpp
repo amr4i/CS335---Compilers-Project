@@ -17,22 +17,19 @@ struct genNode{
 
 
 string getNewLabel(){
-	string labelName = "label_"+stoi(labelCounter);
+	string labelName = "label_"+to_string(labelCounter);
 	labelCounter+=1;
-	Symbol* sym = new Symbol(labelName, "label");
-	symTable.insert(sym);
+	symTable.AddVar(labelName, "label", "label", labelName.size());
 	return labelName;
 }
 
 
-void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, int lineNum = -1, genNode* s2 = NULL){
+void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NULL, int lineNum = -1){
 	if(op=="+" || op=="-"){
 		TAC* tac = new TAC();
-		Symbol* temp = getTemp();
-		d->place = temp->name;
+		string temptype;
 		tac->op = op;
 		tac->opType = 3;
-		tac->dest = temp;
 		if(s1->isLit && s2->isLit){
 			tac->isInt1 = true;
 			tac->isInt2 = true;
@@ -44,7 +41,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, int lineNum = -1,
 			tac->l1 = s1->place;
 			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
-				printf("Error: Symbol %s not defined in scope.", s2->place)
+				printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
 			tac->opd2 = symTable.get(sym2);	
@@ -54,7 +51,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, int lineNum = -1,
 			tac->l2 = s2->place;
 			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
-				printf("Error: Symbol %s not defined in scope.", s1->place)
+				printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
 			tac->opd1 = symTable.get(sym1);	
@@ -62,48 +59,52 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, int lineNum = -1,
 		else{
 			Symbol* sym1 = symTable.get(s1->place);
 			if(sym1==NULL){
-				printf("Error: Symbol %s not defined in scope.", s1->place)
+				printf("Error: Symbol %s not defined in scope.", s1->place);
 				exit(1);
 			}
 			tac->opd1 = symTable.get(sym1);	
 			Symbol* sym2 = symTable.get(s2->place);
 			if(sym2==NULL){
-				printf("Error: Symbol %s not defined in scope.", s2->place)
+				printf("Error: Symbol %s not defined in scope.", s2->place);
 				exit(1);
 			}
 			tac->opd2 = symTable.get(sym2);	
 		}			
 		
 		// Type-Checking
-		if (s1->type = "char"){
-			if(s2->type=="int")		temp->type="int";
-			else if(s2->type == "long")		temp->type=="long";
+		if (s1->type == "char"){
+			if(s2->type=="int")		temptype="int";
+			else if(s2->type == "long")		temptype=="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
 		else if(s1->type == "int"){
-			if(s2->type=="char" || s2->type=="int")		temp->type="int";
-			else if(s2->type=="long")		temp->type="long";
+			if(s2->type=="char" || s2->type=="int")		temptype="int";
+			else if(s2->type=="long")		temptype="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}	
 		else if(s1->type == "long"){
-			if(s2->type=="char" || s2->type=="int" || s2->type=="long")	temp->type="long";
+			if(s2->type=="char" || s2->type=="int" || s2->type=="long")	temptype="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
 			}
 		}
+
+		string tempName = symTable.curEnv->genTemp(temptype);
+		Symbol* temp = symTable.get(tempName);
+		d->place = temp->name;
 		d->type = temp->type;
+		tac->dest = temp;
 		d->code.pb(tac);
-		symTable.insert(temp);			
 	}
 	
-	else if(op == "*" || op=="/" || op==="%"){
+	else if(op == "*" || op=="/" || op =="%"){
 	
 	}
 
@@ -134,7 +135,7 @@ string equal_compatible(string s1, string s2){
 
 void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	d->code = c->code;
-	Symbol* temp = getTemp();
+	Symbol* temp = genTemp();
 	d->place = temp->name;
 	d->type = equal_compatible(s1->type, s2->type);
 	if(d->type=="None" || d->type==""){
@@ -147,9 +148,9 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	TAC* tac7 = new TAC(); 	TAC* tac8 = new TAC();
 	// getNewLabel() has to generate a new label name, create a symbol with that name, and type "label" and add it to the symbol table, and return 
 	// the name of this new symbol, as a string. 
-	string newLabel1 = new getNewLabel();			
-	string newLabel2 = new getNewLabel();
-	string newLabel3 = new getNewLabel();
+	string newLabel1 = getNewLabel();			
+	string newLabel2 = getNewLabel();
+	string newLabel3 = getNewLabel();
 	tac1->op = "label"; tac1->target = newLabel1;
 	tac2->op = "label"; tac2->target = newLabel2;
 	tac3->op = "ifgoto"; tac3->dest = symTable.get(c->place); tac3->target = newLabel1;
@@ -158,14 +159,14 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	tac6->op = "label"; tac6->target = newLabel3;
 	tac7->op = "="; tac7->dest=temp;
 	if(s1->isLit){
-		tac7->IsInt1=true;
+		tac7->isInt1=true;
 		tac7->l1=s1->place;
 	}
 	else 	tac7->opd1 = symTable.get(s1->place);
 
 	tac8->op = "="; tac8->dest=temp;
 	if(s2->isLit){
-		tac8->IsInt1=true;
+		tac8->isInt1=true;
 		tac8->l1=s2->place;
 	}
 	else 	tac8->opd1 = symTable.get(s2->place);
