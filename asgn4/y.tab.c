@@ -3854,13 +3854,13 @@ yyreduce:
 
   case 187:
 #line 698 "src/parser.ypp" /* yacc.c:1646  */
-    {	}
+    { (yyval.node) = NULL; ST->BeginScope();	}
 #line 3859 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 188:
 #line 700 "src/parser.ypp" /* yacc.c:1646  */
-    {	}
+    { (yyval.node) = NULL; ST->EndScope();	}
 #line 3865 "y.tab.c" /* yacc.c:1646  */
     break;
 

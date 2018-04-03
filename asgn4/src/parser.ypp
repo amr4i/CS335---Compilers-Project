@@ -73,7 +73,7 @@
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
 %type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
-%type <node> namespace_member_declaration using_alias_directive class_member_declaration 
+%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end
 
 %%
 
@@ -695,9 +695,9 @@ embedded_statement : block 	{ $$ = $1; }
 block : block_start '{' '}' block_end 	{ $$ = NULL;	}
 		| block_start '{' statement_list '}' block_end	{  $$ = $3;   }
 		;
-block_start : epsilon	{	}
+block_start : epsilon	{ $$ = NULL; ST->BeginScope();	}
 		;
-block_end : epsilon	{	}
+block_end : epsilon	{ $$ = NULL; ST->EndScope();	}
 		;
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	
@@ -779,11 +779,51 @@ statement_expression : invocation_expression 	{  }
 		| pre_increment_expression 	{  }
 		| pre_decrement_expression	{  }
 		;
-selection_statement : if_statement 	{  }
-		| switch_statement	{  }
+selection_statement : if_statement 	{ $$ = $1; }
+		| switch_statement	{ $$ = $1; }
 		;
-if_statement : IF '(' boolean_expression ')' embedded_statement 	{ } %prec IFX
-		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	{  }
+if_statement : IF '(' boolean_expression ')' embedded_statement 	
+		{ 
+			$$ = $3;
+			string trueLabel = getNewLabel();			
+			string ifEndLabel = getNewLabel();
+			TAC* tac1 = new TAC();
+			tac1->op = "label"; tac1->target = trueLabel;
+			TAC* tac2 = new TAC();
+			tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = trueLabel;
+			TAC* tac3 = new TAC();
+			tac3->op = "goto"; tac3->target = ifEndLabel;
+			TAC* tac4 = new TAC();
+			tac1->op = "label"; tac1->target = ifEndLabel;
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac4);
+		} %prec IFX
+		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	
+		{  
+			TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
+			TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
+			TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
+			string trueLabel = getNewLabel();			
+			string falseLabel = getNewLabel();
+			string endLabel = getNewLabel();
+			tac1->op = "label"; tac1->target = trueLabel;
+			tac2->op = "label"; tac2->target = falseLabel;
+			tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			tac4->op = "goto"; tac4->target = falseLabel;
+			tac5->op = "goto"; tac5->target = endLabel;
+			tac6->op = "label"; tac6->target = endLabel;
+
+			$$->code.pb(tac3); $$->code.pb(tac4);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac2);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac6);
+		}
 		;
 switch_statement : SWITCH '(' expression ')' switch_block	{  }
 		;
