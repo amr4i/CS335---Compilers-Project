@@ -230,15 +230,8 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		}			
 		
 		// Type-Checking
-		if (s1->type == "char"){
-			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
-			else{
-				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-				exit(1);
-			}
-		}
 		else if (s1->type == "int"){
-			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
+			if(s2->type=="char" || s2->type=="int") ;
 			else{
 				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 				exit(1);
@@ -251,6 +244,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				exit(1);
 			}
 		}
+		else if (s1->type == s2->type) ;
 		else {
 			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 			exit(1);
