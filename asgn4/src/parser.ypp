@@ -804,10 +804,8 @@ namespace_member_declarations : namespace_member_declaration 	{  }
 		| namespace_member_declarations namespace_member_declaration	{  }
 		;
 namespace_member_declaration : namespace_declaration 	{  }
-		| type_declaration	{  }
-		;
-type_declaration : class_declaration 	{  }
 		| struct_declaration	{  }
+		| class_declaration     {  }
 		;
 qualified_alias_member : identifier DCLN identifier 	{ $$ = $1; }
 		;
@@ -862,7 +860,7 @@ class_member_declaration : constant_declaration 	{  }
 		| method_declaration 	{  }
 		| constructor_declaration 	{  }
 		| destructor_declaration 	{  }
-		| type_declaration	{  }
+		| struct_declaration	{  }
 		;
 constant_declaration : CONST type constant_declarators ';' 	{  }
 		| modifiers CONST type constant_declarators ';'	{  }
@@ -961,7 +959,6 @@ struct_member_declaration : constant_declaration 	{  }
 		| field_declaration 	{  }
 		| method_declaration 	{  }
 		| constructor_declaration 	{  }
-		| type_declaration	{  }
 		;
 
 /*B.2.9 Arrays*/ 

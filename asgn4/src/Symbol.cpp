@@ -6,8 +6,7 @@ Symbol::Symbol(string symName, string Type, int Width = 0, string BaseType = "si
 	name = newName;
 	type = Type;
 	isKeyword = false;
-	width  = Width;  // Type Specific
+	width  = Width; 
 	offset = Offset;
 	baseType = BaseType;
-	// attr = NULL;
 }

@@ -6,41 +6,45 @@ static int tempCounter = 0;
 
 class Env{
 public:
+	string name;
+	
 	// if it is a method
 	string returnType;
 	int argNum;
 	vector <string> argTypeList;
 
 	// if it is a class
-	string _class;
-	string _parentClass;
+	string Class;
+	string ParentClass;
+	
 	map <string, Symbol*> varList;
 	map <string, Symbol*> methodList;
-	map <string, Symbol*> extras;
 	map <string, Symbol*> addTable;
 
 	int width;
 	int maxWidth;	
-
-	string name;
-	Env *prevEnv;
-	string type;
-	vector <Env*> children;
 	int offset;
 
-	Env(string _name, string _type, Env *prev_env, string _return_type, string Class, string ParentClass);
+	// string type;
+	enum typeEnum { CLASSTYPE, METHODTYPE, BLOCKTYPE };
+	typeEnum type; 
+
+	vector <Env*> children;
+	Env *prevEnv;
+
+	Env(string _name, typeEnum _type, Env *prev_env, string _return_type, string Class, string ParentClass);
 
 	string getMethodType();
 	string genTemp(string varType, string genericType, int _width);
 	Symbol* addVar(string varName, string varType, string genericType, int _width);
 	int getWidth(string varType, string genericType, int _width);
 	Symbol* getVar(string varName);
-	Symbol* getVarInClass(string varName, string className);
-	Symbol* getVarEnv(string varName);
 	vector <string> setArgTypeList(vector <string> args);
-	Env* findClass(string className);
-	Env* getBaseEnvClass();
-	Env* getMethod(string methodName);
-	Env* getMethodFromClass(string methodName, string className);
+	Env* findClass(string className, Env* baseEnv);
+	Env* getClassEnv();
+	Env* getMethod(string methodName, Env* baseEnv);
+	Env* getMethodFromClass(string methodName, string className, Env* baseEnv);
 	void printTableEnv(Env* env);
+	// Symbol* getVarInClass(string varName, string className);
+	// Symbol* getVarEnv(string varName);
 };

@@ -1,12 +1,12 @@
 #include "Env.h"
 
-Env::Env(string _name = "None", string _type = "blockType", Env *prev_env = NULL, string _return_type = "Void", string Class = "None", string ParentClass = "None"){
+Env::Env(string _name = "None", typeEnum _type = BLOCKTYPE, Env *prev_env = NULL, string _return_type = "Void", string _class = "None", string _parentClass = "None"){
 	type = _type;
 	returnType = _return_type;
 	name = _name;
 	prevEnv = prev_env;
-	_class = Class;
-	_parentClass = ParentClass;
+	Class = _class;
+	ParentClass = _parentClass;
 	width = 0;
 	offset = 0;
 	maxWidth = 0;
@@ -15,37 +15,33 @@ Env::Env(string _name = "None", string _type = "blockType", Env *prev_env = NULL
 
 string Env::getMethodType(){
 	Env* tmpEnv = this;
-	while(tmpEnv != NULL && tmpEnv->type != "classType"){
-		if(tmpEnv->type == "methodType")	return tmpEnv->returnType;
+	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
+		if(tmpEnv->type == METHODTYPE)	return tmpEnv->returnType;
 		tmpEnv = tmpEnv->prevEnv;
 	}
 	return "None";
 }
 
-string Env::genTemp(string varType, string genericType = "simple", int _width = 0){
+string Env::genTemp(string varType = "None", string genericType = "simple", int _width = 0){
+
 	string place = "tVar_"+ to_string(tempCounter);
-	tempCounter+=1;
+	tempCounter += 1;
+
 	_width = getWidth(varType, genericType, _width);
-	Symbol* symbol = new Symbol(place, varType, _width, "simple", offset);
+
+	Symbol* symbol = new Symbol(place, varType, _width, genericType, offset);
 	addTable[place] = symbol;
+
 	offset += _width;
 	width += _width;
+
 	return place;
 }
 
-Symbol* Env::addVar(string varName, string varType, string genericType, int _width){
-	_width = getWidth(varType, genericType, _width);
-	string place = varName;
-	Symbol* symbol = new Symbol(varName, varType, _width, "simple", offset);
-	addTable[place] = symbol;
-	varList[varName] = symbol;
-	offset += _width;
-	width += _width;
-	return symbol;
-}
-
 int Env::getWidth(string varType, string genericType, int _width = -1){
+
 	map <string, int> typeMap;
+
 	typeMap["int"] = 4;
 	typeMap["long"] = 8;
 	typeMap["char"] = 1;
@@ -53,43 +49,45 @@ int Env::getWidth(string varType, string genericType, int _width = -1){
 	typeMap["void"] = 0;
 	typeMap["null"] = 0;
 
-	// To be confirmed
-	typeMap["ulong"] = 8;      
-	typeMap["uint"] = 4;
-
-	if(genericType == "simple"){  return typeMap[varType]; }
+	if(genericType == "simple") {  return typeMap[varType]; }
 	else{
-		if(genericType == "arrayType"){	return _width*typeMap[varType];	}
+		if(genericType == "array") {	return _width*typeMap[varType];	}
 		else { return _width; }
 	}
+
+}
+
+Symbol* Env::addVar(string varName, string varType = "None" , string genericType = "simple", int _width = -1){
+
+	_width = getWidth(varType, genericType, _width);
+
+	Symbol* symbol = new Symbol(varName, varType, _width, genericType, offset);
+	addTable[varName] = symbol;
+
+	offset += _width;
+	width += _width;
+
+	return symbol;
 }
 
 Symbol* Env::getVar(string varName){
+
 	Symbol* temp = NULL;
 	Env* tmpEnv = this;
-	while(tmpEnv != NULL && tmpEnv->type != "classType"){
-		if(tmpEnv->varList.find(varName) != tmpEnv->varList.end()){
-			temp = tmpEnv->varList[varName];
+
+	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
+		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
+			temp = tmpEnv->addTable[varName];
 			break;
 		}
+		tmpEnv = tmpEnv->prevEnv;
 	}
+	
 	if(temp == NULL){
-		if(tmpEnv->type == "classType")	{ temp = tmpEnv->varList[varName]; }
+		if(tmpEnv->type == CLASSTYPE)	{ temp = tmpEnv->addTable[varName]; }
 	}
+
 	return temp;
-}
-
-Symbol* Env::getVarInClass(string varName, string className){
-	Env* _class = findClass(className);
-	if(_class != NULL){
-		if(_class->varList.find(varName)  != _class->varList.end())	return _class->varList[varName];
-	}
-	return NULL;
-}
-
-Symbol* Env::getVarEnv(string varName){
-	if(this->varList.find(varName) != this->varList.end())	return this->varList[varName];
-	else	return NULL;
 }
 
 vector <string> Env::setArgTypeList(vector <string> args){
@@ -97,85 +95,87 @@ vector <string> Env::setArgTypeList(vector <string> args){
 	return argTypeList;
 }
 
-Env* Env::findClass(string className){
-	fori(0, this->children.size()){
-		if((this->children)[i]->type == "classType" && (this->children)[i]->name == className)	return (this->children)[i];
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// We have ignored namespaces for now, thought the code will contain namespaces. The corresponding rules will contain no semantic actions.
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Env* Env::findClass(string className, Env* baseEnv){
+	fori(0, baseEnv->children.size()){
+		if((baseEnv->children)[i]->type == CLASSTYPE && (baseEnv->children)[i]->name == className)	return (baseEnv->children)[i];
 	}
 	return NULL;
 }
 
-Env* Env::getBaseEnvClass(){
+Env* Env::getClassEnv(){
 	Env* tmpEnv = this;
-	while(tmpEnv != NULL && tmpEnv->type != "classType"){
+	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
 		tmpEnv = tmpEnv->prevEnv;
 	}
 	return tmpEnv;
 }
 
-Env* Env::getMethod(string methodName){
-	Env* tmpEnv = getBaseEnvClass();
-	fori(0, (tmpEnv->children).size()){
-		if((tmpEnv->children)[i]->type == "methodType" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+Env* Env::getMethod(string methodName, Env* baseEnv){
+	Env* tmpEnv = getClassEnv();
+
+	int siz = (tmpEnv->children).size();
+	fori(0, siz){
+		if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 	}
-	if(_parentClass != "None"){
-		tmpEnv = findClass(_parentClass);
-		fori(0, (tmpEnv->children).size()){
-			if((tmpEnv->children)[i]->type == "methodType" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+
+	if(ParentClass != "None"){
+		tmpEnv = findClass(ParentClass, baseEnv);
+
+		siz = (tmpEnv->children).size();
+		fori(0, siz){
+			if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 		}
 	}
+
 	return NULL;
 }
 
-Env* Env::getMethodFromClass(string methodName, string className){
-	Env* tmpEnv = findClass(className);
+Env* Env::getMethodFromClass(string methodName, string className, Env* baseEnv){
+	Env* tmpEnv = findClass(className, baseEnv);
+	
 	fori(0, (tmpEnv->children).size()){
-		if((tmpEnv->children)[i]->type == "methodType" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+		if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 	}
-	if(_parentClass == "None"){
-		tmpEnv = findClass(_parentClass);
+
+	if(ParentClass == "None"){
+		tmpEnv = findClass(ParentClass, baseEnv);
 		fori(0, (tmpEnv->children).size()){
-			if((tmpEnv->children)[i]->type == "methodType" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+			if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 		}
 	}
+
 	return NULL;
 }
 
 void Env::printTableEnv(Env* env){
-	for(map<string, Symbol*>::iterator it = (env->varList.begin()) ; it != (env->varList.end()) ; it++){
+
+	for(map<string, Symbol*>::iterator it = (env->addTable.begin()) ; it != (env->addTable.end()) ; it++){
 		cout << (((*it).se)->name) << " ";
 	}
 	cout << "\n";
-	fori(0, (env->children).size()){
+
+	int siz = (env->children).size();
+	fori(0, siz){
 		printTableEnv((env->children)[i]);
 	}
 }
 
-// Env::Env(){
-// 	symbolTable = new SymTable();
-// 	prevEnv = NULL;
+/////////////////////////////////////////////////////////////////////////////////
+// Don't have a use yet
+/////////////////////////////////////////////////////////////////////////////////
+
+// Symbol* Env::getVarInClass(string varName, string className){
+// 	Env* Class = _cindClass(className);
+// 	if(Class != NULL){_p// 		if(Class->v_c_pList.find(varName)  != Class->varList.end())	return Class->varList[varName];
+//_c	}
+// _pretu_pn NULL;
 // }
 
-
-// Env::Env(Env *prev_env){
-// 	symbolTable = new SymTable();
-// 	prevEnv = prev_env;
+// Symbol* Env::getVarEnv(string varName){
+// 	if(this->varList.find(varName) != this->varList.end())	return this->varList[varName];
+// 	else	return NULL;
 // }
-
-
-// bool Env::insert(Symbol* symbol){
-// 	return symbolTable->insert(symbol);
-// }
-
-
-// Symbol* Env::get(string symName){
-// 	Symbol *sym;
-// 	sym = symbolTable->get(symName);
-// 	if(	sym != NULL){
-// 		return sym;
-// 	}
-// 	else if(prevEnv != NULL){
-// 		return prevEnv->get(symName);
-// 	}
-// 	return NULL;
-// }
-
