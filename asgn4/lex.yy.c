@@ -690,7 +690,7 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "src/lexer.lex"
 #line 2 "src/lexer.lex"
-	extern void yyerror(char*);
+	extern void yyerror(const char*);
 	#include <math.h>
 	#include <cstdio> 
 	#include <map>
@@ -705,7 +705,7 @@ char *yytext;
 	#include "y.tab.h"
 	
 	using namespace std;	
-
+	#define YY_DECL extern "C" int yylex()
 /*
 DEFINE			{WHITESPACE}*#{WHITESPACE}*define
 UNDEF			{WHITESPACE}*#{WHITESPACE}*undef 
@@ -1008,486 +1008,486 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 132 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return BASE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return BASE; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 133 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return BOOL; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return BOOL; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 134 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return BREAK; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return BREAK; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 135 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CASE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CASE; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 136 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CATCH; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CATCH; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 137 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CHAR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CHAR; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 138 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CLASS; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CLASS; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 139 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CONST; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CONST; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 140 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CONTINUE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CONTINUE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 141 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return DEFAULT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return DEFAULT; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 142 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return DO; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return DO; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 143 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return ELSE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return ELSE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 144 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return FALSE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FALSE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 145 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return FINALLY; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FINALLY; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 146 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return FOR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FOR; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 147 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return FOREACH; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FOREACH; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 148 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return GOTO; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return GOTO; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 149 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return IF; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return IF; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 150 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return IN; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return IN; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 151 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return INT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return INT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 152 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return LONG; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return LONG; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 153 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return NAMESPACE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return NAMESPACE; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 154 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return NEW; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return NEW; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 155 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return NULL_LIT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return NULL_LIT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 156 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return OBJECT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return OBJECT; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 157 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return PARAMS; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return PARAMS; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 158 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return PRIVATE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return PRIVATE; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 159 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return PROTECTED; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return PROTECTED; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 160 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return PUBLIC; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return PUBLIC; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 161 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return REF; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return REF; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 162 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return RETURN; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return RETURN; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 163 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return STRING; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return STRING; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
 #line 164 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return STRUCT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return STRUCT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 165 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return SWITCH; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return SWITCH; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 166 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return THIS; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return THIS; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
 #line 167 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return THROW; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return THROW; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 168 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return TRUE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return TRUE; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
 #line 169 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return TRY; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return TRY; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
 #line 170 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return TYPEOF; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return TYPEOF; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
 #line 171 "src/lexer.lex"
-{ cerr<< "1" << endl; yylval.sVal = strdup(yytext); return USING; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return USING; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
 #line 172 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return VOID; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return VOID; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 173 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return WHILE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return WHILE; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
 #line 174 "src/lexer.lex"
-{yylval.sVal = strdup(yytext); return WHERE; }
+{yylval.sVal = strdup(yytext); printf("%s\n", yytext); return WHERE; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
 #line 175 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return ID; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return ID; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
 #line 176 "src/lexer.lex"
-{ yylval.iVal = atoi(yytext); return DINT_LITERAL; }
+{ yylval.iVal = atoi(yytext); printf("%s\n", yytext); return DINT_LITERAL; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 177 "src/lexer.lex"
-{ yylval.iVal = strtol(yytext, NULL, 16); return HDINT_LITERAL; }
+{ yylval.iVal = strtol(yytext, NULL, 16); printf("%s\n", yytext); return HDINT_LITERAL; }
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
 #line 178 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return SIMPLE_ESC_SEQ; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return SIMPLE_ESC_SEQ; }
 	YY_BREAK
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
 #line 179 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return CHAR_LITERAL; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return CHAR_LITERAL; }
 	YY_BREAK
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
 #line 180 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return REG_STR_LITERAL; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return REG_STR_LITERAL; }
 	YY_BREAK
 case 53:
 /* rule 53 can match eol */
 YY_RULE_SETUP
 #line 181 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return VER_STR_LITERAL; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return VER_STR_LITERAL; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
 #line 182 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
 #line 183 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 184 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
 #line 185 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 186 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 187 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 188 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 189 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
 #line 190 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 191 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 192 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 193 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 194 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 195 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
 #line 196 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
 #line 197 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
 #line 198 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
 #line 199 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
 #line 200 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
 #line 201 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
 #line 202 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
 #line 203 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
 #line 204 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
 #line 205 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return *yytext; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return *yytext; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
 #line 206 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return DQM; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return DQM; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
 #line 207 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return DCLN; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return DCLN; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
 #line 208 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return INCR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return INCR; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
 #line 209 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return DECR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return DECR; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
 #line 210 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return RAND; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return RAND; }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
 #line 211 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return ROR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return ROR; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
 #line 212 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return REQ; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return REQ; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
 #line 213 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return RNE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return RNE; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
 #line 214 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return LE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return LE; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
 #line 215 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return GE; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return GE; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
 #line 216 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return APLUS; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return APLUS; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
 #line 217 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return AMINUS; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return AMINUS; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
 #line 218 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return AMULT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return AMULT; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
 #line 219 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return ADIV; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return ADIV; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
 #line 220 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return AMOD; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return AMOD; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
 #line 221 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return AAND; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return AAND; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
 #line 222 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return AOR; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return AOR; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
 #line 223 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return ACARET; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return ACARET; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
 #line 224 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return LSHIFT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return LSHIFT; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
 #line 225 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return LSHIFTEQ; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return LSHIFTEQ; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
 #line 226 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return RSHIFT; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return RSHIFT; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
 #line 227 "src/lexer.lex"
-{ yylval.sVal = strdup(yytext); return RSHIFTEQ; }
+{ yylval.sVal = strdup(yytext); printf("%s\n", yytext); return RSHIFTEQ; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
@@ -2505,6 +2505,6 @@ void yyfree (void * ptr )
 
 
 int yywrap(void){
-	yylval.sVal = strdup(yytext); return 1;
+	return 1;
 }
 

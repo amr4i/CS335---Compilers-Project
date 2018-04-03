@@ -18,13 +18,6 @@ set<string> itype0= {"ret","exit"};
 
 struct TAC
 {
-	TAC(){
-		isInt1 = false;
-		isInt2 = false;
-		opd1 = NULL;
-		opd2 = NULL;
-		dest = NULL;
-	}
 
 	int lineNum;
 
@@ -47,6 +40,13 @@ struct TAC
 	bool isInt1;
 	bool isInt2;
 
+	TAC(){
+		isInt1 = false;
+		isInt2 = false;
+		opd1 = NULL;
+		opd2 = NULL;
+		dest = NULL;
+	}
 };
 
 vector < TAC* > IR;
@@ -54,6 +54,6 @@ vector < TAC* > IR;
 SymTable* ST = new SymTable();
 
 
-void readFile(char* fileName);
-void fillTAC(vector <string> instr);
-bool isIntegerLiteral(string str);
+// void readFile(char* fileName);
+// void fillTAC(vector <string> instr);
+// bool isIntegerLiteral(string str);

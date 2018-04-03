@@ -2,7 +2,7 @@
 
 
 SymTable::SymTable(){
-	Env* curEnv = new Env(NULL);
+	Env* curEnv = new Env("None");
 	baseEnv = curEnv;
 }
 

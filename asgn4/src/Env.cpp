@@ -82,10 +82,11 @@ Symbol* Env::getVar(string varName){
 		}
 		tmpEnv = tmpEnv->prevEnv;
 	}
-	
+
 	if(temp == NULL){
-		if(tmpEnv->type == CLASSTYPE)	{ temp = tmpEnv->addTable[varName]; }
+		if(tmpEnv->type == typeEnum::CLASSTYPE)	{ temp = tmpEnv->addTable[varName]; }
 	}
+	
 
 	return temp;
 }
