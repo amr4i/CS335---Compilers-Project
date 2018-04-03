@@ -81,9 +81,7 @@ start :	compilation_unit	{ $$ = $1; printTAC($$);}
 identifier : 	ID 		
 				{
 					string s1($1);
-					cerr << typeid(s1).name() << endl;
 					Symbol* sym = ST->GetVar(s1);
-					cerr << "fuck it!" << endl;
 					if(sym == NULL){
 						ST->AddVar(s1);
 					}
@@ -1013,7 +1011,6 @@ extern void yyerror(const char *c){
 
 
 int main(int argc, char* argv[]){
-	cerr << "anything\n";
 	FILE *file;
 	if (argc==2 &&(file=fopen(argv[1],"r")))
 		yyin = file;

@@ -3,7 +3,6 @@
 
 static int labelCounter = 0;
 static int tempCounter = 0;
-enum typeEnum { CLASSTYPE, METHODTYPE, BLOCKTYPE };
 
 class Env{
 public:
@@ -27,12 +26,12 @@ public:
 	int offset;
 
 	// string type;
-	typeEnum type; 
+	string type; 
 
 	vector <Env*> children;
 	Env *prevEnv;
 
-	Env(string _name, typeEnum _type, Env *prev_env, string _return_type, string Class, string ParentClass);
+	Env(string _name, string _type, Env *prev_env, string _return_type, string Class, string ParentClass);
 
 	string getMethodType();
 	string genTemp(string varType, string genericType, int _width);

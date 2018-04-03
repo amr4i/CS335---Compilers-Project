@@ -15,7 +15,7 @@ public:
 	// Symbol* GetVarEnv(string varName);
 	// Symbol* GetVarInClass(string varName, string className);
 	string GenTemp();
-	Env* BeginScope(string scopeName, typeEnum scopeType, string returnType, string Class, string Parent_Class);
+	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
 	string GetEnvName();
 	string GetPrevEnvName();
 	Env* GetMethod(string methodName);

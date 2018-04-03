@@ -2,16 +2,16 @@
 
 
 SymTable::SymTable(){
-	Env* curEnv = new Env("None");
+	curEnv = new Env();
 	baseEnv = curEnv;
 }
 
 Env* SymTable::GetMainClass(){
 	Env* env = baseEnv;
 	fori(0, (env->children).size()){
-		if((env->children)[i]->type == CLASSTYPE){
+		if((env->children)[i]->type == "CLASSTYPE"){
 			for(vector <Env*> :: iterator it = (env->children).begin() ; it != (env->children).end() ; it++){
-				if((*it)->type == METHODTYPE && (*it)->name == "main")	return (*it);
+				if((*it)->type == "METHODTYPE" && (*it)->name == "main")	return (*it);
 			}
 		}
 	}
@@ -43,11 +43,11 @@ string SymTable::GenTemp(){
 	return curEnv->genTemp();
 }
 
-Env* SymTable::BeginScope(string scopeName = "None", typeEnum scopeType = BLOCKTYPE, string returnType = "void", string Class = "None", string Parent_Class = "None"){
+Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "BLOCKTYPE", string returnType = "void", string Class = "None", string Parent_Class = "None"){
 	Env* newEnv = new Env(scopeName, scopeType, curEnv, returnType, Class, Parent_Class);
 	(curEnv->children).pb(newEnv);
 
-	if(scopeType == BLOCKTYPE) { newEnv->offset = curEnv->offset; }
+	if(scopeType == "BLOCKTYPE") { newEnv->offset = curEnv->offset; }
 	
 	curEnv = newEnv;
 

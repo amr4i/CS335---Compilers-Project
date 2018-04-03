@@ -1,6 +1,6 @@
 #include "Env.h"
 
-Env::Env(string _name = "None", typeEnum _type = BLOCKTYPE, Env *prev_env = NULL, string _return_type = "Void", string _class = "None", string _parentClass = "None"){
+Env::Env(string _name = "None", string _type = "BLOCKTYPE", Env *prev_env = NULL, string _return_type = "Void", string _class = "None", string _parentClass = "None"){
 	type = _type;
 	returnType = _return_type;
 	name = _name;
@@ -15,8 +15,8 @@ Env::Env(string _name = "None", typeEnum _type = BLOCKTYPE, Env *prev_env = NULL
 
 string Env::getMethodType(){
 	Env* tmpEnv = this;
-	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
-		if(tmpEnv->type == METHODTYPE)	return tmpEnv->returnType;
+	while(tmpEnv != NULL && tmpEnv->type != "CLASSTYPE"){
+		if(tmpEnv->type == "METHODTYPE")	return tmpEnv->returnType;
 		tmpEnv = tmpEnv->prevEnv;
 	}
 	return "None";
@@ -75,18 +75,13 @@ Symbol* Env::getVar(string varName){
 	Symbol* temp = NULL;
 	Env* tmpEnv = this;
 
-	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
+	while(tmpEnv != NULL && tmpEnv->type != "CLASSTYPE"){
 		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
 			temp = tmpEnv->addTable[varName];
 			break;
 		}
 		tmpEnv = tmpEnv->prevEnv;
 	}
-
-	if(temp == NULL){
-		if(tmpEnv->type == typeEnum::CLASSTYPE)	{ temp = tmpEnv->addTable[varName]; }
-	}
-	
 
 	return temp;
 }
@@ -102,14 +97,14 @@ vector <string> Env::setArgTypeList(vector <string> args){
 
 Env* Env::findClass(string className, Env* baseEnv){
 	fori(0, baseEnv->children.size()){
-		if((baseEnv->children)[i]->type == CLASSTYPE && (baseEnv->children)[i]->name == className)	return (baseEnv->children)[i];
+		if((baseEnv->children)[i]->type == "CLASSTYPE" && (baseEnv->children)[i]->name == className)	return (baseEnv->children)[i];
 	}
 	return NULL;
 }
 
 Env* Env::getClassEnv(){
 	Env* tmpEnv = this;
-	while(tmpEnv != NULL && tmpEnv->type != CLASSTYPE){
+	while(tmpEnv != NULL && tmpEnv->type != "CLASSTYPE"){
 		tmpEnv = tmpEnv->prevEnv;
 	}
 	return tmpEnv;
@@ -120,7 +115,7 @@ Env* Env::getMethod(string methodName, Env* baseEnv){
 
 	int siz = (tmpEnv->children).size();
 	fori(0, siz){
-		if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+		if((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 	}
 
 	if(ParentClass != "None"){
@@ -128,7 +123,7 @@ Env* Env::getMethod(string methodName, Env* baseEnv){
 
 		siz = (tmpEnv->children).size();
 		fori(0, siz){
-			if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+			if((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 		}
 	}
 
@@ -139,13 +134,13 @@ Env* Env::getMethodFromClass(string methodName, string className, Env* baseEnv){
 	Env* tmpEnv = findClass(className, baseEnv);
 	
 	fori(0, (tmpEnv->children).size()){
-		if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+		if((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 	}
 
 	if(ParentClass == "None"){
 		tmpEnv = findClass(ParentClass, baseEnv);
 		fori(0, (tmpEnv->children).size()){
-			if((tmpEnv->children)[i]->type == METHODTYPE && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
+			if((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 		}
 	}
 
