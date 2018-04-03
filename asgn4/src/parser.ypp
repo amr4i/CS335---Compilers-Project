@@ -26,7 +26,7 @@
 
 %union{
 	int iVal;
-	const char *sVal;
+	char *sVal;
 	struct genNode* node;	
 };
 
@@ -999,6 +999,7 @@ extern void yyerror(char *c){
 
 
 int main(int argc, char* argv[]){
+	printf("hereth");
 	FILE *file;
 	if (argc==2 &&(file=fopen(argv[1],"r")))
 		yyin = file;
@@ -1010,6 +1011,7 @@ int main(int argc, char* argv[]){
 		cerr<< "Please specify correct file name\n";
 		exit(1);
 	}
+
 	yydebug = 0;
 	yyparse();
 	/*
