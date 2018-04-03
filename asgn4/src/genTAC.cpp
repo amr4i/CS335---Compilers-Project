@@ -15,6 +15,22 @@ struct genNode{
 	vector <TAC*> code;
 };
 
+void printTAC(genNode* node){
+	int siz = node->code.size();
+	fori(0, siz){
+		cout << "\t" << node->code[i]->op << " ";
+
+		cout << node->code[i]->dest->name << " ";
+
+		if(isInt1)	cout << node->code[i]->l1 << " ";
+		else	cout << node->code[i]->opd1->name << " ";
+
+		if(isInt2)	cout << node->code[i]->l2 << " ";
+		else	cout << node->code[i]->opd2->name << " ";
+
+		cout << "\n";
+	}
+}
 
 string getNewLabel(){
 	string labelName = "label_"+to_string(labelCounter);
