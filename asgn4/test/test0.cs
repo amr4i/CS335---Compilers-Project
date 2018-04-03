@@ -7,8 +7,12 @@ namespace Rextester
         {
 		int a = 5;
 		int b = 6;
-		int c;
-		c = a + b;
+		if(a == 5){
+			int c = a + b;
+		}
+		else{
+			int d = a + 2*b;
+		}
         }
     }
 }

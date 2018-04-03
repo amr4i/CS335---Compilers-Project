@@ -16,31 +16,36 @@ struct genNode{
 	vector <Symbol*> varDecs;
 };
 
+string op3 [18]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr"};
+string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint", "array"};
+string op1 [9]= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint", "printstr"};
+string op0 [2]= {"ret","exit"};
+
+bool isOpIn(string *opA, int n, string op){
+	fori(0, n){
+		if(op == opA[i]){
+			return true;
+		}
+	}
+	return false;
+}
+
 void printTAC(genNode* node){
 	int siz = node->code.size();
 	TAC *t;
-	// fori(0,siz){
-	// 	cout << "\t" << node->code[i]->op << " ";
-
-	// 	if(node->code[i]->dest != NULL)
-	// 	cout << node->code[i]->dest->name << " ";
-
-	// 	if(node->code[i]->isInt1)	cout << node->code[i]->l1 << " ";
-	// 	else if(node->code[i]->opd1 != NULL)	cout << node->code[i]->opd1->name << " ";
-
-	// 	if(node->code[i]->isInt2)	cout << node->code[i]->l2 << " ";
-	// 	else if(node->code[i]->opd2 !=NULL)	cout << node->code[i]->opd2->name << " ";
-
-	// 	cerr<< "maa chod do\n" ;
-	// 	cout << "\n";
-	// }
 	fori(0, siz){
 		t=node->code[i];
-		if(!t){
+
+		if(isOpIn(op3,18,t->op)) t->opType = 3;
+		else if(isOpIn(op2,14,t->op)) t->opType = 2;
+		else if(isOpIn(op1,9,t->op)) t->opType = 1;
+		else if(isOpIn(op0,2,t->op)) t->opType = 0;
+
+		if(t==NULL){
 			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
-		cout<<t->opType<<" ";
+		cerr<<t->opType<<" ";
 		switch(t->opType){
 			case 3: 
 				if(!t->isInt1 && !t->isInt2)
@@ -53,13 +58,22 @@ void printTAC(genNode* node){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->l2;
 				break;
 			case 2:
-				if(!t->isInt1)
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name;
+				if(!(t->isInt1)){
+					
+					if(t->op=="ifgoto")
+						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->target;
+					else
+						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
+				}
 				else
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1;
 				break;
 			case 1:
-				cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+				if(t->op=="++" || t->op=="--"){
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+					break;
+				}
+				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
 			case 0:
 				cout<<t->lineNum<<", "<<t->op;
@@ -129,7 +143,6 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->opd2 = ST->GetVar(sym2->name);	
 		}			
 		
-		cerr<<"1" << endl;
 		// Type-Checking
 		if (s1->type == "char"){
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
@@ -161,87 +174,12 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		string tempName = ST->GenTemp();
 		Symbol* temp = ST->GetVar(tempName);
 		d->place = temp->name;
-		cerr << "Here\n";
 		temp->type = temptype;
 		d->type = temp->type;
 		tac->dest = temp;
 		d->code.pb(tac);
 	}
 	
-	// else if(op == "*" || op=="/" || op =="%"){
-	// 	TAC* tac = new TAC();
-	// 	string temptype;
-	// 	tac->op = op;
-	// 	tac->opType = 3;
-	// 	if(s1->isLit && s2->isLit){
-	// 		tac->isInt1 = true;
-	// 		tac->isInt2 = true;
-	// 		tac->l1 = s1->place;
-	// 		tac->l2 = s2->place;
-	// 	}
-	// 	else if(s1->isLit &.& !s2->isLit){
-	// 		tac->isInt1 = true;
-	// 		tac->l1 = s1->place;
-	// 		Symbol* sym2 = ST->GetVar(s2->place);
-	// 		if(sym2==NULL){
-				// printf("Error: Symbol %s not defined in scope.", s2->place);
-	// 			exit(1);
-	// 		}
-	// 		tac->opd2 = ST->GetVar(sym2->name);	
-	// 	}
-	// 	else if(!s1->isLit && s2->isLit){
-	// 		tac->isInt2 = true;
-	// 		tac->l2 = s2->place;
-	// 		Symbol* sym1 = ST->GetVar(s1->place);
-	// 		if(sym1==NULL){
-				// printf("Error: Symbol %s not defined in scope.", s1->place);
-	// 			exit(1);
-	// 		}
-	// 		tac->opd1 = ST->GetVar(sym1->name);	
-	// 	}	
-	// 	else{
-	// 		Symbol* sym1 = ST->GetVar(s1->place);
-	// 		if(sym1==NULL){
-				// printf("Error: Symbol %s not defined in scope.", s1->place);
-	// 			exit(1);
-	// 		}
-	// 		tac->opd1 = ST->GetVar(sym1->name);	
-	// 		Symbol* sym2 = ST->GetVar(s2->place);
-	// 		if(sym2==NULL){
-				// printf("Error: Symbol %s not defined in scope.", s2->place);
-	// 			exit(1);
-	// 		}
-	// 		tac->opd2 = ST->GetVar(sym2->name);	
-	// 	}			
-		
-	// 	// Type-Checking
-	// 	if(s1->type == "int"){
-	// 		if(s2->type=="int")				temptype="int";
-	// 		else if(s2->type=="long")		temptype="long";
-	// 		else{
-				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-	// 			exit(1);
-	// 		}
-	// 	}	
-	// 	else if(s1->type == "long"){
-	// 		if(s2->type=="int" || s2->type=="long")	temptype="long";
-	// 		else{
-				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-	// 			exit(1);
-	// 		}
-	// 	}
-	// 	else {
-			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
-	// 		exit(1);	
-	// 	}
-		
-	// 	string tempName = ST.curEnv->genTemp(temptype);
-	// 	Symbol* temp = ST->GetVar(tempName);
-	// 	d->place = temp->name;
-	// 	d->type = temp->type;
-	// 	tac->dest = temp;
-	// 	d->code.pb(tac);
-	// }
 
 	else if(op=="="|| op== "+="|| op== "-="|| op== "*="|| op== "/=" || op== "%=" || op== "&="|| op== "|="|| op== "^="|| op== "<<="|| op== ">>="){
 		TAC* tac = new TAC();
