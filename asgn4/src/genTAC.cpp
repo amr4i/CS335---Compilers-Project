@@ -25,7 +25,7 @@ string getNewLabel(){
 
 
 void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NULL, int lineNum = -1){
-	if(op=="+" || op=="-"){
+	if(op=="+" || op=="-" || op=="*" || op=="/" || op=="%" || op=="&" || op=="|" || op=="^" || op=="<<" || op==">>" || op=="==" || op=="<" || op==">" || op=="!=" || op=="<=" || op==">="){
 		TAC* tac = new TAC();
 		string temptype;
 		tac->op = op;
@@ -73,7 +73,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		
 		// Type-Checking
 		if (s1->type == "char"){
-			if(s2->type=="int")		temptype="int";
+			if(s2->type=="char" || s2->type=="int")		temptype="int";
 			else if(s2->type == "long")		temptype=="long";
 			else{
 				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
@@ -95,6 +95,11 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				exit(1);
 			}
 		}
+		else {
+			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			exit(1);
+		}
+
 
 		string tempName = symTable.curEnv->genTemp(temptype);
 		Symbol* temp = symTable.get(tempName);
@@ -104,8 +109,166 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		d->code.pb(tac);
 	}
 	
-	else if(op == "*" || op=="/" || op =="%"){
-	
+	// else if(op == "*" || op=="/" || op =="%"){
+	// 	TAC* tac = new TAC();
+	// 	string temptype;
+	// 	tac->op = op;
+	// 	tac->opType = 3;
+	// 	if(s1->isLit && s2->isLit){
+	// 		tac->isInt1 = true;
+	// 		tac->isInt2 = true;
+	// 		tac->l1 = s1->place;
+	// 		tac->l2 = s2->place;
+	// 	}
+	// 	else if(s1->isLit && !s2->isLit){
+	// 		tac->isInt1 = true;
+	// 		tac->l1 = s1->place;
+	// 		Symbol* sym2 = symTable.get(s2->place);
+	// 		if(sym2==NULL){
+	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
+	// 			exit(1);
+	// 		}
+	// 		tac->opd2 = symTable.get(sym2);	
+	// 	}
+	// 	else if(!s1->isLit && s2->isLit){
+	// 		tac->isInt2 = true;
+	// 		tac->l2 = s2->place;
+	// 		Symbol* sym1 = symTable.get(s1->place);
+	// 		if(sym1==NULL){
+	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
+	// 			exit(1);
+	// 		}
+	// 		tac->opd1 = symTable.get(sym1);	
+	// 	}	
+	// 	else{
+	// 		Symbol* sym1 = symTable.get(s1->place);
+	// 		if(sym1==NULL){
+	// 			printf("Error: Symbol %s not defined in scope.", s1->place);
+	// 			exit(1);
+	// 		}
+	// 		tac->opd1 = symTable.get(sym1);	
+	// 		Symbol* sym2 = symTable.get(s2->place);
+	// 		if(sym2==NULL){
+	// 			printf("Error: Symbol %s not defined in scope.", s2->place);
+	// 			exit(1);
+	// 		}
+	// 		tac->opd2 = symTable.get(sym2);	
+	// 	}			
+		
+	// 	// Type-Checking
+	// 	if(s1->type == "int"){
+	// 		if(s2->type=="int")				temptype="int";
+	// 		else if(s2->type=="long")		temptype="long";
+	// 		else{
+	// 			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+	// 			exit(1);
+	// 		}
+	// 	}	
+	// 	else if(s1->type == "long"){
+	// 		if(s2->type=="int" || s2->type=="long")	temptype="long";
+	// 		else{
+	// 			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+	// 			exit(1);
+	// 		}
+	// 	}
+	// 	else {
+	// 		printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+	// 		exit(1);	
+	// 	}
+		
+	// 	string tempName = symTable.curEnv->genTemp(temptype);
+	// 	Symbol* temp = symTable.get(tempName);
+	// 	d->place = temp->name;
+	// 	d->type = temp->type;
+	// 	tac->dest = temp;
+	// 	d->code.pb(tac);
+	// }
+
+	else if(op=="="|| op== "+="|| op== "-="|| op== "*="|| op== "/=" || op== "%=" || op== "&="|| op== "|="|| op== "^="|| op== "<<="|| op== ">>="){
+		TAC* tac = new TAC();
+		tac->op = op;
+		tac->opType = 2;
+		if(s1->isLit){
+			printf("Error: in Line %d\nLHS of an expression should not be a literal\n",lineNum);
+		}
+		else{
+			Symbol* symd = symTable.get(s1->place);
+			if(symd==NULL){
+				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
+				exit(1);
+			}
+			tac->dest=symd;
+		}
+		if(s2->isLit){
+			tac->isInt1 = true;
+			tac->l1 = s2->place;
+		}
+		else{
+			Symbol* sym1 = symTable.get(s2->place);
+			if(sym1==NULL){
+				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s2->place);
+				exit(1);
+			}
+			tac->opd1 = symTable.get(sym1);	
+		}			
+		
+		// Type-Checking
+		if (s1->type == "char"){
+			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
+			else{
+				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				exit(1);
+			}
+		}
+		else if (s1->type == "int"){
+			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
+			else{
+				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				exit(1);
+			}
+		}
+		else if (s1->type == "long"){
+			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
+			else{
+				printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+				exit(1);
+			}
+		}
+		else {
+			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			exit(1);
+		}
+
+		d->place = s1->name;
+		d->type = s1->type;
+		d->code.pb(tac);	
+	}
+
+	else if(op=="++" || op=="--"){
+		TAC* tac = new TAC();
+		tac->op = op;
+		tac->opType = 1;
+		if(s1->isLit){
+			printf("Error: in Line %d\nDo not use a literal in this expression\n",lineNum);
+		}
+		else{
+			Symbol* symd = symTable.get(s1->place);
+			if(symd==NULL){
+				printf("Error: in Line %d\nSymbol %s not defined in scope.", lineNum, s1->place);
+				exit(1);
+			}
+			tac->dest=symd;
+		}
+
+		// Type-Checking
+		if(!(s1->type=="char" || s1->type=="int" ||s1->type=="long")){
+			printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
+			exit(1);
+		}
+
+		d->place = s1->name;
+		d->type = s1->type;
+		d->code.pb(tac);	
 	}
 
 	// TO DO: ALL OTHER CASES WHERE get2OpCode() HAS BEEN USED. 
