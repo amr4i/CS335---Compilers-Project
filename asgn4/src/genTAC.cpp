@@ -13,6 +13,7 @@ struct genNode{
 	}
 
 	vector <TAC*> code;
+	vector <Symbol*> varDecs;
 };
 
 void printTAC(genNode* node){
@@ -88,6 +89,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->opd2 = ST->GetVar(sym2->name);	
 		}			
 		
+		cerr<<"1" << endl;
 		// Type-Checking
 		if (s1->type == "char"){
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
@@ -116,7 +118,6 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);
 			exit(1);
 		}
-
 		string tempName = ST->GenTemp();
 		Symbol* temp = ST->GetVar(tempName);
 		d->place = temp->name;
@@ -227,10 +228,11 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
-		}			
+		}
+
 		
 		// Type-Checking
-		else if (s1->type == "int"){
+		if (s1->type == "int"){
 			if(s2->type=="char" || s2->type=="int") ;
 			else{
 				// printf("Error: Incompatible operands to operator %s near line %d", op, lineNum);

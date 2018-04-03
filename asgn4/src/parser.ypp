@@ -66,12 +66,11 @@
 %type <node> block empty_statement expression_statement selection_statement iteration_statement jump_statement try_statement using_statement statement_list 
 %type <node> local_variable_declaration local_variable_type local_variable_declarators local_variable_declarator local_variable_initializer 
 %type <node> compilation_unit namespace_member_declarations using_directives namespace_declaration namespace_body using_directive
-%type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list
+%type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list statement_expression
 %type <node> method_header fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access
-%type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression
+%type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
 %type <node> statement class_declaration class_base class_body method_body member_name
 %type <sVal> assignment_operator rank_specifier 
-
 %%
 
 start :	compilation_unit	{ $$ = $1; printTAC($$);}
@@ -470,6 +469,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			cerr<<"fuck" << endl;
 			gen2OpCode($$, "+", $1, $3, 1234555);
 		}
 		| additive_expression '-' multiplicative_expression	
@@ -622,6 +622,28 @@ conditional_expression : null_coalescing_expression 	{ $$ = $1; }
 assignment : unary_expression assignment_operator expression	{  
 			// assignment_operator is a string
 			$$ = $1;	
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			// TAC* tac = new TAC();
+			Symbol* sym1 = ST->GetVar($1->place);
+			Symbol* sym2 = ST->GetVar($3->place);
+			if(sym1->baseType != sym2->baseType){
+				cout << "Error: Incompatible types at line num: " << endl;
+				exit(1);
+			}
+			if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
+				cout << "Error: Incompatible types at line num: " << endl;
+				exit(1);
+			}
+			// if((equal_compatible(sym2->type, sym1->type)) != "None"){
+			// 	tac->dest = sym1;
+			// 	tac->type = sym1->type;
+			// 	if($3->isLit){
+			// 		tac->isInt1 = true;
+			// 		tac->l1 = 
+			// 	}
+			// }
+			gen2OpCode($$, $2, $1, $3, 1234555);
+
 		}
 		;
 assignment_operator : '=' 	{ $$ = "="; }
@@ -639,7 +661,7 @@ assignment_operator : '=' 	{ $$ = "="; }
 expression : non_assignment_expression 	{ $$ = $1; }
 		| assignment	{ $$ = $1; }
 		;
-non_assignment_expression : conditional_expression	{  }
+non_assignment_expression : conditional_expression	{ $$ = $1; }
 		;
 constant_expression : expression	{ $$ = $1; }
 		;
@@ -668,35 +690,57 @@ block_start : epsilon	{	}
 block_end : epsilon	{	}
 		;
 statement_list : statement 	{ $$ = $1; }
-		| statement_list statement	{ $$ = $1; }
+		| statement_list statement	{ $$ = $1;}
 		;
 empty_statement : ';'	{  }
 		;
 labeled_statement :	identifier ':' statement	{  }
 		;
 declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
-		| local_constant_declaration ';'	{  }
+		| local_constant_declaration ';'	{ $$ = $1; }
 		;
-local_variable_declaration : local_variable_type local_variable_declarators	{ $$ = $1; }
+local_variable_declaration : local_variable_type local_variable_declarators	
+		{ 
+			$$ = $2;
+			string typeName = $1->place;
+			int siz = $$->varDecs.size();
+			fori(0, siz){
+				($$->varDecs)[i]->type = typeName;
+			}
+			$$->type = typeName;
+		}
 		;
 local_variable_type : type 	{ $$ = $1; }
 		;
 local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
-		| local_variable_declarators ',' local_variable_declarator	{  }
+		| local_variable_declarators ',' local_variable_declarator	
+		{ 
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
 		;
-local_variable_declarator : identifier 	{ $$ = $1; }
-		| identifier '=' local_variable_initializer	{ $$ = $1; }
+local_variable_declarator : identifier 	
+		{ 
+			$$ = $1; 
+			$$->varDecs.pb(ST->GetVar($1->place));
+		}
+		| identifier '=' local_variable_initializer	
+		{
+			$$ = $3;
+			TAC* tac = new TAC();
+
+		}
 		;
 local_variable_initializer : expression 	{  }
 		| array_initializer	{  }
 		;
 local_constant_declaration :  CONST type constant_declarators	{  }
 		;
-expression_statement : statement_expression ';'	{  }
+expression_statement : statement_expression ';'	{ $$ = $1; }
 		;
 statement_expression : invocation_expression 	{  }
 		| object_creation_expression 	{  }
-		| assignment 	{  }
+		| assignment 	{ $$ = $1; }
 		| pre_increment_expression 	{  }
 		| pre_decrement_expression	{  }
 		;
