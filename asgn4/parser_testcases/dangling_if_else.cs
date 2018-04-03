@@ -10,18 +10,24 @@
 
 using System;
 
-public class Test
+namespace Wow
 {
-	public void Main()
+	public class Test
 	{
-		    int i = 0;
-		    int a=1;
-		    if (i<=3)
-		        a++;
-		    if (i>=2)
-		        a--;
-		    else 
-		        a = 1;
+		public void Main()
+		{
+			    int i = 0;
+			    int a=1;
+			    if (i<=3){
+			        a = a+1;
+			    }
+			    if (i>=2){
+			        a = a-1;
+			    }
+			    else {
+			        a = 1;
+			    }
 
+		}
 	}
 }

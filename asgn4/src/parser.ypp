@@ -633,17 +633,18 @@ assignment : unary_expression assignment_operator expression	{
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			// TAC* tac = new TAC();
 			Symbol* sym1 = ST->GetVar($1->place);
-			Symbol* sym2 = ST->GetVar($3->place);
-			if(sym1->baseType != sym2->baseType){
-				cout << "Error: Incompatible types at line num: " << endl;
-				exit(1);
+			if($3->isLit==false){		
+				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym1->baseType != sym2->baseType){
+					cout << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
+					cout << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
 			}
-			if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
-				cout << "Error: Incompatible types at line num: " << endl;
-				exit(1);
-			}
-			gen2OpCode($$, $2, $1, $3, 1234555);
-
+			gen2OpCode($$, $2, $1, $3, 1234555);				
 		}
 		;
 assignment_operator : '=' 	{ $$ = "="; }
