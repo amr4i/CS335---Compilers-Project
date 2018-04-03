@@ -47,7 +47,7 @@ Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "BLOCKTY
 	Env* newEnv = new Env(scopeName, scopeType, curEnv, returnType, Class, Parent_Class);
 	(curEnv->children).pb(newEnv);
 
-	if(scopeType == "BLOCKTYPE") { newEnv->offset = curEnv->offset; }
+	// if(scopeType == "BLOCKTYPE") { newEnv->offset = curEnv->offset; }
 	
 	curEnv = newEnv;
 
@@ -75,13 +75,13 @@ Env* SymTable::FindClass(string className){
 }
 
 Env* SymTable::EndScope(){
-	int cur_width = max(curEnv->maxWidth, curEnv->width);
-	curEnv->maxWidth = cur_width;
+	// int cur_width = max(curEnv->maxWidth, curEnv->width);
+	// curEnv->maxWidth = cur_width;
 
 	curEnv = curEnv->prevEnv;
 
-	curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
-	return curEnv;
+	// curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
+	// return curEnv;
 }
 
 vector <string> SymTable::SetArgTypeList(vector <string> args){
