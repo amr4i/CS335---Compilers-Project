@@ -39,13 +39,13 @@ void printTAC(genNode* node){
 		if(isOpIn(op3,18,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;
 		else if(isOpIn(op1,9,t->op)) t->opType = 1;
-		else if(isOpIn(op0,2,t->op)) t->opType = 0;
+		else if(isOpIn(op0,2,t->op)){ t->opType = -1; cerr << t->op << endl;}
 
 		if(t==NULL){
 			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
-		cerr<<t->opType<<" ";
+		cerr<< t->opType << " " ;
 		switch(t->opType){
 			case 3: 
 				if(!t->isInt1 && !t->isInt2)
@@ -59,16 +59,13 @@ void printTAC(genNode* node){
 				break;
 			case 2:
 				if(!(t->isInt1)){
-					if(t == NULL)	cerr << "Yippee!\n";
-					if(t->dest == NULL)	cerr << "sad\n";
-					else	cerr << t->dest->name << "\n";
 					if(t->op=="ifgoto")
 						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->target;
 					else
 						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
 				}
 				else
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1;
+					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
 				if(t->op=="++" || t->op=="--"){
@@ -77,7 +74,8 @@ void printTAC(genNode* node){
 				}
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
-			case 0:
+			case -1:
+				cerr << "fuck" << endl;
 				cout<<t->lineNum<<", "<<t->op;
 				break;
 			default:

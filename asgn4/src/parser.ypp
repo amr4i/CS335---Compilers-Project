@@ -659,9 +659,7 @@ assignment_operator : '=' 	{ $$ = "="; }
 		| LSHIFTEQ 	{ $$ = "<<="; }
 		| right_shift_assignment	{ $$ = ">>="; }
 		;
-expression : non_assignment_expression 	{ $$ = $1; 
-			
-		}
+expression : non_assignment_expression 	{ $$ = $1; }
 		| assignment	{ $$ = $1; }
 		;
 non_assignment_expression : conditional_expression	{ $$ = $1; }
@@ -787,7 +785,7 @@ if_statement : IF '(' boolean_expression ')' embedded_statement
 			TAC* tac3 = new TAC();
 			tac3->op = "goto"; tac3->target = ifEndLabel;
 			TAC* tac4 = new TAC();
-			tac1->op = "label"; tac1->target = ifEndLabel;
+			tac4->op = "label"; tac4->target = ifEndLabel;
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
@@ -839,9 +837,64 @@ iteration_statement : while_statement 	{ $$ = $1; }
 		| do_statement 	{ $$ = $1; }
 		| for_statement 	{ $$ = $1; }
 		;
-while_statement : WHILE '(' boolean_expression ')' embedded_statement	{  }
+while_statement : WHILE '(' boolean_expression ')' embedded_statement	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = inLoopLabel;
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+		}
 		;
-do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	{  }
+do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC(); 	tac->op = "label";	tac->target = conditionLabel;
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+
+
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac4);
+
+		}
 		;
 for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 		{  
@@ -860,7 +913,7 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $7->code.begin(), $7->code.end());
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
@@ -885,7 +938,7 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
@@ -947,8 +1000,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
-			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
 
@@ -978,7 +1031,7 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
@@ -1007,8 +1060,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $9->code.begin(), $9->code.end());
-			$$->code.insert($$->code.begin(), $7->code.begin(), $7->code.end());
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
 
@@ -1075,13 +1128,13 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
 			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
-			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
 
@@ -1107,10 +1160,10 @@ statement_expression_list : statement_expression 	{ $$ = $1; }
 		| statement_expression_list ',' statement_expression	
 		{  
 			$$ = $1;
-			$$->code.insert($$->code.begin(), $3->code.begin(), $3->code.end());
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		;
-jump_statement : break_statement 	{  }
+jump_statement : break_statement 	{ $$ = $1 }
 		| continue_statement 	{  }
 		| goto_statement 	{  }
 		| return_statement 	{  }
