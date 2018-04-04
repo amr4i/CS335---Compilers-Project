@@ -5,14 +5,14 @@ namespace Rextester
     {
         public void Main(string[] args)
         {
-		int  a = 5;
-		while(a<=10){
+		int a = 5;
+		do {
 			a = a + 1;
-			if(a != 1){
+			if((a=0) != 1){
 				int p = 6;
 			}
 		}
-		
+		while(a<=10);
 		int b = a;
         }
     }
