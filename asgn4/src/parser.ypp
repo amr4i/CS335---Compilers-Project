@@ -75,6 +75,7 @@
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
 %type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
+%type <node> break_statement goto_statement throw_statement continue_statement return_statement
 
 %%
 
@@ -867,6 +868,10 @@ while_statement : WHILE '(' boolean_expression ')' embedded_statement
 			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
 		}
 		;
 do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	
@@ -894,6 +899,9 @@ do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'
 			$$->code.pb(tac2);
 			$$->code.pb(tac4);
 
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
 		}
 		;
 for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
@@ -917,6 +925,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -942,6 +953,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -979,6 +993,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
 
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -999,11 +1016,18 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
 			$$->code.pb(tac);
 			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1040,6 +1064,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
 
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1059,11 +1086,18 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
 			$$->code.pb(tac);
 			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1092,15 +1126,22 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
 
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
 			$$->code.pb(tac);
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
 			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1127,6 +1168,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
 
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
 			$$->code.pb(tac);
 			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 
@@ -1134,9 +1178,13 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
 			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1163,15 +1211,31 @@ statement_expression_list : statement_expression 	{ $$ = $1; }
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		;
-jump_statement : break_statement 	{ $$ = $1 }
+jump_statement : break_statement 	{ $$ = $1; }
 		| continue_statement 	{  }
 		| goto_statement 	{  }
 		| return_statement 	{  }
 		| throw_statement	{  }
 		;
-break_statement : BREAK ';'	{  }
+break_statement : BREAK ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			TAC* tac = new TAC();	tac -> op = "goto";	tac -> isBreak = true;
+
+			newNode->code.pb(tac);
+		}
 		;
-continue_statement : CONTINUE ';'	{  }
+continue_statement : CONTINUE ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			TAC* tac = new TAC();	tac -> op = "goto";	tac -> isContinue = true;
+
+			newNode->code.pb(tac);
+		}
 		;
 goto_statement : GOTO identifier ';' 	{  }
 		| GOTO CASE constant_expression ';' 	{  }

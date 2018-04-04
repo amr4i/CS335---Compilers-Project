@@ -10,6 +10,7 @@ namespace Rextester
 			a = a + 1;
 			if(a != 1){
 				int p = 6;
+				continue;
 			}
 		}
 		

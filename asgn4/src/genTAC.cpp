@@ -356,3 +356,17 @@ TAC* genLabelTAC(string labelName){
 	tac->target = labelName;
 	return tac;
 }
+
+void updateBreak(genNode* node, string label){
+	int siz = node->code.size();
+	fori(0, siz){
+		if(node->code[i]->isBreak == true)	node->code[i]->target = label;
+	}
+}
+
+void updateContinue(genNode* node, string label){
+	int siz = node->code.size();
+	fori(0, siz){
+		if(node->code[i]->isContinue == true)	node->code[i]->target = label;
+	}
+}

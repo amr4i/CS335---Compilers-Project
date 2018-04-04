@@ -40,12 +40,16 @@ struct TAC
 	bool isInt1;
 	bool isInt2;
 
+	bool isBreak;
+	bool isContinue;
+
 	TAC(){
 		isInt1 = false;
 		isInt2 = false;
 		opd1 = NULL;
 		opd2 = NULL;
 		dest = NULL;
+		isBreak = false;
 	}
 };
 
