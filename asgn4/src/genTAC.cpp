@@ -59,7 +59,9 @@ void printTAC(genNode* node){
 				break;
 			case 2:
 				if(!(t->isInt1)){
-					
+					if(t == NULL)	cerr << "Yippee!\n";
+					if(t->dest == NULL)	cerr << "sad\n";
+					else	cerr << t->dest->name << "\n";
 					if(t->op=="ifgoto")
 						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->target;
 					else

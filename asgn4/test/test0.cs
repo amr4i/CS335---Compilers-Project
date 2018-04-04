@@ -6,13 +6,13 @@ namespace Rextester
         public void Main(string[] args)
         {
 		int a = 5;
-		int b = 6;
-		if(a == 5){
-			int c = a + b;
+		for(int i=1 ; i<=10 ; i = i+1){
+			a = a + 1;
+			if((a=0) != 1){
+				int p = 6;
+			}
 		}
-		else{
-			int d = a + 2*b;
-		}
+		int b = a;
         }
     }
 }

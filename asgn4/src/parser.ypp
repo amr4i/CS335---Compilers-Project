@@ -38,7 +38,7 @@
 
 %expect 1
 
-%token <sVal> CONST CONTINUE DEFAULT DO ELSE FINALLY FOR FOREACH GOTO IF IN NAMESPACE PARAMS REF RETURN 
+%token <sVal> CONST CONTINUE DEFAULT DO ELSE FINALLY FOR GOTO IF IN NAMESPACE PARAMS REF RETURN 
 %token <sVal> STRUCT SWITCH THROW TRY TYPEOF USING VOID WHILE SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL
 %token <sVal> DQM RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ WHERE
 %token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID NULL_LIT THIS INCR DECR 
@@ -60,7 +60,7 @@
 %type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
 %type <node> variable_reference expression argument_list argument argument_value argument_name primary_no_array_creation_expression
 %type <node> primary_expression array_creation_expression parenthesized_expression postfix_expression
-%type <node> unary_expression_not_plusminus
+%type <node> unary_expression_not_plusminus statement_expression_list
 %type <node> pre_decrement_expression pre_increment_expression multiplicative_expression unary_expression additive_expression shift_expression
 %type <node> relational_expression equality_expression and_expression exclusive_or_expression 
 %type <node> inclusive_or_expression conditional_and_expression conditional_or_expression null_coalescing_expression
@@ -74,7 +74,7 @@
 %type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
 %type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
-%type <node> switch_statement
+%type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 
 %%
 
@@ -835,35 +835,280 @@ switch_labels : switch_label 	{  }
 switch_label : CASE constant_expression ':' 	{  }
 		| DEFAULT ':'	{  }
 		;
-iteration_statement : while_statement 	{  }
-		| do_statement 	{  }
-		| for_statement 	{  }
-		| foreach_statement	{  }
+iteration_statement : while_statement 	{ $$ = $1; }
+		| do_statement 	{ $$ = $1; }
+		| for_statement 	{ $$ = $1; }
 		;
 while_statement : WHILE '(' boolean_expression ')' embedded_statement	{  }
 		;
 do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	{  }
 		;
-for_statement : FOR '(' ';' ';' ')' embedded_statement 	{  }
-		| FOR '(' for_initializer ';' ';' ')' embedded_statement 	{  }
-		| FOR '(' ';' for_condition ';' ')' embedded_statement 	{  }
-		| FOR '(' ';' ';' for_iterator ')' embedded_statement 	{  }
-		| FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement 	{  }
-		| FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement 	{  }
-		| FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement 	{  }
-		| FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement	{  }
+for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $7->code.begin(), $7->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' ';' ')' embedded_statement
+		{  
+			$$ = $4;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' for_condition ';' ')' embedded_statement
+		{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' ';' for_iterator ')' embedded_statement
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
+			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement  	
+		{
+			$$ = $4;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement  	
+		{  
+			$$ = $4;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $9->code.begin(), $9->code.end());
+			$$->code.insert($$->code.begin(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement  	
+		{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement
+		{
+			$$ = $4;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.begin(), $6->code.begin(), $6->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+			$$->code.insert($$->code.begin(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
 		;
-for_initializer : local_variable_declaration 	{  }
-		| statement_expression_list	{  }
+for_initializer : local_variable_declaration 	{ $$ = $1; }
+		| statement_expression_list	{ $$ = $1; }
 		;
-for_condition : boolean_expression	{  }
+for_condition : boolean_expression	{ 
+			$$ = $1;
+			cerr << "Debug\n";
+			for(map <string, Symbol*> :: iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
+				cerr << (*it).fi << " " << (*it).se->name << "\n" ;
+			}
+		}
 		;
-for_iterator : statement_expression_list	{  }
+for_iterator : statement_expression_list	{ $$ = $1; }
 		;
-statement_expression_list : statement_expression 	{  }
-		| statement_expression_list ',' statement_expression	{  }
-		;
-foreach_statement : FOREACH '(' local_variable_type identifier IN expression ')' embedded_statement	{  }
+statement_expression_list : statement_expression 	{ $$ = $1; }
+		| statement_expression_list ',' statement_expression	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.begin(), $3->code.begin(), $3->code.end());
+		}
 		;
 jump_statement : break_statement 	{  }
 		| continue_statement 	{  }

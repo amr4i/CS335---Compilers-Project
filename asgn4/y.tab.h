@@ -53,71 +53,70 @@ extern int yydebug;
     DO = 263,
     FINALLY = 264,
     FOR = 265,
-    FOREACH = 266,
-    GOTO = 267,
-    IF = 268,
-    IN = 269,
-    NAMESPACE = 270,
-    PARAMS = 271,
-    REF = 272,
-    RETURN = 273,
-    STRUCT = 274,
-    SWITCH = 275,
-    THROW = 276,
-    TRY = 277,
-    TYPEOF = 278,
-    USING = 279,
-    VOID = 280,
-    WHILE = 281,
-    SIMPLE_ESC_SEQ = 282,
-    CHAR_LITERAL = 283,
-    REG_STR_LITERAL = 284,
-    VER_STR_LITERAL = 285,
-    DQM = 286,
-    RAND = 287,
-    ROR = 288,
-    REQ = 289,
-    RNE = 290,
-    LE = 291,
-    GE = 292,
-    APLUS = 293,
-    AMINUS = 294,
-    AMULT = 295,
-    ADIV = 296,
-    AMOD = 297,
-    AAND = 298,
-    AOR = 299,
-    ACARET = 300,
-    LSHIFT = 301,
-    LSHIFTEQ = 302,
-    WHERE = 303,
-    TRUE = 304,
-    FALSE = 305,
-    DCLN = 306,
-    RSHIFT = 307,
-    RSHIFTEQ = 308,
-    INT = 309,
-    CHAR = 310,
-    LONG = 311,
-    OBJECT = 312,
-    STRING = 313,
-    BOOL = 314,
-    ID = 315,
-    NULL_LIT = 316,
-    THIS = 317,
-    INCR = 318,
-    DECR = 319,
-    NEW = 320,
-    PUBLIC = 321,
-    PROTECTED = 322,
-    PRIVATE = 323,
-    BREAK = 324,
-    CASE = 325,
-    CATCH = 326,
-    BASE = 327,
-    CLASS = 328,
-    DINT_LITERAL = 329,
-    HDINT_LITERAL = 330
+    GOTO = 266,
+    IF = 267,
+    IN = 268,
+    NAMESPACE = 269,
+    PARAMS = 270,
+    REF = 271,
+    RETURN = 272,
+    STRUCT = 273,
+    SWITCH = 274,
+    THROW = 275,
+    TRY = 276,
+    TYPEOF = 277,
+    USING = 278,
+    VOID = 279,
+    WHILE = 280,
+    SIMPLE_ESC_SEQ = 281,
+    CHAR_LITERAL = 282,
+    REG_STR_LITERAL = 283,
+    VER_STR_LITERAL = 284,
+    DQM = 285,
+    RAND = 286,
+    ROR = 287,
+    REQ = 288,
+    RNE = 289,
+    LE = 290,
+    GE = 291,
+    APLUS = 292,
+    AMINUS = 293,
+    AMULT = 294,
+    ADIV = 295,
+    AMOD = 296,
+    AAND = 297,
+    AOR = 298,
+    ACARET = 299,
+    LSHIFT = 300,
+    LSHIFTEQ = 301,
+    WHERE = 302,
+    TRUE = 303,
+    FALSE = 304,
+    DCLN = 305,
+    RSHIFT = 306,
+    RSHIFTEQ = 307,
+    INT = 308,
+    CHAR = 309,
+    LONG = 310,
+    OBJECT = 311,
+    STRING = 312,
+    BOOL = 313,
+    ID = 314,
+    NULL_LIT = 315,
+    THIS = 316,
+    INCR = 317,
+    DECR = 318,
+    NEW = 319,
+    PUBLIC = 320,
+    PROTECTED = 321,
+    PRIVATE = 322,
+    BREAK = 323,
+    CASE = 324,
+    CATCH = 325,
+    BASE = 326,
+    CLASS = 327,
+    DINT_LITERAL = 328,
+    HDINT_LITERAL = 329
   };
 #endif
 /* Tokens.  */
@@ -129,71 +128,70 @@ extern int yydebug;
 #define DO 263
 #define FINALLY 264
 #define FOR 265
-#define FOREACH 266
-#define GOTO 267
-#define IF 268
-#define IN 269
-#define NAMESPACE 270
-#define PARAMS 271
-#define REF 272
-#define RETURN 273
-#define STRUCT 274
-#define SWITCH 275
-#define THROW 276
-#define TRY 277
-#define TYPEOF 278
-#define USING 279
-#define VOID 280
-#define WHILE 281
-#define SIMPLE_ESC_SEQ 282
-#define CHAR_LITERAL 283
-#define REG_STR_LITERAL 284
-#define VER_STR_LITERAL 285
-#define DQM 286
-#define RAND 287
-#define ROR 288
-#define REQ 289
-#define RNE 290
-#define LE 291
-#define GE 292
-#define APLUS 293
-#define AMINUS 294
-#define AMULT 295
-#define ADIV 296
-#define AMOD 297
-#define AAND 298
-#define AOR 299
-#define ACARET 300
-#define LSHIFT 301
-#define LSHIFTEQ 302
-#define WHERE 303
-#define TRUE 304
-#define FALSE 305
-#define DCLN 306
-#define RSHIFT 307
-#define RSHIFTEQ 308
-#define INT 309
-#define CHAR 310
-#define LONG 311
-#define OBJECT 312
-#define STRING 313
-#define BOOL 314
-#define ID 315
-#define NULL_LIT 316
-#define THIS 317
-#define INCR 318
-#define DECR 319
-#define NEW 320
-#define PUBLIC 321
-#define PROTECTED 322
-#define PRIVATE 323
-#define BREAK 324
-#define CASE 325
-#define CATCH 326
-#define BASE 327
-#define CLASS 328
-#define DINT_LITERAL 329
-#define HDINT_LITERAL 330
+#define GOTO 266
+#define IF 267
+#define IN 268
+#define NAMESPACE 269
+#define PARAMS 270
+#define REF 271
+#define RETURN 272
+#define STRUCT 273
+#define SWITCH 274
+#define THROW 275
+#define TRY 276
+#define TYPEOF 277
+#define USING 278
+#define VOID 279
+#define WHILE 280
+#define SIMPLE_ESC_SEQ 281
+#define CHAR_LITERAL 282
+#define REG_STR_LITERAL 283
+#define VER_STR_LITERAL 284
+#define DQM 285
+#define RAND 286
+#define ROR 287
+#define REQ 288
+#define RNE 289
+#define LE 290
+#define GE 291
+#define APLUS 292
+#define AMINUS 293
+#define AMULT 294
+#define ADIV 295
+#define AMOD 296
+#define AAND 297
+#define AOR 298
+#define ACARET 299
+#define LSHIFT 300
+#define LSHIFTEQ 301
+#define WHERE 302
+#define TRUE 303
+#define FALSE 304
+#define DCLN 305
+#define RSHIFT 306
+#define RSHIFTEQ 307
+#define INT 308
+#define CHAR 309
+#define LONG 310
+#define OBJECT 311
+#define STRING 312
+#define BOOL 313
+#define ID 314
+#define NULL_LIT 315
+#define THIS 316
+#define INCR 317
+#define DECR 318
+#define NEW 319
+#define PUBLIC 320
+#define PROTECTED 321
+#define PRIVATE 322
+#define BREAK 323
+#define CASE 324
+#define CATCH 325
+#define BASE 326
+#define CLASS 327
+#define DINT_LITERAL 328
+#define HDINT_LITERAL 329
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -206,7 +204,7 @@ union YYSTYPE
 	char *sVal;
 	struct genNode* node;	
 
-#line 210 "y.tab.h" /* yacc.c:1909  */
+#line 208 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

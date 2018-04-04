@@ -37,7 +37,6 @@ ELSE			else
 FALSE			false
 FINALLY			finally
 FOR 			for
-FOREACH			foreach
 GOTO			goto
 IF				if
 IN 				in
@@ -144,7 +143,6 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {FALSE} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FALSE; }
 {FINALLY} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FINALLY; }
 {FOR} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FOR; }
-{FOREACH} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return FOREACH; }
 {GOTO} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return GOTO; }
 {IF} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return IF; }
 {IN} { yylval.sVal = strdup(yytext); printf("%s\n", yytext); return IN; }
