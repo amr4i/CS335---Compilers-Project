@@ -1163,7 +1163,7 @@ statement_expression_list : statement_expression 	{ $$ = $1; }
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		;
-jump_statement : break_statement 	{  }
+jump_statement : break_statement 	{ $$ = $1 }
 		| continue_statement 	{  }
 		| goto_statement 	{  }
 		| return_statement 	{  }
