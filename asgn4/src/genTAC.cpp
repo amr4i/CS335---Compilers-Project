@@ -360,13 +360,19 @@ TAC* genLabelTAC(string labelName){
 void updateBreak(genNode* node, string label){
 	int siz = node->code.size();
 	fori(0, siz){
-		if(node->code[i]->isBreak == true)	node->code[i]->target = label;
+		if(node->code[i]->isBreak == true){
+			node->code[i]->target = label;
+			node->code[i]->isBreak == false;
+		}
 	}
 }
 
 void updateContinue(genNode* node, string label){
 	int siz = node->code.size();
 	fori(0, siz){
-		if(node->code[i]->isContinue == true)	node->code[i]->target = label;
+		if(node->code[i]->isContinue == true){
+			node->code[i]->target = label;
+			node->code[i]->isContinue == false;
+		}
 	}
 }
