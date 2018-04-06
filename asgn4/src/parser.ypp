@@ -347,7 +347,12 @@ predefined_type : BOOL
 
 invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		| primary_no_array_creation_expression '(' argument_list ')'	{  }
-		| qualified_identifier '(' ')' 	{  }
+		| qualified_identifier '(' ')' 	
+		{  
+			TAC* tac = new TAC();
+			tac->op = "callvoid";
+			tac->target = ST->
+		}
 		| qualified_identifier '(' argument_list ')'	{  }
 		;
 
@@ -687,7 +692,12 @@ embedded_statement : block 	{ $$ = $1; }
 block : block_start '{' '}' block_end 	{ $$ = NULL;	}
 		| block_start '{' statement_list '}' block_end	{  $$ = $3;   }
 		;
-block_start : epsilon	{ $$ = NULL; ST->BeginScope();	}
+block_start : epsilon	
+		{ 
+			$$ = NULL; 
+			ST->BeginScope();	
+			ST->curEnv->prevEnv->children.pb(ST->curEnv);
+		}
 		;
 block_end : epsilon	{ $$ = NULL; ST->EndScope();	}
 		;
@@ -1416,16 +1426,64 @@ variable_declarator : identifier 	{  }
 variable_initializer : expression 	{  }
 		| array_initializer	{  }
 		;
-method_declaration : method_header method_body	{ $$ = $2; }
+method_declaration : block_start method_header method_body	
+		{
+			$$ = $2;
+
+			$$->code.clear();
+			$$->code.pb(genLabelTAC(ST->curEnv->name));
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
+
+			ST->curEnv->type = "METHODTYPE";
+
+			ST->EndScope();
+		}
 		;
-method_header : type member_name '(' ')' 	{  }
-		| modifiers type member_name '(' ')' 	{  }
-		| type member_name '(' formal_parameter_list ')' 	{  }
-		| modifiers type member_name '(' formal_parameter_list ')' 	{ $$ = $2; }
-		| VOID member_name '(' ')' 	{  }
-		| modifiers VOID member_name '(' ')' 	{  }
-		| VOID member_name '(' formal_parameter_list ')' 	{  }
-		| modifiers VOID member_name '(' formal_parameter_list ')' 	{  }
+method_header : type member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = member_name;
+		}
+		| modifiers type member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = member_name;
+		}
+		| type member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = member_name;
+		}
+		| modifiers type member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = member_name;
+		}
+		| VOID member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = member_name;
+		}
+		| modifiers VOID member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = member_name;
+		}
+		| VOID member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = member_name;
+		}
+		| modifiers VOID member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = member_name;
+		}
 		;
 
 member_name : qualified_identifier	{ $$ = $1; }
@@ -1434,23 +1492,79 @@ method_body : block 	{ $$ = $1; }
 		| ';'	{ $$ = NULL; }
 		;
 formal_parameter_list : fixed_parameters 	{ $$ = $1; }
-		| fixed_parameters ',' parameter_array 	{  }
-		| parameter_array	{  }
+		| fixed_parameters ',' parameter_array 	
+		{ 
+			$$ = $1; 
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
+		| parameter_array	{ $$ = $1; }
 		;
 fixed_parameters : fixed_parameter 	{ $$ = $1; }
-		| fixed_parameters ',' fixed_parameter	{  }
+		| fixed_parameters ',' fixed_parameter	
+		{ 
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
 		;
 fixed_parameter : type identifier 	{ $$ = $1; }
-		| parameter_modifier type identifier 	{  }
-		| type identifier default_argument 	{  }
-		| parameter_modifier type identifier default_argument	{  }
+		| parameter_modifier type identifier 	{ $$ = NULL; }
+		| type identifier default_argument 	
+		{ 
+			$$ = $4; 
+
+			TAC* tac = new TAC();
+			tac->op = "=";
+			if($4->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $4->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($4->place);
+			}
+
+			tac -> dest = ST->GetVar(identifier->place);
+			$$->code.pb(tac);
+
+			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = type->place;
+		}
+		| parameter_modifier type identifier default_argument	
+		{ 
+			$$ = $4; 
+
+			TAC* tac = new TAC();
+			tac->op = "=";
+			if($4->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $4->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($4->place);
+			}
+
+			tac -> dest = ST->GetVar(identifier->place);
+			$$->code.pb(tac);
+
+			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = type->place;
+		}
 		;
-default_argument : '=' expression	{  }
+default_argument : '=' expression	{ $$ = $2; }
 		;
 parameter_modifier : REF 	{  }
 		| THIS	{  }
 		;
-parameter_array : PARAMS array_type identifier	{  }
+parameter_array : PARAMS array_type identifier	
+		{ 
+-			// Not sure about this
+			$$ = $3; 
+			ST->curEnv->argNum++;
+			ST->curEnv->argTypeList.pb(arrayType->place);
+		}
 		;
 constructor_declaration : constructor_declarator constructor_body 	{  }
 		| modifiers constructor_declarator constructor_body	{  }
@@ -1488,10 +1602,10 @@ struct_body : '{' '}' 	{  }
 struct_member_declarations : struct_member_declaration 	{  }
 		| struct_member_declarations struct_member_declaration	{  }
 		;
-struct_member_declaration : constant_declaration 	{  }
-		| field_declaration 	{  }
-		| method_declaration 	{  }
-		| constructor_declaration 	{  }
+struct_member_declaration : constant_declaration 	{ $$ = $1; }
+		| field_declaration 	{ $$ = $1; }
+		| method_declaration 	{ $$ = $1; }
+		| constructor_declaration 	{ $$ = $1; }
 		;
 
 /*B.2.9 Arrays*/ 
