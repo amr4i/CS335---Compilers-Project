@@ -367,28 +367,40 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		{  
 			TAC* tac = new TAC();
 			tac->op = "call";
-			tac->target = ST->curEnv->name;
+			Env* methodEnv = ST->GetMethod($1->place);
+			tac->target = methodEnv->name;
 			tac->isInt1 = true;
-			tac->l1 = convertNumToString(ST->GetMethod($1->place)->argNum);
+			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
 			tac->dest = ST->GetVar(str1);
-			cerr << "\t" << "Debug: " << tac->l1 << "\n";
 			$$ = $1;
+			$$->place = str1;
+			$$->type = methodEnv->returnType;
 			$$->code.pb(tac);
 		}
 		| qualified_identifier '(' argument_list ')'	
 		{  
 			TAC* tac = new TAC();
 			tac->op = "call";
-			tac->target = ST->curEnv->name;
 			tac->isInt1 = true;
-			tac->l1 = convertNumToString(ST->GetMethod($1->place)->argNum);
+
+			Env* methodEnv = ST->GetMethod($1->place);
+			tac->target = methodEnv->name;
+
+			cerr << "\t" << "Debug: " << methodEnv->name << ": " << methodEnv->argNum << "\n";
+
+			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
+
+			cerr << "\t \t Debug: " << str1 << "\n";
+
 			tac->dest = ST->GetVar(str1);
-			if(tac->dest != NULL)	cerr << "\t" << ST->GetMethod($1->place)->argNum << " : " << "Debug: " << tac->l1 << "\n";
-			else 	cerr << "\t Debug: Screwed\n";
+			// if(tac->dest != NULL)	cerr << "\t" << ST->GetMethod($1->place)->argNum << " : " << "Debug: " << tac->l1 << "\n";
+			// else 	cerr << "\t Debug: Screwed\n";
 			$$ = $1;
-			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->place = str1;
+			$$->type = methodEnv->returnType;
 			$$->code.pb(tac);
 		}
 		;
@@ -715,7 +727,7 @@ boolean_expression : expression	{ $$ = $1; }
 /*B.2.5 Statements*/ 
 statement :	labeled_statement 	{  $$ = $1;  }
 		| declaration_statement 	{ $$ = $1; }
-		| embedded_statement	{ $$ = $1; }
+		| embedded_statement	{ $$ = $1;cerr <<"3\n"; }
 		;
 embedded_statement : block 	{ $$ = $1; }
 		| empty_statement 	{ $$ = $1; }
@@ -727,7 +739,7 @@ embedded_statement : block 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
 block : block_start '{' '}' block_end 	{ $$ = NULL;	}
-		| block_start '{' statement_list '}' block_end	{  $$ = $3;   }
+		| block_start '{' statement_list '}' block_end	{  $$ = $3; }
 		;
 block_start : epsilon	
 		{ 
@@ -743,6 +755,8 @@ block_end : epsilon
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	
 		{ 
+			cerr << $$->code.size() << "\n";
+			cerr << $2->code.size() << "\n";
 			$$ = $1;
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
 		}
@@ -1245,10 +1259,10 @@ for_initializer : local_variable_declaration 	{ $$ = $1; }
 		;
 for_condition : boolean_expression	{ 
 			$$ = $1;
-			cerr << "Debug\n";
-			for(map <string, Symbol*> :: iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
-				cerr << (*it).fi << " " << (*it).se->name << "\n" ;
-			}
+			// cerr << "Debug\n";
+			// for(map <string, Symbol*> :: iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
+			// 	cerr << (*it).fi << " " << (*it).se->name << "\n" ;
+			// }
 		}
 		;
 for_iterator : statement_expression_list	{ $$ = $1; }
@@ -1290,8 +1304,24 @@ goto_statement : GOTO identifier ';' 	{  }
 		| GOTO CASE constant_expression ';' 	{  }
 		| GOTO DEFAULT ';'	{  }
 		;
-return_statement : RETURN ';' 	{  }
-		| RETURN expression ';'	{  }
+return_statement : RETURN ';' 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			TAC* tac = new TAC();
+			tac->op = "ret";
+			$$->code.pb(tac);
+		}
+		| RETURN expression ';'	
+		{  
+			$$ = $2;
+			TAC* tac = new TAC();
+			tac->op = "retint";
+			tac->dest = ST->GetVar($2->place);
+			vector <TAC*> tmp;
+			tmp.pb(tac);
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		}
 		;
 throw_statement : THROW ';' 	{  }
 		| THROW expression ';'	{  }
@@ -1495,10 +1525,8 @@ method_declaration : method_header method_body
 			$$ = $1;
 			vector <TAC*> tmp;
 			tmp.pb(genLabelTAC(ST->curEnv->name));
-			cerr << "\t \tDebug: " << ST->curEnv->name << "\n";
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
-
 
 			ST->curEnv->type = "METHODTYPE";
 
@@ -1526,9 +1554,9 @@ method_header : type member_name '(' ')'
 		}
 		| modifiers type member_name '(' formal_parameter_list ')' 	
 		{ 
-			$$ = $2;
-			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = $2->place;
+			$$ = $3;
+			ST->curEnv->returnType = $2->place;
+			ST->curEnv->name = $3->place;
 			$$->code = $5->code;
 		}
 		| VOID member_name '(' ')' 	
@@ -1561,7 +1589,10 @@ member_name : qualified_identifier
 			$$ = $1; 
 		}
 		;
-method_body : block 	{ $$ = $1; }
+method_body : block 	
+		{ 
+			$$ = $1; 
+		}
 		| ';'	{ $$ = NULL; }
 		;
 formal_parameter_list : fixed_parameters 	{ $$ = $1; }
@@ -1585,6 +1616,7 @@ fixed_parameter : type identifier
 			Symbol* sym = ST->GetVar($2->place);
 			sym->type = $1->place;
 			$$->type = $1->place;
+			ST->curEnv->argNum ++;
 
 			TAC* tac = new TAC();
 			tac->op = "readParam";

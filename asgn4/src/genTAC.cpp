@@ -49,10 +49,9 @@ void printTAC(genNode* node){
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
-					cerr << "Here\n";
-					cout << t->lineNum<< ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
+					cerr << t->lineNum<< ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
 				}
-				if(!t->isInt1 && !t->isInt2){
+				else if(!t->isInt1 && !t->isInt2){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
 				}
 				else if(t->isInt1 && !t->isInt2){
@@ -76,14 +75,13 @@ void printTAC(genNode* node){
 					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
-				if(t->op=="++" || t->op=="--"){
+				if(t->op=="++" || t->op=="--" || t->op == "retint"){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
 				}
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
 			case -1:
-				cerr << "coke" << endl;
 				cout<<t->lineNum<<", "<<t->op;
 				break;
 			default:
