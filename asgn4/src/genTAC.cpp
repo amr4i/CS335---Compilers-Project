@@ -16,9 +16,9 @@ struct genNode{
 	vector <Symbol*> varDecs;
 };
 
-string op3 [18]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
+string op3 [19]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
 string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
-string op1 [9]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
+string op1 [10]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 string op0 [2]= {"ret","exit"};
 
 bool isOpIn(string *opA, int n, string op){
@@ -36,9 +36,9 @@ void printTAC(genNode* node){
 	fori(0, siz){
 		t=node->code[i];
 
-		if(isOpIn(op3,18,t->op)) t->opType = 3;
+		if(isOpIn(op3,19,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;
-		else if(isOpIn(op1,9,t->op)) t->opType = 1;
+		else if(isOpIn(op1,10,t->op)) t->opType = 1;
 		else if(isOpIn(op0,2,t->op)){ t->opType = -1; cerr << t->op << endl;}
 
 		if(t==NULL){
@@ -49,16 +49,21 @@ void printTAC(genNode* node){
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name->", "<<t->target<<", "<<t->l1;
+					cerr << "Here\n";
+					cout << t->lineNum<< ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
 				}
-				if(!t->isInt1 && !t->isInt2)
+				if(!t->isInt1 && !t->isInt2){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
-				else if(t->isInt1 && !t->isInt2)
+				}
+				else if(t->isInt1 && !t->isInt2){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->opd2->name;
-				else if(!t->isInt1 && t->isInt2)
+				}
+				else if(!t->isInt1 && t->isInt2){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->l2;
-				else
+				}
+				else{
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->l2;
+				}
 				break;
 			case 2:
 				if(!(t->isInt1)){
@@ -78,7 +83,7 @@ void printTAC(genNode* node){
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
 			case -1:
-				cerr << "fuck" << endl;
+				cerr << "coke" << endl;
 				cout<<t->lineNum<<", "<<t->op;
 				break;
 			default:

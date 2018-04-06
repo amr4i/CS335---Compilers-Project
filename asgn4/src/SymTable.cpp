@@ -50,6 +50,8 @@ Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "BLOCKTY
 	// if(scopeType == "BLOCKTYPE") { newEnv->offset = curEnv->offset; }
 	
 	curEnv = newEnv;
+	cerr << "Debug \t \t ::::::>>>>>>\n";
+
 
 	return newEnv;
 }
@@ -79,6 +81,8 @@ Env* SymTable::EndScope(){
 	// curEnv->maxWidth = cur_width;
 
 	curEnv = curEnv->prevEnv;
+	cerr << "\t \t Debug : <<<<<<:::::::\n";
+
 
 	// curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
 	// return curEnv;

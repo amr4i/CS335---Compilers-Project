@@ -114,7 +114,9 @@ Env* Env::getClassEnv(){
 Env* Env::getMethod(string methodName, Env* baseEnv){
 	Env* tmpEnv = getClassEnv();
 
+	cerr << "Debug: inside getMethod\n";
 	int siz = (tmpEnv->children).size();
+	if(tmpEnv != NULL)	cerr << siz << "\n";
 	fori(0, siz){
 		if((tmpEnv->children)[i]->type == "METHODTYPE" && (tmpEnv->children)[i]->name == methodName)	return (tmpEnv->children)[i];
 	}
