@@ -60,7 +60,7 @@
 %type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
 %type <node> variable_reference expression argument_list argument argument_value argument_name primary_no_array_creation_expression
 %type <node> primary_expression array_creation_expression parenthesized_expression postfix_expression
-%type <node> unary_expression_not_plusminus statement_expression_list
+%type <node> unary_expression_not_plusminus statement_expression_list method_header 
 %type <node> pre_decrement_expression pre_increment_expression multiplicative_expression unary_expression additive_expression shift_expression
 %type <node> relational_expression equality_expression and_expression exclusive_or_expression 
 %type <node> inclusive_or_expression conditional_and_expression conditional_or_expression null_coalescing_expression
@@ -69,13 +69,14 @@
 %type <node> local_variable_declaration local_variable_type local_variable_declarators local_variable_declarator local_variable_initializer 
 %type <node> compilation_unit namespace_member_declarations using_directives namespace_declaration namespace_body using_directive
 %type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list statement_expression
-%type <node> method_header fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access
+%type <node> fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access parameter_array
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
 %type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
 %type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
-%type <node> break_statement goto_statement throw_statement continue_statement return_statement
+%type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
+%type <node> struct_member_declarations struct_member_declaration
 
 %%
 
@@ -294,15 +295,29 @@ variable_reference : expression	{ $$ = $1; }
 		;
 
 /*B.2.4 Expressions*/ 
-argument_list : argument 	{ }
-		| argument_list ',' argument	{ }
+argument_list : argument 	
+		{ 
+			$$ = $1; 
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $1->place;
+			$$->code.pb(tac);
+		}
+		| argument_list ',' argument	
+		{ 
+			$$ = $1;
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $3->place;
+			$$->code.pb(tac);
+		}
 		;
-argument : argument_value 	{ }
-		| argument_name argument_value	{ }
+argument : argument_value 	{ $$ = $1; }
+		| argument_name argument_value	{ $$ = NULL; }
 		;
 argument_name : identifier ':'	{ }
 		;
-argument_value : expression 	{ }
+argument_value : expression 	{ $$ = $1; }
 		| REF variable_reference 	{ }
 		;
 primary_expression : primary_no_array_creation_expression 	{ $$ = $1; }
@@ -350,12 +365,28 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		| qualified_identifier '(' ')' 	
 		{  
 			TAC* tac = new TAC();
-			tac->op = "callvoid";
-			tac->target = ST->name;
+			tac->op = "call";
+			tac->target = ST->curEnv->name;
+			tac->isInt1 = true;
+			tac->l1 = convertNumToString(ST->curEnv->argNum);
+			string str1 = ST->GenTemp();
+			tac->dest = ST->GetVar(str1);
 			$$ = $1;
 			$$->code.pb(tac);
 		}
-		| qualified_identifier '(' argument_list ')'	{  }
+		| qualified_identifier '(' argument_list ')'	
+		{  
+			TAC* tac = new TAC();
+			tac->op = "call";
+			tac->target = ST->curEnv->name;
+			tac->isInt1 = true;
+			tac->l1 = convertNumToString(ST->curEnv->argNum);
+			string str1 = ST->GenTemp();
+			tac->dest = ST->GetVar(str1);
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->code.pb(tac);
+		}
 		;
 
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
@@ -1428,14 +1459,13 @@ variable_declarator : identifier 	{  }
 variable_initializer : expression 	{  }
 		| array_initializer	{  }
 		;
-method_declaration : block_start method_header method_body	
+method_declaration : method_header method_body	
 		{
-			$$ = $2;
-
-			$$->code.clear();
-			$$->code.pb(genLabelTAC(ST->curEnv->name));
+			$$ = $1;
+			vector <TAC*> tmp;
+			tmp.pb(genLabelTAC(ST->curEnv->name));
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
-			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
 
 			ST->curEnv->type = "METHODTYPE";
 
@@ -1466,7 +1496,7 @@ method_header : type member_name '(' ')'
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
 			ST->curEnv->name = $2->place;
-			$$->code = $4->code;
+			$$->code = $5->code;
 		}
 		| VOID member_name '(' ')' 	
 		{ 
@@ -1475,8 +1505,8 @@ method_header : type member_name '(' ')'
 		}
 		| modifiers VOID member_name '(' ')' 	
 		{ 
-			$$ = $2;
-			ST->curEnv->name = $2->place;
+			$$ = $3;
+			ST->curEnv->name = $3->place;
 		}
 		| VOID member_name '(' formal_parameter_list ')' 	
 		{ 
@@ -1486,13 +1516,18 @@ method_header : type member_name '(' ')'
 		}
 		| modifiers VOID member_name '(' formal_parameter_list ')' 	
 		{ 
-			$$ = $2;
-			ST->curEnv->name = $2->place;
-			$$->code = $4->code;
+			$$ = $3;
+			ST->curEnv->name = $3->place;
+			$$->code = $5->code;
 		}
 		;
 
-member_name : qualified_identifier	{ $$ = $1; }
+member_name : qualified_identifier	
+		{ 
+			ST->BeginScope();	
+			ST->curEnv->prevEnv->children.pb(ST->curEnv); 
+			$$ = $1; 
+		}
 		;
 method_body : block 	{ $$ = $1; }
 		| ';'	{ $$ = NULL; }
@@ -1508,8 +1543,8 @@ formal_parameter_list : fixed_parameters 	{ $$ = $1; }
 fixed_parameters : fixed_parameter 	{ $$ = $1; }
 		| fixed_parameters ',' fixed_parameter	
 		{ 
-			$$ = $1;
-			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$ = $3;
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
 		}
 		;
 fixed_parameter : type identifier 	
@@ -1518,37 +1553,58 @@ fixed_parameter : type identifier
 			Symbol* sym = ST->GetVar($2->place);
 			sym->type = $1->place;
 			$$->type = $1->place;
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $2->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
+
 		}
 		| parameter_modifier type identifier 	
 		{
-			$$ = $4; 
+			$$ = $3; 
 
-			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argTypeList.pb($2->place);
 			ST->curEnv->argNum ++;
 
-			$$->type = type->place;
+			$$->type = $2->place;
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $3->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
 		}
 		| type identifier default_argument 	
 		{ 
-			$$ = $4; 
+			$$ = $3; 
 
 			TAC* tac = new TAC();
 			tac->op = "=";
-			if($4->isLit == true){
+			if($3->isLit == true){
 				tac->isInt1 = true;
-				tac->l1 = $4->place;
+				tac->l1 = $3->place;
 			}
 			else{
-				tac->opd1 = ST->GetVar($4->place);
+				tac->opd1 = ST->GetVar($3->place);
 			}
 
-			tac -> dest = ST->GetVar(identifier->place);
+			tac -> dest = ST->GetVar($3->place);
 			$$->code.pb(tac);
 
-			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argTypeList.pb($1->place);
 			ST->curEnv->argNum ++;
 
-			$$->type = type->place;
+			$$->type = $1->place;
+
+			TAC* tac1 = new TAC();
+			tac1->op = "readParam";
+			tac1->target = $2->place;
+
+			$$->code.pb(tac1);
 		}
 		| parameter_modifier type identifier default_argument	
 		{ 
@@ -1564,13 +1620,19 @@ fixed_parameter : type identifier
 				tac->opd1 = ST->GetVar($4->place);
 			}
 
-			tac -> dest = ST->GetVar(identifier->place);
+			tac -> dest = ST->GetVar($3->place);
 			$$->code.pb(tac);
 
-			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argTypeList.pb($2->place);
 			ST->curEnv->argNum ++;
 
-			$$->type = type->place;
+			$$->type = $2->place;
+
+			TAC* tac1 = new TAC();
+			tac1->op = "readParam";
+			tac1->target = $3->place;
+
+			$$->code.pb(tac1);
 		}
 		;
 default_argument : '=' expression	{ $$ = $2; }
@@ -1580,10 +1642,10 @@ parameter_modifier : REF 	{  }
 		;
 parameter_array : PARAMS array_type identifier	
 		{ 
--			// Not sure about this
-			$$ = $3; 
-			ST->curEnv->argNum++;
-			ST->curEnv->argTypeList.pb(arrayType->place);
+// -			// Not sure about this
+// 			$$ = $3; 
+// 			ST->curEnv->argNum++;
+// 			ST->curEnv->argTypeList.pb($2->place);
 		}
 		;
 constructor_declaration : constructor_declarator constructor_body 	{  }

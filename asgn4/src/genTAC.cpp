@@ -376,3 +376,9 @@ void updateContinue(genNode* node, string label){
 		}
 	}
 }
+
+string convertNumToString(int x){
+	stringstream ss;
+	ss << x;
+	return ss.str();
+}
