@@ -16,9 +16,9 @@ struct genNode{
 	vector <Symbol*> varDecs;
 };
 
-string op3 [18]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr"};
-string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint", "array"};
-string op1 [9]= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint", "printstr"};
+string op3 [18]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
+string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
+string op1 [9]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 string op0 [2]= {"ret","exit"};
 
 bool isOpIn(string *opA, int n, string op){
@@ -48,6 +48,9 @@ void printTAC(genNode* node){
 		cerr<< t->opType << " " ;
 		switch(t->opType){
 			case 3: 
+				if(t->op=="call"){
+					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name->", "<<t->target<<", "<<t->l1;
+				}
 				if(!t->isInt1 && !t->isInt2)
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
 				else if(t->isInt1 && !t->isInt2)
