@@ -2,13 +2,13 @@
 #include "SymTable.cpp"
 
 // 3 operand instructions
-set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr"};
+set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
 
 // 2 operand instructions
-set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "callint", "array"};
+set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
 
 // 1 operand instructions
-set<string> itype1= {"++", "--", "label", "printint", "scan", "callvoid", "goto", "retint", "printstr"};
+set<string> itype1= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 
 // No operand instruction
 set<string> itype0= {"ret","exit"};
