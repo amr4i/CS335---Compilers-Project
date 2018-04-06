@@ -36,7 +36,7 @@
 %nonassoc IFX
 %nonassoc ELSE
 
-%expect 1
+%expect 2
 
 %token <sVal> CONST CONTINUE DEFAULT DO ELSE FINALLY FOR GOTO IF IN NAMESPACE PARAMS REF RETURN 
 %token <sVal> STRUCT SWITCH THROW TRY TYPEOF USING VOID WHILE SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL
@@ -406,6 +406,7 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		;
 
 element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
+		| qualified_identifier '[' expression_list ']'	{  }
 		;
 
 expression_list : expression  	{  }
