@@ -351,7 +351,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		{  
 			TAC* tac = new TAC();
 			tac->op = "callvoid";
-			tac->target = ST->
+			tac->target = ST->name;
+			$$ = $1;
+			$$->code.pb(tac);
 		}
 		| qualified_identifier '(' argument_list ')'	{  }
 		;
@@ -1444,45 +1446,49 @@ method_header : type member_name '(' ')'
 		{ 
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
 		}
 		| modifiers type member_name '(' ')' 	
 		{ 
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
 		}
 		| type member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
 		}
 		| modifiers type member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
 		}
 		| VOID member_name '(' ')' 	
 		{ 
 			$$ = $2;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
 		}
 		| modifiers VOID member_name '(' ')' 	
 		{ 
 			$$ = $2;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
 		}
 		| VOID member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $2;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
 		}
 		| modifiers VOID member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $2;
-			ST->curEnv->name = member_name;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
 		}
 		;
 
@@ -1506,8 +1512,22 @@ fixed_parameters : fixed_parameter 	{ $$ = $1; }
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		;
-fixed_parameter : type identifier 	{ $$ = $1; }
-		| parameter_modifier type identifier 	{ $$ = NULL; }
+fixed_parameter : type identifier 	
+		{ 
+			$$ = $2; 
+			Symbol* sym = ST->GetVar($2->place);
+			sym->type = $1->place;
+			$$->type = $1->place;
+		}
+		| parameter_modifier type identifier 	
+		{
+			$$ = $4; 
+
+			ST->curEnv->argTypeList.pb(type->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = type->place;
+		}
 		| type identifier default_argument 	
 		{ 
 			$$ = $4; 
