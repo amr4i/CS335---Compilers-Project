@@ -1,6 +1,6 @@
 all:
 	flex src/lexer.lex
-	bison -ydv src/parser.ypp
+	bison -yd src/parser.ypp
 	g++ -std=c++11 -w y.tab.c y.tab.h -ly lex.yy.c -lfl -o bin/asgn4
 	#g++ src/toHTML.cpp -o bin/toHTML
 	#cp src/finalScript.sh bin/parser

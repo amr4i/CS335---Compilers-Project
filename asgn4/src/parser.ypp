@@ -19,13 +19,14 @@
 	// extern "C" int yyparse();
 	extern "C" FILE *yyin;
 	extern void yyerror(const char *c);
-	//extern int 1234555;
+	
+	//extern int lineNum;
 
-
+	int lineNum = 1;
 	// SymTable* ST = new SymTable();
 %}
-// yylineno replaced by 1234555
-//%option 1234555
+// lineNum replaced by lineNum
+// %option lineNum
 
 %union{
 	int iVal;
@@ -43,7 +44,7 @@
 %token <sVal> DQM RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ WHERE
 %token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID NULL_LIT THIS INCR DECR 
 %token <sVal> NEW PUBLIC PROTECTED PRIVATE BREAK CASE CATCH BASE CLASS
-
+// %token NEWLINE
 %token <iVal> DINT_LITERAL HDINT_LITERAL
 
 
@@ -73,16 +74,20 @@
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
 %type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
-%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
+%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
-%type <node> struct_member_declarations struct_member_declaration class_init
+%type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list  
+%type <node> variable_initializer 
+
 
 %%
 
 
-start :	compilation_unit	{ $$ = $1; cerr << "Completed Parsing." << endl; printTAC($$);}
+start :	compilation_unit	{ $$ = $1; /*cerr << "Completed Parsing." << endl; */ printTAC($$);}
 		;
+
+// new_line : NEWLINE { lineNum++; };
 
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
@@ -95,7 +100,6 @@ identifier : 	ID
 					}
 
 					genNode* newNode = new genNode();
-					cerr << "\t\t\t" << sym->name << "\n";
 					newNode->place = sym->name;
 					$$ = newNode;
 					$$->type = sym->type;
@@ -298,6 +302,10 @@ variable_reference : expression	{ $$ = $1; }
 /*B.2.4 Expressions*/ 
 argument_list : argument 	
 		{ 
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			$$ = $1; 
 			TAC* tac = new TAC();
 			tac->op = "param";
@@ -306,6 +314,10 @@ argument_list : argument
 		}
 		| argument_list ',' argument	
 		{ 
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			$$ = $1;
 			TAC* tac = new TAC();
 			tac->op = "param";
@@ -372,7 +384,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			tac->isInt1 = true;
 			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
-			tac->dest = ST->GetVar(str1);
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
 			$$ = $1;
 			$$->place = str1;
 			$$->type = methodEnv->returnType;
@@ -387,16 +401,14 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			Env* methodEnv = ST->GetMethod($1->place);
 			tac->target = methodEnv->name;
 
-			cerr << "\t" << "Debug: " << methodEnv->name << ": " << methodEnv->argNum << "\n";
 
 			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
 
-			cerr << "\t \t Debug: " << str1 << "\n";
 
-			tac->dest = ST->GetVar(str1);
-			// if(tac->dest != NULL)	cerr << "\t" << ST->GetMethod($1->place)->argNum << " : " << "Debug: " << tac->l1 << "\n";
-			// else 	cerr << "\t Debug: Screwed\n";
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
 			$$ = $1;
 			if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			$$->place = str1;
@@ -405,12 +417,65 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		}
 		;
 
-element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
-		| qualified_identifier '[' expression_list ']'	{  }
+element_access : primary_no_array_creation_expression '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
+		| qualified_identifier '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
 		;
 
 expression_list : expression  	{  }
-		| expression ',' expression	{  }
+		| expression_list ',' expression	{  }
 		;
 this_access : THIS	{ 
 			genNode* newNode = new genNode();
@@ -454,12 +519,39 @@ element_initializer_list : element_initializer 	{  }
 element_initializer : non_assignment_expression 	{  }
 		| '{' expression_list '}'	{  }
 		;
-array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{  }
-		| NEW non_array_type '[' expression_list ']' rank_specifier 	{  }
-		| NEW non_array_type '[' expression_list ']' array_initializer 	{  }
-		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{  }
-		| NEW array_type array_initializer 	{  }
-		| NEW rank_specifier array_initializer	{  }
+array_creation_expression :	NEW non_array_type '[' integer_literal ']' 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->nodeLen = stoi($4->place);
+		}
+		| NEW non_array_type '[' integer_literal ']' array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $6->code;
+			if(stoi($4->place) != $6->varDecs.size()){
+				cerr << "Incompatible array lengths at line: " << lineNum << endl;
+				exit(1);
+			}
+			else 
+				$$->nodeLen = stoi($4->place);
+			$$->varDecs = $6->varDecs;
+		}
+		| NEW array_type array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $3->code;
+			$$->varDecs = $3->varDecs;
+			$$->nodeLen = $3->varDecs.size();
+		}
 		;
 
 typeof_expression : TYPEOF '(' type ')' 	{  }
@@ -479,19 +571,19 @@ unary_expression : unary_expression_not_plusminus 	{ $$ = $1; }
 			//string tmpVar = GenTemp($2->type, "simple", curEnv->addTable[$2->place]->width);
 			//$$->place = tmpVar;
 			////////////////// I guess this function will carry out the above mentioned statements ////////////////////////////
-			getPreUnaryOpCode("-", $$, $2, 1234555);
+			getPreUnaryOpCode("-", $$, $2, lineNum);
 		}
 		;
 pre_increment_expression : INCR unary_expression
 		{  
 			$$ = $2;
-			getPreUnaryOpCode("++", $$, $2, 1234555);
+			getPreUnaryOpCode("++", $$, $2, lineNum);
 		}
 		;
 pre_decrement_expression : DECR unary_expression	
 		{  
 			$$ = $2;
-			getPreUnaryOpCode("--", $$, $2, 1234555);
+			getPreUnaryOpCode("--", $$, $2, lineNum);
 		}
 		;
 cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
@@ -506,7 +598,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->code = $1->code;
-			gen2OpCode($$, "*", $1, $3, 1234555);
+			gen2OpCode($$, "*", $1, $3, lineNum);
 			//$$->code.pb($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		| multiplicative_expression '/' unary_expression 	
@@ -515,7 +607,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "/", $1, $3, 1234555);
+			gen2OpCode($$, "/", $1, $3, lineNum);
 		}
 		| multiplicative_expression '%' unary_expression	
 		{ 
@@ -523,7 +615,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "%", $1, $3, 1234555);
+			gen2OpCode($$, "%", $1, $3, lineNum);
 		}
 		;
 
@@ -534,7 +626,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "+", $1, $3, 1234555);
+			gen2OpCode($$, "+", $1, $3, lineNum);
 		}
 		| additive_expression '-' multiplicative_expression	
 		{  
@@ -542,7 +634,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "-", $1, $3, 1234555);
+			gen2OpCode($$, "-", $1, $3, lineNum);
 		}
 		;
 
@@ -553,7 +645,7 @@ shift_expression : additive_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<<", $1, $3, 1234555);
+			gen2OpCode($$, "<<", $1, $3, lineNum);
 		}
 		| shift_expression right_shift additive_expression	
 		{ 
@@ -561,7 +653,7 @@ shift_expression : additive_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">>", $1, $3, 1234555);
+			gen2OpCode($$, ">>", $1, $3, lineNum);
 		}
 		;
 relational_expression : shift_expression 	{ $$ = $1; }
@@ -571,7 +663,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<", $1, $3, 1234555);
+			gen2OpCode($$, "<", $1, $3, lineNum);
 		}
 		| relational_expression '>' shift_expression 	
 		{ 
@@ -579,7 +671,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">", $1, $3, 1234555);
+			gen2OpCode($$, ">", $1, $3, lineNum);
 		}
 		| relational_expression LE shift_expression 	
 		{ 
@@ -587,7 +679,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<=", $1, $3, 1234555);
+			gen2OpCode($$, "<=", $1, $3, lineNum);
 		}
 		| relational_expression GE shift_expression 	
 		{ 
@@ -595,7 +687,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">=", $1, $3, 1234555);
+			gen2OpCode($$, ">=", $1, $3, lineNum);
 		}
 equality_expression : relational_expression 	{ $$ = $1; }
 		| equality_expression REQ relational_expression 	{  }
@@ -604,7 +696,7 @@ equality_expression : relational_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "==", $1, $3, 1234555);
+			gen2OpCode($$, "==", $1, $3, lineNum);
 		}
 		| equality_expression RNE relational_expression	
 		{ 
@@ -612,7 +704,7 @@ equality_expression : relational_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "!=", $1, $3, 1234555);
+			gen2OpCode($$, "!=", $1, $3, lineNum);
 		}
 		;
 and_expression : equality_expression 	{ $$ = $1; }
@@ -622,7 +714,7 @@ and_expression : equality_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "&", $1, $3, 1234555);
+			gen2OpCode($$, "&", $1, $3, lineNum);
 		}
 		;
 exclusive_or_expression : and_expression 	{ $$ = $1; }
@@ -632,7 +724,7 @@ exclusive_or_expression : and_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "^", $1, $3, 1234555);
+			gen2OpCode($$, "^", $1, $3, lineNum);
 		}
 		;
 inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
@@ -642,7 +734,7 @@ inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "|", $1, $3, 1234555);
+			gen2OpCode($$, "|", $1, $3, lineNum);
 		}
 		;
 conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
@@ -652,7 +744,7 @@ conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "&&", $1, $3, 1234555);
+			gen2OpCode($$, "&&", $1, $3, lineNum);
 		}
 		;
 conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
@@ -662,7 +754,7 @@ conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "||", $1, $3, 1234555);
+			gen2OpCode($$, "||", $1, $3, lineNum);
 		}
 		;
 null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
@@ -672,7 +764,7 @@ null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "??", $1, $3, 1234555);
+			gen2OpCode($$, "??", $1, $3, lineNum);
 		}
 		;
 conditional_expression : null_coalescing_expression 	{ $$ = $1; }
@@ -680,7 +772,7 @@ conditional_expression : null_coalescing_expression 	{ $$ = $1; }
 		{ 
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			getCECode($$, $1, $3, $5, 1234555);
+			getCECode($$, $1, $3, $5, lineNum);
 		}
 		;
 assignment : unary_expression assignment_operator expression	{  
@@ -688,19 +780,39 @@ assignment : unary_expression assignment_operator expression	{
 			$$ = $1;	
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			// TAC* tac = new TAC();
+			
 			Symbol* sym1 = ST->GetVar($1->place);
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym2->type == "None"){
+					cerr << "Error: Symbol %s not defined, at line num: " << $3->place << endl;
+					exit(1);
+				}
 				if(sym1->baseType != sym2->baseType){
-					cout << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: " << endl;
 					exit(1);
 				}
 				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
-					cout << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: " << endl;
 					exit(1);
 				}
 			}
-			gen2OpCode($$, $2, $1, $3, 1234555);				
+			gen2OpCode($$, $2, $1, $3, lineNum);
+			if($1->isArray == true){
+				TAC* tac = new TAC();
+				tac->op = "setarr";
+				tac->array_name = $1->arrayName;
+				if($1->isLit){
+					tac->isInt1 = true;
+					tac->l1 = $1->arrayIndex;
+				}
+				else{
+					tac->opd1 = ST->GetVar($1->arrayIndex);
+				}
+				tac->opd2 = sym1;
+				$$->code.pb(tac);
+			}			
+
 		}
 		;
 assignment_operator : '=' 	{ $$ = "="; }
@@ -728,7 +840,7 @@ boolean_expression : expression	{ $$ = $1; }
 /*B.2.5 Statements*/ 
 statement :	labeled_statement 	{  $$ = $1;  }
 		| declaration_statement 	{ $$ = $1; }
-		| embedded_statement	{ $$ = $1;cerr <<"3\n"; }
+		| embedded_statement	{ $$ = $1; }
 		;
 embedded_statement : block 	{ $$ = $1; }
 		| empty_statement 	{ $$ = $1; }
@@ -739,8 +851,8 @@ embedded_statement : block 	{ $$ = $1; }
 		| try_statement 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
-block : block_start '{' '}' block_end 	{ $$ = NULL;	}
-		| block_start '{' statement_list '}' block_end	{  $$ = $3; }
+block : block_start '{' '}' 	{ $$ = NULL; ST->EndScope();	}
+		| block_start '{' statement_list '}'	{  $$ = $3; ST->EndScope(); }
 		;
 block_start : epsilon	
 		{ 
@@ -748,16 +860,10 @@ block_start : epsilon
 			ST->BeginScope();	
 		}
 		;
-block_end : epsilon	
-		{ 
-			$$ = NULL; ST->EndScope();	
-		}
-		;
+
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	
 		{ 
-			cerr << $$->code.size() << "\n";
-			cerr << $2->code.size() << "\n";
 			$$ = $1;
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
 		}
@@ -771,13 +877,15 @@ declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
 		;
 local_variable_declaration : local_variable_type local_variable_declarators	
 		{ 
+			if($2->type != "None" && equal_compatible($2->type, $1->type) == "None"){
+				cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+				exit(1);
+			}
 			$$ = $2;
 			string typeName = $1->place;
-			cerr << "\t" << typeName << "\n";
 			int siz = $$->varDecs.size();
 			fori(0, siz){
 				($$->varDecs)[i]->type = typeName;
-				cerr << "Name: " << ($$->varDecs)[i]->name << ($$->varDecs)[i]->type << "\n" ;
 			}
 			$$->type = typeName;
 		}
@@ -789,41 +897,86 @@ local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 		{ 
 			$$ = $1;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			if($3->isArray){
+				if($1->type == "None")
+					$$->type = $3->type;
+				else 
+					if($1->type != $3->type){
+						cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+						exit(1);
+					}
+			}
 		}
 		;
 local_variable_declarator : identifier 	
 		{ 
 			$$ = $1; 
-			$$->varDecs.pb(ST->GetVar($1->place));
+			Symbol* sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			$$->varDecs.pb(sym);
 		}
 		| identifier '=' local_variable_initializer	
 		{
 			$$ = $3;
 			
-			TAC* tac = new TAC();
+			TAC* tac1 = new TAC();
 			Symbol* sym;
 			
 			sym = ST->GetVar($1->place);
-			tac->dest = sym;
-			tac->op = "=";
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			tac1->dest = sym;
+			tac1->op = "=";
 
 			if($3->isLit == true){
-				tac->isInt1 = true;
-				tac->l1 = $3->place;
+				tac1->isInt1 = true;
+				tac1->l1 = $3->place;
+				$$->code.pb(tac1);
+			}
+			else if($3->isArray){
+
+				sym->baseType = "array";
+				sym->type = $3->type;
+				$$->isArray = true;
+				for(int i=0; i<$3->varDecs.size(); i++){
+					TAC* tac = new TAC();
+					tac->op = "setarr";
+					tac->array_name = $1->place;
+					tac->opd2 = $3->varDecs[i];
+					tac->isInt1 = true;
+					tac->l1 = convertNumToString(i);
+					$$->code.pb(tac);
+				}
+				$$->varDecs.clear();
 			}
 			else{
 				Symbol* sym_ = ST->GetVar($3->place);
-				tac->opd1 = sym_;
+				if(sym_->type == "None"){
+					cerr << "Error: Symbol "<< $3->place <<" not defined, at line num: " << lineNum << endl;
+					exit(1);
+				}
+				tac1->opd1 = sym_;
 				sym -> baseType = sym_->baseType;
+				$$->code.pb(tac1);
 			}
 
-			$$->code.pb(tac);
 			$$->varDecs.pb(ST->GetVar($1->place));
-				
+
 		}
 		;
-local_variable_initializer : expression 	{ $$ = $1; }
-		| array_initializer	{ $$ = $1; }
+local_variable_initializer : expression 	
+		{	 	
+			$$ = $1; 
+		}
+		| array_initializer	
+		{ 
+			$$ = $1; 
+		}
 		;
 local_constant_declaration :  CONST type constant_declarators	{  }
 		;
@@ -1260,10 +1413,6 @@ for_initializer : local_variable_declaration 	{ $$ = $1; }
 		;
 for_condition : boolean_expression	{ 
 			$$ = $1;
-			// cerr << "Debug\n";
-			// for(map <string, Symbol*> :: iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
-			// 	cerr << (*it).fi << " " << (*it).se->name << "\n" ;
-			// }
 		}
 		;
 for_iterator : statement_expression_list	{ $$ = $1; }
@@ -1409,7 +1558,6 @@ class_declaration : CLASS block_start class_init identifier class_body
 		}
 		| modifiers CLASS block_start class_init identifier class_body 	
 		{ 
-			// cerr << curEnv -> 
 			$$ = $5;
 			$$->type = "class";
 			$$->code = $6->code;
@@ -1517,9 +1665,10 @@ variable_declarators : variable_declarator 	{  }
 		| variable_declarators ',' variable_declarator	{  }
 		;
 variable_declarator : identifier 	{  }
-		| identifier '=' variable_initializer;	
-variable_initializer : expression 	{  }
-		| array_initializer	{  }
+		| identifier '=' variable_initializer 	{	}	
+
+variable_initializer : expression 	{ $$ = $1; }
+		| array_initializer	{ $$ = $1; }
 		;
 method_declaration : method_header method_body	
 		{
@@ -1759,20 +1908,66 @@ struct_member_declaration : constant_declaration 	{ $$ = $1; }
 array_type : non_array_type rank_specifier	{ 
 			genNode* newNode = new genNode();
 			$$ = newNode;
+			$$->type=$1->type;
+			$$->place=$1->place;
+			$$->isArray = true;
 		}
 		;
 rank_specifier : '[' ']' 	{   }
-		| '[' ',' ']'	{  }
 		;
 array_initializer : '{' '}' 	
 		{ 
-
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->nodeLen = 0;
 		}
-		| '{' variable_initializer_list '}' 	{  }
-		| '{' variable_initializer_list ',' '}'	{  }
+		| '{' variable_initializer_list '}' 	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
+		| '{' variable_initializer_list ',' '}'	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
 		;
-variable_initializer_list : variable_initializer 	{  }
-		| variable_initializer_list ',' variable_initializer	{  }
+variable_initializer_list : variable_initializer 	
+		{  
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			$$->code = $1->code;
+			if($1->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $1->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($1->place);
+			}
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
+		| variable_initializer_list ',' variable_initializer	
+		{  
+			$$ = $1;
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			if($3->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($3->place);
+			}
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
 
 
 
@@ -1783,7 +1978,7 @@ epsilon : 	%empty 		{}
 
 extern void yyerror(const char *c){
 		string str(c);
-		cout << "Error at line: " << 1234555 << "\n" << str << endl;
+		cerr << "Error at line: " << lineNum << "\n" << str << endl;
 		exit(1);	
 	}
 
@@ -1804,11 +1999,6 @@ int main(int argc, char* argv[]){
 	yydebug = 0;
 	yyparse();
 	
-	/*
-	cerr << "==================================================\n";
-	cerr << "                 PARSING COMPLETE\n";
-	cerr << "==================================================\n";
-	*/
 	fclose(file);
 	return 0;
 }
