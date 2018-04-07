@@ -74,7 +74,7 @@
 %type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
 %type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
 %type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
-%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
+%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
 %type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list  
@@ -302,6 +302,10 @@ variable_reference : expression	{ $$ = $1; }
 /*B.2.4 Expressions*/ 
 argument_list : argument 	
 		{ 
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			$$ = $1; 
 			TAC* tac = new TAC();
 			tac->op = "param";
@@ -310,6 +314,10 @@ argument_list : argument
 		}
 		| argument_list ',' argument	
 		{ 
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			$$ = $1;
 			TAC* tac = new TAC();
 			tac->op = "param";
@@ -376,7 +384,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			tac->isInt1 = true;
 			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
-			tac->dest = ST->GetVar(str1);
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
 			$$ = $1;
 			$$->place = str1;
 			$$->type = methodEnv->returnType;
@@ -396,7 +406,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			string str1 = ST->GenTemp();
 
 
-			tac->dest = ST->GetVar(str1);
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
 			$$ = $1;
 			if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			$$->place = str1;
@@ -772,6 +784,10 @@ assignment : unary_expression assignment_operator expression	{
 			Symbol* sym1 = ST->GetVar($1->place);
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym2->type == "None"){
+					cerr << "Error: Symbol %s not defined, at line num: " << $3->place << endl;
+					exit(1);
+				}
 				if(sym1->baseType != sym2->baseType){
 					cerr << "Error: Incompatible types at line num: " << endl;
 					exit(1);
@@ -835,8 +851,8 @@ embedded_statement : block 	{ $$ = $1; }
 		| try_statement 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
-block : block_start '{' '}' block_end 	{ $$ = NULL;	}
-		| block_start '{' statement_list '}' block_end	{  $$ = $3; }
+block : block_start '{' '}' 	{ $$ = NULL; ST->EndScope();	}
+		| block_start '{' statement_list '}'	{  $$ = $3; ST->EndScope(); }
 		;
 block_start : epsilon	
 		{ 
@@ -844,11 +860,7 @@ block_start : epsilon
 			ST->BeginScope();	
 		}
 		;
-block_end : epsilon	
-		{ 
-			$$ = NULL; ST->EndScope();	
-		}
-		;
+
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	
 		{ 
@@ -865,7 +877,7 @@ declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
 		;
 local_variable_declaration : local_variable_type local_variable_declarators	
 		{ 
-			if($2->type != "None" && $1->type != $2->type){
+			if($2->type != "None" && equal_compatible($2->type, $1->type) == "None"){
 				cerr << "Incompatible types in declaration at line: " << lineNum << endl;
 				exit(1);
 			}
@@ -899,7 +911,12 @@ local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 local_variable_declarator : identifier 	
 		{ 
 			$$ = $1; 
-			$$->varDecs.pb(ST->GetVar($1->place));
+			Symbol* sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			$$->varDecs.pb(sym);
 		}
 		| identifier '=' local_variable_initializer	
 		{
@@ -909,6 +926,10 @@ local_variable_declarator : identifier
 			Symbol* sym;
 			
 			sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
 			tac1->dest = sym;
 			tac1->op = "=";
 
@@ -935,6 +956,10 @@ local_variable_declarator : identifier
 			}
 			else{
 				Symbol* sym_ = ST->GetVar($3->place);
+				if(sym_->type == "None"){
+					cerr << "Error: Symbol "<< $3->place <<" not defined, at line num: " << lineNum << endl;
+					exit(1);
+				}
 				tac1->opd1 = sym_;
 				sym -> baseType = sym_->baseType;
 				$$->code.pb(tac1);
