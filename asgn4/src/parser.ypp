@@ -76,7 +76,8 @@
 %type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start block_end if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
-%type <node> struct_member_declarations struct_member_declaration class_init
+%type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list  
+%type <node> variable_initializer
 
 %%
 
@@ -387,16 +388,12 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			Env* methodEnv = ST->GetMethod($1->place);
 			tac->target = methodEnv->name;
 
-			cerr << "\t" << "Debug: " << methodEnv->name << ": " << methodEnv->argNum << "\n";
 
 			tac->l1 = convertNumToString(methodEnv->argNum);
 			string str1 = ST->GenTemp();
 
-			cerr << "\t \t Debug: " << str1 << "\n";
 
 			tac->dest = ST->GetVar(str1);
-			// if(tac->dest != NULL)	cerr << "\t" << ST->GetMethod($1->place)->argNum << " : " << "Debug: " << tac->l1 << "\n";
-			// else 	cerr << "\t Debug: Screwed\n";
 			$$ = $1;
 			if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			$$->place = str1;
@@ -405,12 +402,66 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 		}
 		;
 
-element_access : primary_no_array_creation_expression '[' expression_list ']'	{  }
-		| qualified_identifier '[' expression_list ']'	{  }
+element_access : primary_no_array_creation_expression '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
+		| qualified_identifier '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			// cerr << "\t\t\tdebug: " << $$->type << " : " << ST->GetVar($1->place)->name << endl;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
 		;
 
 expression_list : expression  	{  }
-		| expression ',' expression	{  }
+		| expression_list ',' expression	{  }
 		;
 this_access : THIS	{ 
 			genNode* newNode = new genNode();
@@ -454,12 +505,38 @@ element_initializer_list : element_initializer 	{  }
 element_initializer : non_assignment_expression 	{  }
 		| '{' expression_list '}'	{  }
 		;
-array_creation_expression :	NEW non_array_type '[' expression_list ']' 	{  }
-		| NEW non_array_type '[' expression_list ']' rank_specifier 	{  }
-		| NEW non_array_type '[' expression_list ']' array_initializer 	{  }
-		| NEW non_array_type '[' expression_list ']' rank_specifier array_initializer 	{  }
-		| NEW array_type array_initializer 	{  }
-		| NEW rank_specifier array_initializer	{  }
+array_creation_expression :	NEW non_array_type '[' integer_literal ']' 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->nodeLen = stoi($4->place);
+		}
+		| NEW non_array_type '[' integer_literal ']' array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $6->code;
+			if(stoi($4->place) != $6->varDecs.size()){
+				cerr << "Incompatible array lengths at line: " << 1234555 << endl;
+			}
+			else 
+				$$->nodeLen = stoi($4->place);
+			$$->varDecs = $6->varDecs;
+		}
+		| NEW array_type array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $3->code;
+			$$->varDecs = $3->varDecs;
+			$$->nodeLen = $3->varDecs.size();
+		}
 		;
 
 typeof_expression : TYPEOF '(' type ')' 	{  }
@@ -688,19 +765,35 @@ assignment : unary_expression assignment_operator expression	{
 			$$ = $1;	
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			// TAC* tac = new TAC();
+			
 			Symbol* sym1 = ST->GetVar($1->place);
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
 				if(sym1->baseType != sym2->baseType){
-					cout << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: " << endl;
 					exit(1);
 				}
 				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
-					cout << "Error: Incompatible types at line num: " << endl;
+					cerr << "Error: Incompatible types at line num: " << endl;
 					exit(1);
 				}
 			}
-			gen2OpCode($$, $2, $1, $3, 1234555);				
+			gen2OpCode($$, $2, $1, $3, 1234555);
+			if($1->isArray == true){
+				TAC* tac = new TAC();
+				tac->op = "setarr";
+				tac->array_name = $1->arrayName;
+				if($1->isLit){
+					tac->isInt1 = true;
+					tac->l1 = $1->arrayIndex;
+				}
+				else{
+					tac->opd1 = ST->GetVar($1->arrayIndex);
+				}
+				tac->opd2 = sym1;
+				$$->code.pb(tac);
+			}			
+
 		}
 		;
 assignment_operator : '=' 	{ $$ = "="; }
@@ -771,6 +864,9 @@ declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
 		;
 local_variable_declaration : local_variable_type local_variable_declarators	
 		{ 
+			if($2->type != "None" && $1->type != $2->type){
+				cerr << "Incompatible types in declaration at line: " << 1234555 << endl;
+			}
 			$$ = $2;
 			string typeName = $1->place;
 			cerr << "\t" << typeName << "\n";
@@ -789,6 +885,13 @@ local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 		{ 
 			$$ = $1;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			if($3->isArray){
+				if($1->type == "None")
+					$$->type = $3->type;
+				else 
+					if($1->type != $3->type)
+						cerr << "Incompatible types in declaration at line: " << 1234555 << endl;
+			}
 		}
 		;
 local_variable_declarator : identifier 	
@@ -800,30 +903,53 @@ local_variable_declarator : identifier
 		{
 			$$ = $3;
 			
-			TAC* tac = new TAC();
+			TAC* tac1 = new TAC();
 			Symbol* sym;
 			
 			sym = ST->GetVar($1->place);
-			tac->dest = sym;
-			tac->op = "=";
+			tac1->dest = sym;
+			tac1->op = "=";
 
 			if($3->isLit == true){
-				tac->isInt1 = true;
-				tac->l1 = $3->place;
+				tac1->isInt1 = true;
+				tac1->l1 = $3->place;
+				$$->code.pb(tac1);
+			}
+			else if($3->isArray){
+
+				sym->baseType = "array";
+				sym->type = $3->type;
+				$$->isArray = true;
+				for(int i=0; i<$3->varDecs.size(); i++){
+					TAC* tac = new TAC();
+					tac->op = "setarr";
+					tac->array_name = $1->place;
+					tac->opd2 = $3->varDecs[i];
+					tac->isInt1 = true;
+					tac->l1 = convertNumToString(i);
+					$$->code.pb(tac);
+				}
+				$$->varDecs.clear();
 			}
 			else{
 				Symbol* sym_ = ST->GetVar($3->place);
-				tac->opd1 = sym_;
+				tac1->opd1 = sym_;
 				sym -> baseType = sym_->baseType;
+				$$->code.pb(tac1);
 			}
 
-			$$->code.pb(tac);
 			$$->varDecs.pb(ST->GetVar($1->place));
-				
+
 		}
 		;
-local_variable_initializer : expression 	{ $$ = $1; }
-		| array_initializer	{ $$ = $1; }
+local_variable_initializer : expression 	
+		{	 	
+			$$ = $1; 
+		}
+		| array_initializer	
+		{ 
+			$$ = $1; 
+		}
 		;
 local_constant_declaration :  CONST type constant_declarators	{  }
 		;
@@ -1260,10 +1386,6 @@ for_initializer : local_variable_declaration 	{ $$ = $1; }
 		;
 for_condition : boolean_expression	{ 
 			$$ = $1;
-			// cerr << "Debug\n";
-			// for(map <string, Symbol*> :: iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
-			// 	cerr << (*it).fi << " " << (*it).se->name << "\n" ;
-			// }
 		}
 		;
 for_iterator : statement_expression_list	{ $$ = $1; }
@@ -1517,9 +1639,10 @@ variable_declarators : variable_declarator 	{  }
 		| variable_declarators ',' variable_declarator	{  }
 		;
 variable_declarator : identifier 	{  }
-		| identifier '=' variable_initializer;	
-variable_initializer : expression 	{  }
-		| array_initializer	{  }
+		| identifier '=' variable_initializer 	{	}	
+
+variable_initializer : expression 	{ $$ = $1; }
+		| array_initializer	{ $$ = $1; }
 		;
 method_declaration : method_header method_body	
 		{
@@ -1759,20 +1882,66 @@ struct_member_declaration : constant_declaration 	{ $$ = $1; }
 array_type : non_array_type rank_specifier	{ 
 			genNode* newNode = new genNode();
 			$$ = newNode;
+			$$->type=$1->type;
+			$$->place=$1->place;
+			$$->isArray = true;
 		}
 		;
 rank_specifier : '[' ']' 	{   }
-		| '[' ',' ']'	{  }
 		;
 array_initializer : '{' '}' 	
 		{ 
-
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->nodeLen = 0;
 		}
-		| '{' variable_initializer_list '}' 	{  }
-		| '{' variable_initializer_list ',' '}'	{  }
+		| '{' variable_initializer_list '}' 	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
+		| '{' variable_initializer_list ',' '}'	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
 		;
-variable_initializer_list : variable_initializer 	{  }
-		| variable_initializer_list ',' variable_initializer	{  }
+variable_initializer_list : variable_initializer 	
+		{  
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			$$->code = $1->code;
+			if($1->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $1->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($1->place);
+			}
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
+		| variable_initializer_list ',' variable_initializer	
+		{  
+			$$ = $1;
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			if($3->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($3->place);
+			}
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
 
 
 

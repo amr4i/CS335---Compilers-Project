@@ -10,9 +10,9 @@ namespace Rextester
 
         public void Main(string[] args)
         {
-            int[] c = new int[5];   
+            int[] c = new int[5]{1,2,3,4,5}; 
+            int k = 10;  
             c[1] = 409;
-
 		    int p = 2;
             int t = fn(p, 3, 4);
         }
