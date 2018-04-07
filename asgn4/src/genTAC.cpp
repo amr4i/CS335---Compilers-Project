@@ -41,6 +41,7 @@ void printTAC(genNode* node){
 	TAC *t;
 	fori(0, siz){
 		t=node->code[i];
+		t->lineNum = i+1;
 
 		if(isOpIn(op3,19,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;

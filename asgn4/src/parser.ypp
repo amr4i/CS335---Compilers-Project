@@ -19,13 +19,14 @@
 	// extern "C" int yyparse();
 	extern "C" FILE *yyin;
 	extern void yyerror(const char *c);
-	//extern int 1234555;
+	
+	//extern int lineNum;
 
-
+	int lineNum = 1;
 	// SymTable* ST = new SymTable();
 %}
-// yylineno replaced by 1234555
-//%option 1234555
+// lineNum replaced by lineNum
+// %option lineNum
 
 %union{
 	int iVal;
@@ -43,7 +44,7 @@
 %token <sVal> DQM RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ WHERE
 %token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID NULL_LIT THIS INCR DECR 
 %token <sVal> NEW PUBLIC PROTECTED PRIVATE BREAK CASE CATCH BASE CLASS
-
+// %token NEWLINE
 %token <iVal> DINT_LITERAL HDINT_LITERAL
 
 
@@ -77,13 +78,16 @@
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
 %type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list  
-%type <node> variable_initializer
+%type <node> variable_initializer 
+
 
 %%
 
 
-start :	compilation_unit	{ $$ = $1; cerr << "Completed Parsing." << endl; printTAC($$);}
+start :	compilation_unit	{ $$ = $1; /*cerr << "Completed Parsing." << endl; */ printTAC($$);}
 		;
+
+// new_line : NEWLINE { lineNum++; };
 
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
@@ -96,7 +100,6 @@ identifier : 	ID
 					}
 
 					genNode* newNode = new genNode();
-					cerr << "\t\t\t" << sym->name << "\n";
 					newNode->place = sym->name;
 					$$ = newNode;
 					$$->type = sym->type;
@@ -438,7 +441,6 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			Symbol* temp = ST->GetVar(ST->GenTemp());
 			$$->place = temp->name;
 			$$->type = ST->GetVar($1->place)->type;
-			// cerr << "\t\t\tdebug: " << $$->type << " : " << ST->GetVar($1->place)->name << endl;
 			TAC* tac = new TAC();
 			tac->op = "getarr";
 			tac->dest = temp;
@@ -521,7 +523,8 @@ array_creation_expression :	NEW non_array_type '[' integer_literal ']'
 			$$->type = $2->type;
 			$$->code = $6->code;
 			if(stoi($4->place) != $6->varDecs.size()){
-				cerr << "Incompatible array lengths at line: " << 1234555 << endl;
+				cerr << "Incompatible array lengths at line: " << lineNum << endl;
+				exit(1);
 			}
 			else 
 				$$->nodeLen = stoi($4->place);
@@ -556,19 +559,19 @@ unary_expression : unary_expression_not_plusminus 	{ $$ = $1; }
 			//string tmpVar = GenTemp($2->type, "simple", curEnv->addTable[$2->place]->width);
 			//$$->place = tmpVar;
 			////////////////// I guess this function will carry out the above mentioned statements ////////////////////////////
-			getPreUnaryOpCode("-", $$, $2, 1234555);
+			getPreUnaryOpCode("-", $$, $2, lineNum);
 		}
 		;
 pre_increment_expression : INCR unary_expression
 		{  
 			$$ = $2;
-			getPreUnaryOpCode("++", $$, $2, 1234555);
+			getPreUnaryOpCode("++", $$, $2, lineNum);
 		}
 		;
 pre_decrement_expression : DECR unary_expression	
 		{  
 			$$ = $2;
-			getPreUnaryOpCode("--", $$, $2, 1234555);
+			getPreUnaryOpCode("--", $$, $2, lineNum);
 		}
 		;
 cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
@@ -583,7 +586,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->code = $1->code;
-			gen2OpCode($$, "*", $1, $3, 1234555);
+			gen2OpCode($$, "*", $1, $3, lineNum);
 			//$$->code.pb($$->code.end(), $3->code.begin(), $3->code.end());
 		}
 		| multiplicative_expression '/' unary_expression 	
@@ -592,7 +595,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "/", $1, $3, 1234555);
+			gen2OpCode($$, "/", $1, $3, lineNum);
 		}
 		| multiplicative_expression '%' unary_expression	
 		{ 
@@ -600,7 +603,7 @@ multiplicative_expression :	unary_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "%", $1, $3, 1234555);
+			gen2OpCode($$, "%", $1, $3, lineNum);
 		}
 		;
 
@@ -611,7 +614,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "+", $1, $3, 1234555);
+			gen2OpCode($$, "+", $1, $3, lineNum);
 		}
 		| additive_expression '-' multiplicative_expression	
 		{  
@@ -619,7 +622,7 @@ additive_expression : multiplicative_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "-", $1, $3, 1234555);
+			gen2OpCode($$, "-", $1, $3, lineNum);
 		}
 		;
 
@@ -630,7 +633,7 @@ shift_expression : additive_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<<", $1, $3, 1234555);
+			gen2OpCode($$, "<<", $1, $3, lineNum);
 		}
 		| shift_expression right_shift additive_expression	
 		{ 
@@ -638,7 +641,7 @@ shift_expression : additive_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">>", $1, $3, 1234555);
+			gen2OpCode($$, ">>", $1, $3, lineNum);
 		}
 		;
 relational_expression : shift_expression 	{ $$ = $1; }
@@ -648,7 +651,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<", $1, $3, 1234555);
+			gen2OpCode($$, "<", $1, $3, lineNum);
 		}
 		| relational_expression '>' shift_expression 	
 		{ 
@@ -656,7 +659,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">", $1, $3, 1234555);
+			gen2OpCode($$, ">", $1, $3, lineNum);
 		}
 		| relational_expression LE shift_expression 	
 		{ 
@@ -664,7 +667,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "<=", $1, $3, 1234555);
+			gen2OpCode($$, "<=", $1, $3, lineNum);
 		}
 		| relational_expression GE shift_expression 	
 		{ 
@@ -672,7 +675,7 @@ relational_expression : shift_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, ">=", $1, $3, 1234555);
+			gen2OpCode($$, ">=", $1, $3, lineNum);
 		}
 equality_expression : relational_expression 	{ $$ = $1; }
 		| equality_expression REQ relational_expression 	{  }
@@ -681,7 +684,7 @@ equality_expression : relational_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "==", $1, $3, 1234555);
+			gen2OpCode($$, "==", $1, $3, lineNum);
 		}
 		| equality_expression RNE relational_expression	
 		{ 
@@ -689,7 +692,7 @@ equality_expression : relational_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "!=", $1, $3, 1234555);
+			gen2OpCode($$, "!=", $1, $3, lineNum);
 		}
 		;
 and_expression : equality_expression 	{ $$ = $1; }
@@ -699,7 +702,7 @@ and_expression : equality_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "&", $1, $3, 1234555);
+			gen2OpCode($$, "&", $1, $3, lineNum);
 		}
 		;
 exclusive_or_expression : and_expression 	{ $$ = $1; }
@@ -709,7 +712,7 @@ exclusive_or_expression : and_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "^", $1, $3, 1234555);
+			gen2OpCode($$, "^", $1, $3, lineNum);
 		}
 		;
 inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
@@ -719,7 +722,7 @@ inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "|", $1, $3, 1234555);
+			gen2OpCode($$, "|", $1, $3, lineNum);
 		}
 		;
 conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
@@ -729,7 +732,7 @@ conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "&&", $1, $3, 1234555);
+			gen2OpCode($$, "&&", $1, $3, lineNum);
 		}
 		;
 conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
@@ -739,7 +742,7 @@ conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "||", $1, $3, 1234555);
+			gen2OpCode($$, "||", $1, $3, lineNum);
 		}
 		;
 null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
@@ -749,7 +752,7 @@ null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
 			$$ = newNode;
 			$$->code = $1->code;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
-			gen2OpCode($$, "??", $1, $3, 1234555);
+			gen2OpCode($$, "??", $1, $3, lineNum);
 		}
 		;
 conditional_expression : null_coalescing_expression 	{ $$ = $1; }
@@ -757,7 +760,7 @@ conditional_expression : null_coalescing_expression 	{ $$ = $1; }
 		{ 
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			getCECode($$, $1, $3, $5, 1234555);
+			getCECode($$, $1, $3, $5, lineNum);
 		}
 		;
 assignment : unary_expression assignment_operator expression	{  
@@ -778,7 +781,7 @@ assignment : unary_expression assignment_operator expression	{
 					exit(1);
 				}
 			}
-			gen2OpCode($$, $2, $1, $3, 1234555);
+			gen2OpCode($$, $2, $1, $3, lineNum);
 			if($1->isArray == true){
 				TAC* tac = new TAC();
 				tac->op = "setarr";
@@ -821,7 +824,7 @@ boolean_expression : expression	{ $$ = $1; }
 /*B.2.5 Statements*/ 
 statement :	labeled_statement 	{  $$ = $1;  }
 		| declaration_statement 	{ $$ = $1; }
-		| embedded_statement	{ $$ = $1;cerr <<"3\n"; }
+		| embedded_statement	{ $$ = $1; }
 		;
 embedded_statement : block 	{ $$ = $1; }
 		| empty_statement 	{ $$ = $1; }
@@ -849,8 +852,6 @@ block_end : epsilon
 statement_list : statement 	{ $$ = $1; }
 		| statement_list statement	
 		{ 
-			cerr << $$->code.size() << "\n";
-			cerr << $2->code.size() << "\n";
 			$$ = $1;
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
 		}
@@ -865,15 +866,14 @@ declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
 local_variable_declaration : local_variable_type local_variable_declarators	
 		{ 
 			if($2->type != "None" && $1->type != $2->type){
-				cerr << "Incompatible types in declaration at line: " << 1234555 << endl;
+				cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+				exit(1);
 			}
 			$$ = $2;
 			string typeName = $1->place;
-			cerr << "\t" << typeName << "\n";
 			int siz = $$->varDecs.size();
 			fori(0, siz){
 				($$->varDecs)[i]->type = typeName;
-				cerr << "Name: " << ($$->varDecs)[i]->name << ($$->varDecs)[i]->type << "\n" ;
 			}
 			$$->type = typeName;
 		}
@@ -889,8 +889,10 @@ local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 				if($1->type == "None")
 					$$->type = $3->type;
 				else 
-					if($1->type != $3->type)
-						cerr << "Incompatible types in declaration at line: " << 1234555 << endl;
+					if($1->type != $3->type){
+						cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+						exit(1);
+					}
 			}
 		}
 		;
@@ -1531,7 +1533,6 @@ class_declaration : CLASS block_start class_init identifier class_body
 		}
 		| modifiers CLASS block_start class_init identifier class_body 	
 		{ 
-			// cerr << curEnv -> 
 			$$ = $5;
 			$$->type = "class";
 			$$->code = $6->code;
@@ -1952,7 +1953,7 @@ epsilon : 	%empty 		{}
 
 extern void yyerror(const char *c){
 		string str(c);
-		cout << "Error at line: " << 1234555 << "\n" << str << endl;
+		cerr << "Error at line: " << lineNum << "\n" << str << endl;
 		exit(1);	
 	}
 
@@ -1973,11 +1974,6 @@ int main(int argc, char* argv[]){
 	yydebug = 0;
 	yyparse();
 	
-	/*
-	cerr << "==================================================\n";
-	cerr << "                 PARSING COMPLETE\n";
-	cerr << "==================================================\n";
-	*/
 	fclose(file);
 	return 0;
 }
