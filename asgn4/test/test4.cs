@@ -2,28 +2,23 @@
 
 using System;
 
-class program
-    {
-        public void Main()
+namespace doubleClass{
+    class first
         {
-            string s1;
-            Console.WriteLine("Enter the String : ");
-            s1 = Console.ReadLine();
-            Console.WriteLine(counting.CountStringOccurrences(s1, "the"));
-            Console.ReadLine();
-        }
-    }
-public class counting
-    {
-        public int CountStringOccurrences(string text, string pattern)
-        {
-            int count = 0;
-            int i = 0;
-            while ((i = text.IndexOf(pattern, i)) != -1)
+            public void Main()
             {
-                i += pattern.Length;
-                count++;
+                char[] sid=new char[3]{'S','i','\0'};
             }
-            return count;
         }
-    }
+    public class second
+        {
+            public int Count()
+            {
+                int i = 0;
+                while(i<20){
+                    ++i;
+                }
+                return i;
+            }
+        }
+}

@@ -22,7 +22,7 @@ struct genNode{
 	vector <Symbol*> varDecs;
 };
 
-string op3 [19]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
+string op3 [21]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call", "||", "&&"};
 string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
 string op1 [10]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 string op0 [2]= {"ret","exit"};
@@ -43,16 +43,16 @@ void printTAC(genNode* node){
 		t=node->code[i];
 		t->lineNum = i+1;
 
-		if(isOpIn(op3,19,t->op)) t->opType = 3;
+		if(isOpIn(op3,21,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;
 		else if(isOpIn(op1,10,t->op)) t->opType = 1;
 		else if(isOpIn(op0,2,t->op)){ t->opType = -1;}
 
 		if(t==NULL){
-			// cerr<<"line number %d has the tac struct empty\n";
+			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
-		// cerr<< t->opType << " " ;
+		// cerr<< t->op << "\t\t" ;
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
@@ -103,9 +103,15 @@ void printTAC(genNode* node){
 					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
-				if(t->op=="++" || t->op=="--" || t->op=="retint" || t->op=="printint" || t->op=="scan"){
+				if(t->op=="++" || t->op=="--" || t->op=="printint" || t->op=="scan"){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
+				}
+				else if( t->op == "retint"){
+					if(t->isInt1)
+						cout<<t->lineNum<<", "<<t->op<<", "<<t->l1;
+					else
+						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 				}
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
@@ -113,7 +119,7 @@ void printTAC(genNode* node){
 				cout<<t->lineNum<<", "<<t->op;
 				break;
 			default:
-				// cerr<<"Error: Wrong opType\n";
+				cerr<<"Error: Wrong opType\n";
 				exit(1);
 		}
 
@@ -147,7 +153,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->l1 = s1->place;
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
-				// cerr << "Error: Symbol " <<  s2->place << " not defined in scope.";
+				cerr << "Error: Symbol " <<  s2->place << " not defined in scope.";
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -157,7 +163,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			tac->l2 = s2->place;
 			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
-				// cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
+				cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
@@ -165,13 +171,13 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		else{
 			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
-				// cerr << "Error: Symbol " << s1->place << " not defined in scope.\n";
+				cerr << "Error: Symbol " << s1->place << " not defined in scope.\n";
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
-				// cerr << "Error: Symbol "<< s2->place <<" not defined in scope." ;
+				cerr << "Error: Symbol "<< s2->place <<" not defined in scope." ;
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -182,7 +188,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
 			else if(s2->type == "long")		temptype=="long";
 			else{
-				// cerr << "Error: Incompatible operands to operator " << op << " near line" << lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line" << lineNum;
 				exit(1);
 			}
 		}
@@ -190,21 +196,23 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			if(s2->type=="char" || s2->type=="int")		temptype="int";
 			else if(s2->type=="long")		temptype="long";
 			else{
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "<< lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<< lineNum;
 				exit(1);
 			}
 		}	
 		else if(s1->type == "long"){
 			if(s2->type=="char" || s2->type=="int" || s2->type=="long")	temptype="long";
 			else{
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 				exit(1);
 			}
 		}
 		else {
-			// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+			cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 			exit(1);
 		}
+		if(op=="==" || op=="<" || op==">" || op=="!=" || op=="<=" || op==">=")
+			temptype="bool";
 		string tempName = ST->GenTemp();
 		Symbol* temp = ST->GetVar(tempName);
 		d->place = temp->name;
@@ -214,6 +222,66 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		d->code.pb(tac);
 	}
 	
+	else if(op=="||" || op=="&&"){
+		TAC* tac = new TAC();
+		string temptype;
+		tac->op = op;
+		tac->opType = 3;
+		if(s1->isLit && s2->isLit){
+			tac->isInt1 = true;
+			tac->isInt2 = true;
+			tac->l1 = s1->place;
+			tac->l2 = s2->place;
+		}
+		else if(s1->isLit && !s2->isLit){
+			tac->isInt1 = true;
+			tac->l1 = s1->place;
+			Symbol* sym2 = ST->GetVar(s2->place);
+			if(sym2==NULL){
+				cerr << "Error: Symbol " <<  s2->place << " not defined in scope.";
+				exit(1);
+			}
+			tac->opd2 = ST->GetVar(sym2->name);	
+		}
+		else if(!s1->isLit && s2->isLit){
+			tac->isInt2 = true;
+			tac->l2 = s2->place;
+			Symbol* sym1 = ST->GetVar(s1->place);
+			if(sym1==NULL){
+				cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
+				exit(1);
+			}
+			tac->opd1 = ST->GetVar(sym1->name);	
+		}	
+		else{
+			Symbol* sym1 = ST->GetVar(s1->place);
+			if(sym1==NULL){
+				cerr << "Error: Symbol " << s1->place << " not defined in scope.\n";
+				exit(1);
+			}
+			tac->opd1 = ST->GetVar(sym1->name);	
+			Symbol* sym2 = ST->GetVar(s2->place);
+			if(sym2==NULL){
+				cerr << "Error: Symbol "<< s2->place <<" not defined in scope." ;
+				exit(1);
+			}
+			tac->opd2 = ST->GetVar(sym2->name);	
+		}
+
+		// type-checking
+		if(s1->type!="bool" || s2->type!="bool"){
+			cerr<<"both types should be bool\n";
+			exit(1);
+		}
+		temptype="bool";
+		string tempName = ST->GenTemp();
+		Symbol* temp = ST->GetVar(tempName);
+		d->place = temp->name;
+		temp->type = temptype;
+		d->type = temp->type;
+		tac->dest = temp;
+		d->code.pb(tac);
+	}
 
 	else if(op=="="|| op== "+="|| op== "-="|| op== "*="|| op== "/=" || op== "%=" || op== "&="|| op== "|="|| op== "^="|| op== "<<="|| op== ">>="){
 		TAC* tac = new TAC();
@@ -221,14 +289,14 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		tac->opType = 2;
 		
 		if(s1->isLit && s1->isArray != true){
-			// cerr << "Error: in Line " << lineNun << "\nLHS of an expression should not be a literal\n";
+			cerr << "Error: in Line " << lineNum << "\nLHS of an expression should not be a literal\n";
 			exit(1);
 		}
 		else{
 			Symbol* symd = ST->GetVar(s1->place);
 			Symbol* temp;
 			if(symd==NULL){
-				// cerr << "Error: in Line "<< lineNum "\nSymbol " << s1->place << " not defined in scope.";
+				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s1->place << " not defined in scope.";
 				exit(1);
 			}
 			if(s1->isArray){
@@ -246,7 +314,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		else{
 			Symbol* sym1 = ST->GetVar(s2->place);
 			if(sym1==NULL){
-				// cerr << "Error: in Line "<< lineNum "\nSymbol " << s2->place << " not defined in scope.";
+				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s2->place << " not defined in scope.";
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
@@ -257,20 +325,20 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		if (s1->type == "int"){
 			if(s2->type=="char" || s2->type=="int") ;
 			else{
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 				exit(1);
 			}
 		}
 		else if (s1->type == "long"){
 			if(s2->type=="char" || s2->type=="int" ||s2->type=="long") ;
 			else{
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 				exit(1);
 			}
 		}
 		else if (s1->type == s2->type) ;
 		else {
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 			exit(1);
 		}
 
@@ -284,12 +352,12 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 		tac->op = op;
 		tac->opType = 1;
 		if(s1->isLit){
-			// cerr << "Error: in Line " << lineNum << "\nDo not use a literal in this expression\n";
+			cerr << "Error: in Line " << lineNum << "\nDo not use a literal in this expression\n";
 		}
 		else{
 			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
-				// cerr << "Error: in Line "<< lineNum "\nSymbol " << s1->place << " not defined in scope.";
+				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s1->place << " not defined in scope.";
 				exit(1);
 			}
 			tac->dest=symd;
@@ -297,7 +365,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 
 		// Type-Checking
 		if(!(s1->type=="char" || s1->type=="int" ||s1->type=="long")){
-				// cerr << "Error: Incompatible operands to operator " << op << " near line "lineNum;
+				cerr << "Error: Incompatible operands to operator " << op << " near line "<<lineNum;
 			exit(1);
 		}
 

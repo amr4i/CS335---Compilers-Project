@@ -1,10 +1,6 @@
 all:
 	flex src/lexer.lex
 	bison -yd src/parser.ypp
-	g++ -std=c++11 -w y.tab.c y.tab.h -ly lex.yy.c -lfl -o bin/asgn4
-	#g++ src/toHTML.cpp -o bin/toHTML
-	#cp src/finalScript.sh bin/parser
-	#chmod +x bin/parser
-	#rm y.tab.h y.tab.c lex.yy.c y.output
+	g++ -std=c++11 -w y.tab.c y.tab.h -ly lex.yy.c -lfl -o bin/irgen
 clean:
 	rm bin/* src/.parser.y.swp *.html lex.yy.c y.tab.h y.tab.c

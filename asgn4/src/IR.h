@@ -2,7 +2,7 @@
 #include "SymTable.cpp"
 
 // 3 operand instructions
-set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call"};
+set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call", "||", "&&"};
 
 // 2 operand instructions
 set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
@@ -15,6 +15,8 @@ set<string> itype0= {"ret","exit"};
 
 // TODO :  TEST_CASES. 
 // Arrays need to neccessarily have a pre-defined integer size
+
+// New operations: call, param, readParam
 
 struct TAC
 {

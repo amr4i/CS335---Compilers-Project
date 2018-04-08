@@ -9,29 +9,27 @@ namespace Program
     {
         class leapyear
         {
-            void Main(string[] args)
+            public int readdata()
             {
-                leapyear obj = new leapyear();
-                obj.readdata();
-                obj.leap();
+                return 2018;
             }
-            int y;
-            public void readdata()
-            {
-                Console.WriteLine("Enter the Year in Four Digits : ");
-                y = Convert.ToInt32(Console.ReadLine());
-            }
-            public void leap()
+            public bool leap(int y)
             {
                 if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0))
                 {
-                    Console.WriteLine("{0} is a Leap Year", y);
+                    return true;
                 }
                 else
                 {
-                    Console.WriteLine("{0} is not a Leap Year", y);
+                    return false;
                 }
-                Console.ReadLine();
+            }
+            void Main()
+            {
+                int y;
+                bool isLeap;
+                y= readdata();
+                isLeap = leap(y);
             }
         }
     }

@@ -77,7 +77,7 @@
 %type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start if_statement
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
-%type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list  
+%type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list predefined_type 
 %type <node> variable_initializer 
 
 
@@ -364,11 +364,31 @@ member_access : primary_expression '.' identifier 	{  }
 predefined_type : BOOL 	
 		{
 			genNode* newNode = new genNode();
-			
+			$$=newNode;
+			$$->place = "bool";
+			$$->type = "bool";
   		}
-		| CHAR 	{  }
-		| INT 	{  }
-		| LONG 	{  }
+		| CHAR 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "char";
+			$$->type = "char"; 
+		}
+		| INT 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "int";
+			$$->type = "int";
+		}
+		| LONG 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "long";
+			$$->type = "long";
+		}
 		| OBJECT 	{  }
 		| STRING 	{  }
 		;
@@ -380,6 +400,10 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			TAC* tac = new TAC();
 			tac->op = "call";
 			Env* methodEnv = ST->GetMethod($1->place);
+			if(!methodEnv){
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope\n";
+				exit(1);
+			}
 			tac->target = methodEnv->name;
 			tac->isInt1 = true;
 			tac->l1 = convertNumToString(methodEnv->argNum);
@@ -424,6 +448,7 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
 			$$->place = temp->name;
 			$$->type = ST->GetVar($1->place)->type;
 			TAC* tac = new TAC();
@@ -451,6 +476,7 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			$$ = newNode;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
 			$$->place = temp->name;
 			$$->type = ST->GetVar($1->place)->type;
 			TAC* tac = new TAC();
@@ -782,10 +808,14 @@ assignment : unary_expression assignment_operator expression	{
 			// TAC* tac = new TAC();
 			
 			Symbol* sym1 = ST->GetVar($1->place);
+			if(sym1->type == "None"){
+				cerr << "Error: Symbol %s not defined, at line num: " << $1->place << endl;
+				exit(1);
+			}
 			if($3->isLit==false){		
 				Symbol* sym2 = ST->GetVar($3->place);
 				if(sym2->type == "None"){
-					cerr << "Error: Symbol %s not defined, at line num: " << $3->place << endl;
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
 					exit(1);
 				}
 				if(sym1->baseType != sym2->baseType){
@@ -1467,7 +1497,12 @@ return_statement : RETURN ';'
 			$$ = $2;
 			TAC* tac = new TAC();
 			tac->op = "retint";
-			tac->dest = ST->GetVar($2->place);
+			if($2->isLit){
+				tac->l1=$2->place;
+				tac->isInt1 = true;
+			}
+			else
+				tac->dest = ST->GetVar($2->place);
 			vector <TAC*> tmp;
 			tmp.pb(tac);
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
@@ -1538,7 +1573,11 @@ using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{ $$ = $
 using_namespace_directive : USING namespace_name ';'	{ $$ = $2; }
 		;
 namespace_member_declarations : namespace_member_declaration 	{ $$ = $1; }
-		| namespace_member_declarations namespace_member_declaration	{  }
+		| namespace_member_declarations namespace_member_declaration	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
 		;
 namespace_member_declaration : namespace_declaration 	{ $$ = $1; }
 		| struct_declaration	{ $$ = $1; }
@@ -1552,7 +1591,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 		{ 
 			$$ = $4;
 			$$->type = "class";
-			$$->code = $5->code;
+			$$->code.pb(genLabelTAC($4->place));
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 			ST->curEnv->name = $4->place;
 			ST->EndScope();
 		}
@@ -1560,7 +1600,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 		{ 
 			$$ = $5;
 			$$->type = "class";
-			$$->code = $6->code;
+			$$->code.pb(genLabelTAC($5->place));
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 			ST->curEnv->name = $5->place;
 			ST->EndScope();
 		}
@@ -1569,7 +1610,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 		{ 
 			$$ = $4;
 			$$->type = "class";
-			$$->code = $5->code;
+			$$->code.pb(genLabelTAC($4->place));
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 			ST->curEnv->name = $4->place;
 			ST->EndScope();
 		}
@@ -1578,7 +1620,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 		{ 
 			$$ = $5;
 			$$->type = "class";
-			$$->code = $6->code;
+			$$->code.pb(genLabelTAC($5->place));
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 			ST->curEnv->name = $5->place;
 			ST->EndScope();
 		}
@@ -1692,8 +1735,8 @@ method_header : type member_name '(' ')'
 		| modifiers type member_name '(' ')' 	
 		{ 
 			$$ = $2;
-			ST->curEnv->returnType = $1->place;
-			ST->curEnv->name = $2->place;
+			ST->curEnv->returnType = $2->place;
+			ST->curEnv->name = $3->place;
 		}
 		| type member_name '(' formal_parameter_list ')' 	
 		{ 
