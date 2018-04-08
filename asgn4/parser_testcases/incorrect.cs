@@ -20,14 +20,15 @@ public class Test
     public void Main()
     {
         int i=6;
+        bool yes;
+        int `$#@name;
         for (;i<= 8 && i 6.67 && i!= 7; i++){
         int 36a;
-        int `$#@name;
         if (i>=0);{
-                    Console.WriteLine("yes\n");
+                    yes=true;
         }
         else 
-                    Console.WriteLine("no\n");
+                    yes=false;
         }
     }
 }

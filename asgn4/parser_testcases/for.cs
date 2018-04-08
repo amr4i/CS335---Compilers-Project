@@ -1,16 +1,3 @@
-// #include <stdio.h>
-// int main(){
-//     int i=6;
-//     for (;i<= 8 && i>= 6 && i!= 7; i++){
-//         if (i>=0){
-//             printf("yes\n");
-//         }
-//         else 
-//             printf("no\n");
-//     }
-//     return 0;
-// }
-
 using System;
 
 public class Test
@@ -18,12 +5,13 @@ public class Test
 	public void Main()
 	{
 		int i=6;
-		for(;i<=8 && i>=6 && i!=7; i++){
+		bool yes;
+		for(;i<=8 && i>=6 && i!=7; i+=1){
 			if(i>=0){
-				Console.WriteLine("yes\n");
+				yes=true;
 			}
 			else
-				Console.WriteLine("no\n");
+				yes=false;
 		}
 	}
 }

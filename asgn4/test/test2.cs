@@ -11,18 +11,10 @@ namespace Program
         {
             void Main(string[] args)
             {
-                int num1, num2, temp;
-                Console.Write("\nEnter the First Number : ");
-                num1 = int.Parse(Console.ReadLine());
-                Console.Write("\nEnter the Second Number : ");
-                num2 = int.Parse(Console.ReadLine());
-                temp.part2 = num1;
-                num1 = num2;
-                num2 = temp.part2;
-                Console.Write("\nAfter Swapping : ");
-                Console.Write("\nFirst Number : "+num1);
-                Console.Write("\nSecond Number : "+num2);
-                Console.Read();
+                int i=8,count=0;
+                for(;i<90;i*=2){
+                    ++count;
+                }
             }
         }
     }

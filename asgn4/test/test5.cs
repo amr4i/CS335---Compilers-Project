@@ -4,20 +4,17 @@ using System;
 
 class prog
     {
+        public int compute_factorial(int i){
+            if(i>1)
+                return i*compute_factorial(i-1);
+            else
+                return 1;
+        }
         public void Main()
         {
-            int a, b;
-            Console.WriteLine("Enter the Two Numbers : ");
-            a = Convert.ToInt32(Console.ReadLine());
-            b = Convert.ToInt32(Console.ReadLine());
-            if (a > b)
-            {
-                Console.WriteLine("{0} is the Greatest Number", a);
-            }
-            else
-            {
-                Console.WriteLine("{0} is the Greatest Number ", b);
-            }
-            Console.ReadLine();
+            // factorial using recursion
+            int fact, i=9;
+            fact = compute_factorial(i);
         }
     }
+    

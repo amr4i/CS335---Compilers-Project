@@ -52,7 +52,7 @@ void printTAC(genNode* node){
 			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
-		// cerr<< t->op << "\t\t" ;
+		cerr<< t->op << "\t\t" ;
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
@@ -156,6 +156,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " <<  s2->place << " not defined in scope.";
 				exit(1);
 			}
+			if(!(s2->isLit) && ST->GetVar(s2->place)->type == "None"){
+				cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd2 = ST->GetVar(sym2->name);	
 		}
 		else if(!s1->isLit && s2->isLit){
@@ -166,6 +170,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
 				exit(1);
 			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 		}	
 		else{
@@ -174,10 +182,18 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " << s1->place << " not defined in scope.\n";
 				exit(1);
 			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
 				cerr << "Error: Symbol "<< s2->place <<" not defined in scope." ;
+				exit(1);
+			}
+			if(!(s2->isLit) && ST->GetVar(s2->place)->type == "None"){
+				cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -241,6 +257,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " <<  s2->place << " not defined in scope.";
 				exit(1);
 			}
+			if(!(s2->isLit) && ST->GetVar(s2->place)->type == "None"){
+				cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd2 = ST->GetVar(sym2->name);	
 		}
 		else if(!s1->isLit && s2->isLit){
@@ -251,6 +271,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
 				exit(1);
 			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 		}	
 		else{
@@ -259,10 +283,18 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: Symbol " << s1->place << " not defined in scope.\n";
 				exit(1);
 			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac->opd1 = ST->GetVar(sym1->name);	
 			Symbol* sym2 = ST->GetVar(s2->place);
 			if(sym2==NULL){
 				cerr << "Error: Symbol "<< s2->place <<" not defined in scope." ;
+				exit(1);
+			}
+			if(!(s2->isLit) && ST->GetVar(s2->place)->type == "None"){
+				cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
 				exit(1);
 			}
 			tac->opd2 = ST->GetVar(sym2->name);	
@@ -270,7 +302,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 
 		// type-checking
 		if(s1->type!="bool" || s2->type!="bool"){
-			cerr<<"both types should be bool\n";
+			cerr<<"Error: Incompatible types; should be bool, at line: " << lineNum << endl;
 			exit(1);
 		}
 		temptype="bool";
@@ -299,6 +331,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s1->place << " not defined in scope.";
 				exit(1);
 			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			if(s1->isArray){
 				temp = ST->GetVar(s1->arrayName);
 				if(temp==NULL){
@@ -315,6 +351,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			Symbol* sym1 = ST->GetVar(s2->place);
 			if(sym1==NULL){
 				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s2->place << " not defined in scope.";
+				exit(1);
+			}
+			if(!(s2->isLit) && ST->GetVar(s2->place)->type == "None"){
+				cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
 				exit(1);
 			}
 			tac->opd1 = ST->GetVar(sym1->name);	
@@ -358,6 +398,10 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			Symbol* symd = ST->GetVar(s1->place);
 			if(symd==NULL){
 				cerr << "Error: in Line "<< lineNum <<"\nSymbol " << s1->place << " not defined in scope.";
+				exit(1);
+			}
+			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
+				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
 				exit(1);
 			}
 			tac->dest=symd;
@@ -421,6 +465,10 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 	tac1->op = "label"; tac1->target = newLabel1;
 	tac2->op = "label"; tac2->target = newLabel2;
 	tac3->op = "ifgoto"; tac3->dest = ST->GetVar(c->place); tac3->target = newLabel1;
+	if(!(c->isLit) && ST->GetVar(c->place)->type == "None"){
+		cerr << "Symbol " << c->place << " not defined, at line: " <<lineNum;
+		exit(1);
+	}
 	tac4->op = "goto"; tac4->target = newLabel2;
 	tac5->op = "goto"; tac5->target = newLabel3;
 	tac6->op = "label"; tac6->target = newLabel3;
@@ -429,14 +477,26 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 		tac7->isInt1=true;
 		tac7->l1=s1->place;
 	}
-	else 	tac7->opd1 = ST->GetVar(s1->place);
+	else{
+		tac7->opd1 = ST->GetVar(s1->place);
+		if(ST->GetVar(s1->place)->type == "None"){
+			cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
+			exit(1);
+		}
+	}
 
 	tac8->op = "="; tac8->dest=temp;
 	if(s2->isLit){
 		tac8->isInt1=true;
 		tac8->l1=s2->place;
 	}
-	else 	tac8->opd1 = ST->GetVar(s2->place);
+	else{
+		tac8->opd1 = ST->GetVar(s2->place);
+		if(ST->GetVar(s2->place)->type == "None"){
+			cerr << "Symbol " << s2->place << " not defined, at line: " <<lineNum;
+			exit(1);
+		}
+	}
 
 	d->code.pb(tac3); d->code.pb(tac4);
 	d->code.pb(tac1);
@@ -453,6 +513,10 @@ void getCECode(genNode* d, genNode* c, genNode* s1, genNode* s2, int lineNum){
 void getPreUnaryOpCode(string op, genNode* d, genNode* s, int lineNum){
 	TAC* tac = new TAC();
 	Symbol* sym = ST->GetVar(d->place);
+	if(!(d->isLit) && ST->GetVar(d->place)->type == "None"){
+		cerr << "Symbol " << d->place << " not defined, at line: " <<lineNum;
+		exit(1);
+	}
 	tac->opd1 = sym;
 	tac->dest = sym;
 	tac->isInt2 = true; tac->l2 = "1";

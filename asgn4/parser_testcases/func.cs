@@ -17,8 +17,7 @@ public class Test
 	}
 	public void Main()
 	{
-		Test t = new Test();
-		t.foo();
+		foo();
 
 	}
 }

@@ -7,7 +7,10 @@ namespace doubleClass{
         {
             public void Main()
             {
+                int i=9;
                 char[] sid=new char[3]{'S','i','\0'};
+                char x='f';
+                sid[0]=x;
             }
         }
     public class second

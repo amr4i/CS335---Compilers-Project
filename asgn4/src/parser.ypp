@@ -401,7 +401,7 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			tac->op = "call";
 			Env* methodEnv = ST->GetMethod($1->place);
 			if(!methodEnv){
-				cerr<<"Error: Method "<<$1->place<<" not defined in the scope\n";
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<lineNum<<endl;
 				exit(1);
 			}
 			tac->target = methodEnv->name;
@@ -423,6 +423,10 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			tac->isInt1 = true;
 
 			Env* methodEnv = ST->GetMethod($1->place);
+			if(!methodEnv){
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<lineNum<<endl;
+				exit(1);
+			}
 			tac->target = methodEnv->name;
 
 
@@ -445,10 +449,18 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 		{  
 			genNode* newNode = new genNode;
 			$$ = newNode;
+			if($1->isLit){
+				cerr<<"Error: invalid array name at line: "<<lineNum<<endl;
+				exit(1);
+			}
 			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			Symbol* temp = ST->GetVar(ST->GenTemp());
 			temp->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			$$->place = temp->name;
 			$$->type = ST->GetVar($1->place)->type;
 			TAC* tac = new TAC();
@@ -463,6 +475,10 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			}
 			else{
 				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
 				$$->isLit = false;
 
 			}
@@ -479,6 +495,10 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			temp->type = ST->GetVar($1->place)->type;
 			$$->place = temp->name;
 			$$->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			TAC* tac = new TAC();
 			tac->op = "getarr";
 			tac->dest = temp;
@@ -491,6 +511,10 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			}
 			else{
 				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
 				$$->isLit = false;
 
 			}
@@ -592,12 +616,13 @@ unary_expression_not_plusminus : postfix_expression 	{ $$ = $1; }
 		;
 unary_expression : unary_expression_not_plusminus 	{ $$ = $1; }
 		| '+' unary_expression 	{ $$ = $2; }
-		| '-' unary_expression 	{ 
-			$$ = $2;
-			//string tmpVar = GenTemp($2->type, "simple", curEnv->addTable[$2->place]->width);
-			//$$->place = tmpVar;
-			////////////////// I guess this function will carry out the above mentioned statements ////////////////////////////
-			getPreUnaryOpCode("-", $$, $2, lineNum);
+		| '-' unary_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			genNode* zeroNode = new genNode();
+			zeroNode->isLit = true; zeroNode->place = "0"; zeroNode->type = "int";
+			gen2OpCode($$, "-", zeroNode, $2, lineNum);
 		}
 		;
 pre_increment_expression : INCR unary_expression
@@ -809,7 +834,7 @@ assignment : unary_expression assignment_operator expression	{
 			
 			Symbol* sym1 = ST->GetVar($1->place);
 			if(sym1->type == "None"){
-				cerr << "Error: Symbol %s not defined, at line num: " << $1->place << endl;
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
 				exit(1);
 			}
 			if($3->isLit==false){		
@@ -917,12 +942,18 @@ local_variable_declaration : local_variable_type local_variable_declarators
 			fori(0, siz){
 				($$->varDecs)[i]->type = typeName;
 			}
+
 			$$->type = typeName;
 		}
 		;
 local_variable_type : type 	{ $$ = $1; }
 		;
-local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
+local_variable_declarators : local_variable_declarator 	
+		{ 	
+			$$ = $1; 
+			Symbol* sym = ST->GetVar($1->place);
+			$$->varDecs.pb(sym);
+		}
 		| local_variable_declarators ',' local_variable_declarator	
 		{ 
 			$$ = $1;
@@ -936,6 +967,8 @@ local_variable_declarators : local_variable_declarator 	{ $$ = $1; }
 						exit(1);
 					}
 			}
+			Symbol* sym = ST->GetVar($3->place);
+			$$->varDecs.pb(sym);
 		}
 		;
 local_variable_declarator : identifier 	
@@ -946,11 +979,12 @@ local_variable_declarator : identifier
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);
 			}
-			$$->varDecs.pb(sym);
+			
 		}
 		| identifier '=' local_variable_initializer	
 		{
 			$$ = $3;
+			$$->place = $1->place;
 			
 			TAC* tac1 = new TAC();
 			Symbol* sym;
@@ -986,16 +1020,10 @@ local_variable_declarator : identifier
 			}
 			else{
 				Symbol* sym_ = ST->GetVar($3->place);
-				if(sym_->type == "None"){
-					cerr << "Error: Symbol "<< $3->place <<" not defined, at line num: " << lineNum << endl;
-					exit(1);
-				}
 				tac1->opd1 = sym_;
 				sym -> baseType = sym_->baseType;
 				$$->code.pb(tac1);
 			}
-
-			$$->varDecs.pb(ST->GetVar($1->place));
 
 		}
 		;
@@ -1030,6 +1058,10 @@ if_statement : IF '(' boolean_expression ')' embedded_statement
 			tac1->op = "label"; tac1->target = trueLabel;
 			TAC* tac2 = new TAC();
 			tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			TAC* tac3 = new TAC();
 			tac3->op = "goto"; tac3->target = ifEndLabel;
 			TAC* tac4 = new TAC();
@@ -1052,6 +1084,10 @@ if_statement : IF '(' boolean_expression ')' embedded_statement
 			tac1->op = "label"; tac1->target = trueLabel;
 			tac2->op = "label"; tac2->target = falseLabel;
 			tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			tac4->op = "goto"; tac4->target = falseLabel;
 			tac5->op = "goto"; tac5->target = endLabel;
 			tac6->op = "label"; tac6->target = endLabel;
@@ -1100,6 +1136,10 @@ while_statement : WHILE '(' boolean_expression ')' embedded_statement
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = inLoopLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
 
@@ -1134,6 +1174,10 @@ do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
 
@@ -1168,7 +1212,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			if($7->code.size() > 0)
+				$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
@@ -1196,7 +1241,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 
 			$$->code.pb(tac2);
 			$$->code.pb(tac1);
@@ -1224,6 +1270,10 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
 
@@ -1236,7 +1286,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
-			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
 
@@ -1267,7 +1318,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
 			$$->code.pb(tac2);
@@ -1294,6 +1346,10 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+				cerr << "Symbol " << $6->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
 
@@ -1307,7 +1363,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
-			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			if($9->code.size() > 0)
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
 			$$->code.pb(tac5);
 			$$->code.pb(tac4);
 
@@ -1337,7 +1394,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
 
 			$$->code.pb(tac);
-			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			if($9->code.size() > 0)
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
 			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 			$$->code.pb(tac2);
@@ -1366,6 +1424,10 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
 
@@ -1381,7 +1443,9 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
-			$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			if($9->code.empty()){
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			}
 			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
 			$$->code.pb(tac5);
@@ -1408,6 +1472,10 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
 
 			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+				cerr << "Symbol " << $6->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 
 			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
 
@@ -1424,7 +1492,8 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			$$->code.pb(tac2);
 			$$->code.pb(tac3);
 			$$->code.pb(tac1);
-			$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+			if($10->code.size() > 0)
+				$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
 			$$->code.pb(tac_);
 			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
 			$$->code.pb(tac5);
@@ -1503,6 +1572,10 @@ return_statement : RETURN ';'
 			}
 			else
 				tac->dest = ST->GetVar($2->place);
+			if(!($2->isLit) && ST->GetVar($2->place)->type == "None"){
+				cerr << "Symbol " << $2->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
 			vector <TAC*> tmp;
 			tmp.pb(tac);
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
@@ -1721,7 +1794,6 @@ method_declaration : method_header method_body
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
 
-			ST->curEnv->type = "METHODTYPE";
 
 			ST->EndScope();
 		}
@@ -1778,7 +1850,9 @@ method_header : type member_name '(' ')'
 
 member_name : qualified_identifier	
 		{ 
-			ST->BeginScope();	
+			ST->BeginScope();
+			ST->curEnv->type = "METHODTYPE";
+
 			$$ = $1; 
 		}
 		;
@@ -1978,6 +2052,10 @@ array_initializer : '{' '}'
 		;
 variable_initializer_list : variable_initializer 	
 		{  
+			if($1->isArray){
+				cerr << "Incorrect array initialisation at line: " << lineNum;
+				exit(1);
+			}
 			Symbol* temp =  ST->GetVar(ST->GenTemp());
 			TAC* tac = new TAC();
 			tac->op = "=";
@@ -1988,6 +2066,10 @@ variable_initializer_list : variable_initializer
 				tac->l1 = $1->place;
 			}
 			else{
+				if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+					cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
 				tac->opd1 = ST->GetVar($1->place);
 			}
 			$$->varDecs.pb(tac->dest);
@@ -1995,6 +2077,10 @@ variable_initializer_list : variable_initializer
 		}
 		| variable_initializer_list ',' variable_initializer	
 		{  
+			if($3->isArray){
+				cerr << "Incorrect array initialisation at line: " << lineNum;
+				exit(1);
+			}
 			$$ = $1;
 			Symbol* temp =  ST->GetVar(ST->GenTemp());
 			TAC* tac = new TAC();
@@ -2005,6 +2091,10 @@ variable_initializer_list : variable_initializer
 				tac->l1 = $3->place;
 			}
 			else{
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
 				tac->opd1 = ST->GetVar($3->place);
 			}
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
@@ -2021,7 +2111,7 @@ epsilon : 	%empty 		{}
 
 extern void yyerror(const char *c){
 		string str(c);
-		cerr << "Error at line: " << lineNum << "\n" << str << endl;
+		cerr << "Error at line: " << lineNum << "\n"<< str << endl;
 		exit(1);	
 	}
 
