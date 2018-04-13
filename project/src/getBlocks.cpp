@@ -29,10 +29,10 @@ void getBlocks(){
 		if(opr == "goto" || opr == "ifgoto") {
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(opr == "callint" || opr == "callvoid"){
+		} else if(opr == "call" || opr == "retint"){
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
-		} else if(opr == "ret"){ 
+		} else if(opr == "ret" || opr == "exit"){ 
 			if(lineNum<lastLineNum) { leaders.insert(lineNum+1); }
 
 		} else if(opr == "label"){
