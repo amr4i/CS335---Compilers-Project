@@ -1,5 +1,5 @@
 #include "config.h"
-#include "y.tab.c"
+#include "genTAC.cpp"
 
 // The definition of the global next use table.
 

@@ -2,24 +2,7 @@
 
 using namespace std;
 
-int main(int argc, char** argv){
-
-    FILE *file;
-    if (argc==2 &&(file=fopen(argv[1],"r")))
-        yyin = file;
-    else if (argc!=2){
-        cerr<< "Exactly one file has to be passed as argument!\n";
-        exit(1);
-    }
-    else{
-        cerr<< "Please specify correct file name\n";
-        exit(1);
-    }
-
-    yydebug = 0;
-    yyparse();
-    
-    fclose(file);
+void codeGen(){
 
     int siz, blockSiz, blockNum;
     map <string, Symbol*> ::iterator itt;
@@ -44,7 +27,7 @@ int main(int argc, char** argv){
     code->addLine(".data");
 
     // add all the data variables
-    for(itt = ST.symbols.begin() ; itt != ST.symbols.end() ; itt++)
+    for(itt = ST->curEnv->addTable.begin() ; itt != ST->curEnv->addTable.end() ; itt++)
     {
         if( (*itt).se->type == "int" )
         {
@@ -942,5 +925,4 @@ int main(int argc, char** argv){
 
     code->printCode();
 
-    return 0;    
 }

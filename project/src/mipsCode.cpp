@@ -1,6 +1,6 @@
 #include "mipsCode.h"
 
-mipsCode::mipsCode(SymTable SymT)
+mipsCode::mipsCode(SymTable* SymT)
 {
 
 	string FRS[] = {"$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7"};
@@ -57,11 +57,7 @@ string mipsCode::getReg(string var, int ins, int isDst)
 			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
 				reg = addDesc[tempVarName]["register"];
-				if(reg=="$s7")
-					cerr << regDesc[reg] << var << endl;
 				regDesc[reg] = var;
-				if(reg=="$s7")
-					cerr << regDesc[reg] << var << endl;
 				addDesc[var]["register"] = reg;
 				addDesc[tempVarName]["register"] = "NONE";
 
@@ -184,14 +180,23 @@ string mipsCode::spillReg(string var, int ins)
 
 	spilledReg = (*far).se;
 
-	// Write store instructions to transfer the data in the variable to the stack
-	addLine("sw "+spilledReg+", "+regDesc[spilledReg]);
+	string varName = regDesc[spilledReg];
 
-	addDesc[regDesc[spilledReg]]["memory"] = "true";
+	// If the variable is a temporary then delete it from all the data structures right away
+	if(varName.substr(0, 6) == "_tVar_"){
+		cerr << "This is a temporary variable: " << varName << "\n";
+		ST->curEnv->addTable.erase(varName);
+		addDesc.erase(varName);
+	}
+	else{
+		// Write store instructions to transfer the data in the variable to the stack
+		addLine("sw "+spilledReg+", "+varName);
+		addDesc[varName]["memory"] = "true";
+	}
 
 	reg = spilledReg;
-
 	regDesc[reg] = var;
+
 	(*far).fi = (nextUseTable[ins-1].se)[var].se;
 	addDesc[var]["register"] = reg;
 
@@ -215,13 +220,21 @@ void mipsCode::flushAll()
 	for(it=usedRegs.begin(); it!=usedRegs.end(); it++){
 		reg = (*it).se;
 		varName = regDesc[reg];
-		if(addDesc[varName]["memory"] != "true")
-		{
-			addLine("sw "+reg+", "+varName);
-			addDesc[varName]["memory"] = "true";
-			
+
+		// If the variable is a temp then we just need to delete from all the records
+		if(varName.substr(0, 6) == "_tVar_"){
+			cerr << "This is a temporary variable: " << varName << "\n";
+			ST->curEnv->addTable.erase(varName);
+			addDesc.erase(varName);
 		}
-		addDesc[varName]["register"] = "NONE";
+		else{
+			if(addDesc[varName]["memory"] != "true")
+			{
+				addLine("sw "+reg+", "+varName);
+				addDesc[varName]["memory"] = "true";
+			}
+			addDesc[varName]["register"] = "NONE";
+		}
 	}
 
 	usedRegs.clear();

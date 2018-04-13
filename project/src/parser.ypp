@@ -11,19 +11,16 @@
 	#include <stdarg.h>
 	#include <cstdlib>
 	#define YYDEBUG 1
-	#include "genTAC.cpp"
+	#include "src/codeGen.cpp"
 	#include "y.tab.h"
 	using namespace std;
 
 	extern "C" int yylex();
-	// extern "C" int yyparse();
+
 	extern "C" FILE *yyin;
 	extern void yyerror(const char *c);
-	
-	//extern int lineNum;
 
 	int lineNum = 1;
-	// SymTable* ST = new SymTable();
 %}
 // lineNum replaced by lineNum
 // %option lineNum
@@ -84,7 +81,14 @@
 %%
 
 
-start :	compilation_unit	{ $$ = $1; /*cerr << "Completed Parsing." << endl; */ IR = $$->code; printTAC($$);}
+start :	compilation_unit	
+		{ 
+			$$ = $1; /*cerr << "Completed Parsing." << endl; */ 
+			IR = $$->code;
+			cerr << "\n\n //////////////////////// IR Code ////////////////////////////// \n\n\n";
+			printTAC($$); 
+			cerr << "\n\n /////////////////////////////////////////////////////////////// \n\n\n";
+		}
 		;
 
 // new_line : NEWLINE { lineNum++; };
@@ -883,7 +887,7 @@ assignment_operator : '=' 	{ $$ = "="; }
 		| LSHIFTEQ 	{ $$ = "<<="; }
 		| right_shift_assignment	{ $$ = ">>="; }
 		;
-expression : non_assignment_expression 	{ $$ = $1;}
+expression : non_assignment_expression 	{ $$ = $1; }
 		| assignment	{ $$ = $1; }
 		;
 non_assignment_expression : conditional_expression	{ $$ = $1; }
@@ -986,8 +990,11 @@ local_variable_declarator : identifier
 		{
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			$$->place = $1->place;
+
 			$$->type = $3->type;
+			$$->code = $3->code;
+
+			$$->place = $1->place;
 			
 			TAC* tac1 = new TAC();
 			Symbol* sym;
@@ -2119,3 +2126,24 @@ extern void yyerror(const char *c){
 	}
 
 
+int main(int argc, char* argv[]){
+	FILE *file;
+	if (argc==2 &&(file=fopen(argv[1],"r")))
+		yyin = file;
+	else if (argc!=2){
+		cerr<< "Exactly one file has to be passed as argument!\n";
+		exit(1);
+	}
+	else{
+		cerr<< "Please specify correct file name\n";
+		exit(1);
+	}
+
+	yydebug = 0;
+	yyparse();
+
+	codeGen();
+	
+	fclose(file);
+	return 0;
+}

@@ -11,9 +11,9 @@ public:
 
 	map <string, string> regDesc;
 	map <string, map<string, string> > addDesc; 
-	SymTable ST;
+	SymTable* ST;
 
-	mipsCode(SymTable SymT);
+	mipsCode(SymTable* SymT);
 	void addLine(string line);
 	string getFreeReg(void);
 	string getReg(string var, int ins, int isDst);
