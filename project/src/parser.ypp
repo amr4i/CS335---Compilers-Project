@@ -1,0 +1,2137 @@
+%{
+	#include <math.h>
+	#include <cstdio> 
+	#include <map>
+	#include <utility>
+	#include <vector>
+	#include <string>
+	#include <iostream>
+	#include <algorithm>
+	#include <iomanip>
+	#include <stdarg.h>
+	#include <cstdlib>
+	#define YYDEBUG 1
+	#include "src/genTAC.cpp"
+	#include "y.tab.h"
+	using namespace std;
+
+	extern "C" int yylex();
+	// extern "C" int yyparse();
+	extern "C" FILE *yyin;
+	extern void yyerror(const char *c);
+	
+	//extern int lineNum;
+
+	int lineNum = 1;
+	// SymTable* ST = new SymTable();
+%}
+// lineNum replaced by lineNum
+// %option lineNum
+
+%union{
+	int iVal;
+	char *sVal;
+	struct genNode* node;	
+};
+
+%nonassoc IFX
+%nonassoc ELSE
+
+%expect 2
+
+%token <sVal> CONST CONTINUE DEFAULT DO ELSE FINALLY FOR GOTO IF IN NAMESPACE PARAMS REF RETURN 
+%token <sVal> STRUCT SWITCH THROW TRY TYPEOF USING VOID WHILE SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL
+%token <sVal> DQM RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ WHERE
+%token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID NULL_LIT THIS INCR DECR 
+%token <sVal> NEW PUBLIC PROTECTED PRIVATE BREAK CASE CATCH BASE CLASS
+// %token NEWLINE
+%token <iVal> DINT_LITERAL HDINT_LITERAL
+
+
+//%type <sVal> boolean_literal string_literal right_shift null_literal 
+//%type <sVal> right_shift_assignment qualified_identifier qualified_alias_member namespace_or_type_name namespace_name type_name
+//%type <sVal> integral_type numeric_type class_type simple_type non_nullable_value_type nullable_type
+
+
+%type <node> literal boolean_literal integer_literal string_literal character_literal null_literal modifiers array_initializer
+%type <node> namespace_name namespace_or_type_name type_name qualified_identifier identifier start
+
+%type <sVal> assignment_operator rank_specifier
+
+%type <node> type non_array_type array_type simple_type nullable_type numeric_type class_type integral_type non_nullable_value_type
+%type <node> variable_reference expression argument_list argument argument_value argument_name primary_no_array_creation_expression
+%type <node> primary_expression array_creation_expression parenthesized_expression postfix_expression
+%type <node> unary_expression_not_plusminus statement_expression_list method_header 
+%type <node> pre_decrement_expression pre_increment_expression multiplicative_expression unary_expression additive_expression shift_expression
+%type <node> relational_expression equality_expression and_expression exclusive_or_expression 
+%type <node> inclusive_or_expression conditional_and_expression conditional_or_expression null_coalescing_expression
+%type <node> conditional_expression non_assignment_expression labeled_statement declaration_statement embedded_statement
+%type <node> block empty_statement expression_statement selection_statement iteration_statement jump_statement try_statement using_statement statement_list 
+%type <node> local_variable_declaration local_variable_type local_variable_declarators local_variable_declarator local_variable_initializer 
+%type <node> compilation_unit namespace_member_declarations using_directives namespace_declaration namespace_body using_directive
+%type <node> using_namespace_directive qualified_alias_member modifier class_member_declarations formal_parameter_list statement_expression
+%type <node> fixed_parameters fixed_parameter member_access invocation_expression element_access this_access base_access parameter_array
+%type <node> object_creation_expression typeof_expression default_value_expression assignment constant_expression boolean_expression 
+%type <node> statement class_declaration class_base class_body method_body member_name local_constant_declaration constant_declaration
+%type <node> field_declaration method_declaration constructor_declaration destructor_declaration struct_declaration
+%type <node> namespace_member_declaration using_alias_directive class_member_declaration block_start if_statement
+%type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
+%type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
+%type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list predefined_type 
+%type <node> variable_initializer 
+
+
+%%
+
+
+start :	compilation_unit	{ $$ = $1; /*cerr << "Completed Parsing." << endl; */ printTAC($$);}
+		;
+
+// new_line : NEWLINE { lineNum++; };
+
+/*B.1.6 Identifiers*/
+identifier : 	ID 		
+				{
+					string s1($1);
+					Symbol* sym = ST->GetVar("_" + s1);
+					
+					if(sym == NULL){
+						sym = ST->AddVar(s1);
+					}
+
+					genNode* newNode = new genNode();
+					newNode->place = sym->name;
+					$$ = newNode;
+					$$->type = sym->type;
+				}
+				;
+
+/*B.1.8 Literals*/ 
+literal : boolean_literal 	
+		{  
+			$$ = $1;
+		}
+		| integer_literal 	
+		{  
+			$$ = $1;
+		}
+		| character_literal 	
+		{  
+			$$ = $1;
+		}
+		| string_literal 	
+		{  
+			$$ = $1;
+		}
+		| null_literal	
+		{  
+			$$ = $1;
+		}
+		;
+
+boolean_literal : TRUE 	{	
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "bool";
+			$$->place = s1;
+			$$->isLit = true;	
+		}
+		| FALSE		{ 	
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "bool";
+			$$->place = s1;
+			$$->isLit = true;
+		}
+		;
+
+integer_literal : DINT_LITERAL 	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "int";
+			$$->place = to_string($1);
+			$$->isLit = true;
+		}
+		| HDINT_LITERAL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "int";
+			$$->place = to_string($1);
+			$$->isLit = true;
+		}
+		;
+
+character_literal : CHAR_LITERAL	{
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "char";
+			$$->place = s1;
+			$$->isLit = true;
+		}
+		;
+		
+/*
+simple_escape_sequence : 	SIMPLE_ESC_SEQ 	{  }
+							;
+*/
+
+string_literal : REG_STR_LITERAL 	{
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "string";
+			$$->place = s1;
+			$$->isLit = true;
+		}
+		| VER_STR_LITERAL	{
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "string";
+			$$->place = s1;
+			$$->isLit = true;
+		}
+		;
+
+null_literal :	NULL_LIT	{
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type = "null";
+			$$->place = s1;
+			$$->isLit = true;
+		}
+		;
+
+/*B.1.9 Operators*/ 
+right_shift : RSHIFT	{}
+		;
+right_shift_assignment : RSHIFTEQ	{}
+		;
+
+/*B.2.1 Basic concepts*/ 
+namespace_name : namespace_or_type_name	{ $$ = $1; }
+		;
+type_name : namespace_or_type_name	{ $$ = $1; }
+		;
+namespace_or_type_name : qualified_identifier 	{ $$ = $1; }
+		| qualified_alias_member	{ $$ = $1; }
+		;
+
+/*B.2.2 Types*/ 
+type : non_array_type 	{ $$ = $1;}
+		| array_type 	{ 
+			$$ = $1;
+		}
+		;		;
+non_array_type : type_name 	{ 
+			$$ = $1; 
+		}
+		| simple_type 	{ 
+			$$ = $1; 
+		}
+		| nullable_type	{ 
+			$$ = $1; 
+		}
+		;
+simple_type : numeric_type 	{ 
+			$$ = $1; 
+		}
+		| class_type 	{ 
+			$$ = $1; 
+		}
+		| BOOL	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "bool"; 
+			$$->type = "bool";
+		}
+		;
+numeric_type : integral_type 	{ $$ = $1; }
+		;
+integral_type : INT 	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "int"; 
+			$$->type = "int";
+		}
+		| LONG 	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "long"; 
+			$$->type = "long";
+		}
+		| CHAR	{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = "char"; 
+			$$->type = "char";
+		}
+		;
+nullable_type : non_nullable_value_type '?'	{
+			$$ = $1;
+			$$->place += " ?"; 
+			// Consider the type of this node
+		}
+		;
+non_nullable_value_type : simple_type	{ $$ = $1; }
+		;
+
+
+class_type : OBJECT 	{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		| STRING	{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		;
+
+/*B.2.3 Variables*/ 
+variable_reference : expression	{ $$ = $1; }
+		;
+
+/*B.2.4 Expressions*/ 
+argument_list : argument 	
+		{ 
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			$$ = $1; 
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $1->place;
+			$$->code.pb(tac);
+		}
+		| argument_list ',' argument	
+		{ 
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			$$ = $1;
+			TAC* tac = new TAC();
+			tac->op = "param";
+			tac->target = $3->place;
+			$$->code.pb(tac);
+		}
+		;
+argument : argument_value 	{ $$ = $1; }
+		| argument_name argument_value	{ $$ = NULL; }
+		;
+argument_name : identifier ':'	{ }
+		;
+argument_value : expression 	{ $$ = $1; }
+		| REF variable_reference 	{ }
+		;
+primary_expression : primary_no_array_creation_expression 	{ $$ = $1; }
+		| array_creation_expression	{ $$ = $1; }
+		| parenthesized_expression	{ $$ = $1; }
+		;
+primary_no_array_creation_expression : literal 	{ $$ = $1; }
+		| member_access 	{ $$ = $1; }
+		| invocation_expression 	{ $$ = $1; }
+		| element_access 	{ $$ = $1; }
+		| this_access 	{ $$ = $1; }
+		| base_access 	{ $$ = $1; }
+		| object_creation_expression 	{ $$ = $1; }
+		| typeof_expression 	{ $$ = $1; }
+		| default_value_expression	{ $$ = $1; }
+		;
+
+parenthesized_expression : '(' expression ')'	{ 
+			// string tmpVar = symTable->GenTemp($2->type, "simple", -1);
+			$$ = $2;
+			// $$ -> place = tmpVar;
+			// gen2OpCode($$, "=", $2);
+		}
+		;
+member_access : primary_expression '.' identifier 	{  }
+			{  }
+		| predefined_type '.' identifier 	{  }
+		| qualified_alias_member '.' identifier	{  }
+		;
+
+predefined_type : BOOL 	
+		{
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "bool";
+			$$->type = "bool";
+  		}
+		| CHAR 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "char";
+			$$->type = "char"; 
+		}
+		| INT 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "int";
+			$$->type = "int";
+		}
+		| LONG 	
+		{ 
+			genNode* newNode = new genNode();
+			$$=newNode;
+			$$->place = "long";
+			$$->type = "long";
+		}
+		| OBJECT 	{  }
+		| STRING 	{  }
+		;
+
+invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
+		| primary_no_array_creation_expression '(' argument_list ')'	{  }
+		| qualified_identifier '(' ')' 	
+		{  
+			TAC* tac = new TAC();
+			tac->op = "call";
+			Env* methodEnv = ST->GetMethod($1->place);
+			if(!methodEnv){
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<lineNum<<endl;
+				exit(1);
+			}
+			tac->target = methodEnv->name;
+			tac->isInt1 = true;
+			tac->l1 = convertNumToString(methodEnv->argNum);
+			string str1 = ST->GenTemp();
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
+			$$ = $1;
+			$$->place = str1;
+			$$->type = methodEnv->returnType;
+			$$->code.pb(tac);
+		}
+		| qualified_identifier '(' argument_list ')'	
+		{  
+			TAC* tac = new TAC();
+			tac->op = "call";
+			tac->isInt1 = true;
+
+			Env* methodEnv = ST->GetMethod($1->place);
+			if(!methodEnv){
+				cerr<<"Error: Method "<<$1->place<<" not defined in the scope, at line: "<<lineNum<<endl;
+				exit(1);
+			}
+			tac->target = methodEnv->name;
+
+
+			tac->l1 = convertNumToString(methodEnv->argNum);
+			string str1 = ST->GenTemp();
+
+
+			Symbol* sym = ST->GetVar(str1);
+			sym->type = methodEnv->returnType;
+			tac->dest = sym;
+			$$ = $1;
+			if($3->code.size() > 0)	$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->place = str1;
+			$$->type = methodEnv->returnType;
+			$$->code.pb(tac);
+		}
+		;
+
+element_access : primary_no_array_creation_expression '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			if($1->isLit){
+				cerr<<"Error: invalid array name at line: "<<lineNum<<endl;
+				exit(1);
+			}
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
+		| qualified_identifier '[' expression ']'	
+		{  
+			genNode* newNode = new genNode;
+			$$ = newNode;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			Symbol* temp = ST->GetVar(ST->GenTemp());
+			temp->type = ST->GetVar($1->place)->type;
+			$$->place = temp->name;
+			$$->type = ST->GetVar($1->place)->type;
+			if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+				cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			TAC* tac = new TAC();
+			tac->op = "getarr";
+			tac->dest = temp;
+			tac->array_name = $1->place;
+			$$->isArray = true;
+			if($3->isLit){
+				tac->isInt2 = true;
+				tac->l2 = $3->place;
+				$$->isLit=true;
+			}
+			else{
+				tac->opd2 = ST->GetVar($3->place);
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
+				$$->isLit = false;
+
+			}
+			$$->arrayName = $1->place;
+			$$->arrayIndex = $3->place;
+			$$->code.pb(tac);
+		}
+		;
+
+expression_list : expression  	{  }
+		| expression_list ',' expression	{  }
+		;
+this_access : THIS	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = $1; 
+		}
+		;
+base_access : BASE '.' identifier 	{  }
+		| BASE '[' expression_list ']'	{  }
+		;
+postfix_expression : 	primary_expression 		{ $$ = $1; }
+		| qualified_identifier 		{ $$ = $1; }
+		;
+
+object_creation_expression : NEW type '(' ')' 	{  }
+		| NEW type '(' argument_list ')' 	{  }
+		| NEW type '(' ')' object_or_collection_initializer 	{  }
+		| NEW type '(' argument_list ')' object_or_collection_initializer 	{  }
+		;
+object_or_collection_initializer : object_initializer 	{  }
+		| collection_initializer	{  }
+		;
+object_initializer : '{' '}' 	{  }
+		| '{' member_initializer_list '}' 	{  }
+		| '{' member_initializer_list ',' '}'	{  }
+		;
+member_initializer_list : member_initializer 	{  }
+		| member_initializer_list ',' member_initializer	{  }
+		;
+member_initializer : identifier '=' initializer_value	{  }
+		;
+initializer_value : expression 	{  }
+		| object_or_collection_initializer	{  }
+		;
+collection_initializer : '{' element_initializer_list '}' 	{  }
+		| '{' element_initializer_list ',' '}'	{  }
+		;
+element_initializer_list : element_initializer 	{  }
+		| element_initializer_list ',' element_initializer	{  }
+		;
+element_initializer : non_assignment_expression 	{  }
+		| '{' expression_list '}'	{  }
+		;
+array_creation_expression :	NEW non_array_type '[' integer_literal ']' 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->nodeLen = stoi($4->place);
+		}
+		| NEW non_array_type '[' integer_literal ']' array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $6->code;
+			if(stoi($4->place) != $6->varDecs.size()){
+				cerr << "Incompatible array lengths at line: " << lineNum << endl;
+				exit(1);
+			}
+			else 
+				$$->nodeLen = stoi($4->place);
+			$$->varDecs = $6->varDecs;
+		}
+		| NEW array_type array_initializer 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->type = $2->type;
+			$$->code = $3->code;
+			$$->varDecs = $3->varDecs;
+			$$->nodeLen = $3->varDecs.size();
+		}
+		;
+
+typeof_expression : TYPEOF '(' type ')' 	{  }
+		| TYPEOF '(' VOID ')'	{  }
+		;
+default_value_expression : DEFAULT '(' type ')'	{  }
+		;
+unary_expression_not_plusminus : postfix_expression 	{ $$ = $1; }
+		| '!' unary_expression 	{  }
+		| '~' unary_expression 	{  }
+		| cast_expression	{  }
+		;
+unary_expression : unary_expression_not_plusminus 	{ $$ = $1; }
+		| '+' unary_expression 	{ $$ = $2; }
+		| '-' unary_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			genNode* zeroNode = new genNode();
+			zeroNode->isLit = true; zeroNode->place = "0"; zeroNode->type = "int";
+			gen2OpCode($$, "-", zeroNode, $2, lineNum);
+		}
+		;
+pre_increment_expression : INCR unary_expression
+		{  
+			$$ = $2;
+			getPreUnaryOpCode("++", $$, $2, lineNum);
+		}
+		;
+pre_decrement_expression : DECR unary_expression	
+		{  
+			$$ = $2;
+			getPreUnaryOpCode("--", $$, $2, lineNum);
+		}
+		;
+cast_expression : parenthesized_expression unary_expression_not_plusminus	{ }
+		| '(' qualified_identifier rank_specifier ')' unary_expression  { }
+  		| '(' simple_type ')' unary_expression { }
+  		| '(' VOID ')' unary_expression { }
+  		;
+
+multiplicative_expression :	unary_expression 	{ $$ = $1; }
+		| multiplicative_expression '*' unary_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			gen2OpCode($$, "*", $1, $3, lineNum);
+			//$$->code.pb($$->code.end(), $3->code.begin(), $3->code.end());
+		}
+		| multiplicative_expression '/' unary_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "/", $1, $3, lineNum);
+		}
+		| multiplicative_expression '%' unary_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "%", $1, $3, lineNum);
+		}
+		;
+
+additive_expression : multiplicative_expression 	{ $$ = $1; }
+		| additive_expression '+' multiplicative_expression 	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "+", $1, $3, lineNum);
+		}
+		| additive_expression '-' multiplicative_expression	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "-", $1, $3, lineNum);
+		}
+		;
+
+shift_expression : additive_expression 	{ $$ = $1; }
+		| shift_expression LSHIFT additive_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "<<", $1, $3, lineNum);
+		}
+		| shift_expression right_shift additive_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, ">>", $1, $3, lineNum);
+		}
+		;
+relational_expression : shift_expression 	{ $$ = $1; }
+		| relational_expression '<' shift_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "<", $1, $3, lineNum);
+		}
+		| relational_expression '>' shift_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, ">", $1, $3, lineNum);
+		}
+		| relational_expression LE shift_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "<=", $1, $3, lineNum);
+		}
+		| relational_expression GE shift_expression 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, ">=", $1, $3, lineNum);
+		}
+equality_expression : relational_expression 	{ $$ = $1; }
+		| equality_expression REQ relational_expression 	{  }
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "==", $1, $3, lineNum);
+		}
+		| equality_expression RNE relational_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "!=", $1, $3, lineNum);
+		}
+		;
+and_expression : equality_expression 	{ $$ = $1; }
+		| and_expression '&' equality_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "&", $1, $3, lineNum);
+		}
+		;
+exclusive_or_expression : and_expression 	{ $$ = $1; }
+		| exclusive_or_expression '^' and_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "^", $1, $3, lineNum);
+		}
+		;
+inclusive_or_expression : exclusive_or_expression 	{ $$ = $1; }
+		| inclusive_or_expression '|' exclusive_or_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "|", $1, $3, lineNum);
+		}
+		;
+conditional_and_expression : inclusive_or_expression 	{ $$ = $1;  }
+		| conditional_and_expression RAND inclusive_or_expression
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "&&", $1, $3, lineNum);
+		}
+		;
+conditional_or_expression : conditional_and_expression 	{ $$ = $1; }
+		| conditional_or_expression ROR conditional_and_expression
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "||", $1, $3, lineNum);
+		}
+		;
+null_coalescing_expression : conditional_or_expression 	{ $$ = $1; }
+		| conditional_or_expression DQM null_coalescing_expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $1->code;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			gen2OpCode($$, "??", $1, $3, lineNum);
+		}
+		;
+conditional_expression : null_coalescing_expression 	{ $$ = $1; }
+		| null_coalescing_expression '?' expression ':' expression	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			getCECode($$, $1, $3, $5, lineNum);
+		}
+		;
+assignment : unary_expression assignment_operator expression	{  
+			// assignment_operator is a string
+			$$ = $1;	
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			// TAC* tac = new TAC();
+			
+			Symbol* sym1 = ST->GetVar($1->place);
+			if(sym1->type == "None"){
+				cerr << "Error: Symbol " <<  $1->place << " not defined, at line num: " << endl;
+				exit(1);
+			}
+			if($3->isLit==false){		
+				Symbol* sym2 = ST->GetVar($3->place);
+				if(sym2->type == "None"){
+					cerr << "Error: Symbol "<< $3->place << " not defined, at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType != sym2->baseType){
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+				if(sym1->baseType == "ARRAYTYPE" || sym2->baseType == "ARRAYTYPE"){	
+					cerr << "Error: Incompatible types at line num: " << endl;
+					exit(1);
+				}
+			}
+			gen2OpCode($$, $2, $1, $3, lineNum);
+			if($1->isArray == true){
+				TAC* tac = new TAC();
+				tac->op = "setarr";
+				tac->array_name = $1->arrayName;
+				if($1->isLit){
+					tac->isInt1 = true;
+					tac->l1 = $1->arrayIndex;
+				}
+				else{
+					tac->opd1 = ST->GetVar($1->arrayIndex);
+				}
+				tac->opd2 = sym1;
+				$$->code.pb(tac);
+			}			
+
+		}
+		;
+assignment_operator : '=' 	{ $$ = "="; }
+		| APLUS 	{ $$ = "+="; }
+		| AMINUS 	{ $$ = "-="; }
+		| AMULT 	{ $$ = "*="; }
+		| ADIV 	{ $$ = "/="; }
+		| AMOD 	{ $$ = "%="; }
+		| AAND 	{ $$ = "&="; }
+		| AOR 	{ $$ = "|="; }
+		| ACARET 	{ $$ = "^="; }
+		| LSHIFTEQ 	{ $$ = "<<="; }
+		| right_shift_assignment	{ $$ = ">>="; }
+		;
+expression : non_assignment_expression 	{ $$ = $1; }
+		| assignment	{ $$ = $1; }
+		;
+non_assignment_expression : conditional_expression	{ $$ = $1; }
+		;
+constant_expression : expression	{ $$ = $1; }
+		;
+boolean_expression : expression	{ $$ = $1; }
+		;
+
+/*B.2.5 Statements*/ 
+statement :	labeled_statement 	{  $$ = $1;  }
+		| declaration_statement 	{ $$ = $1; }
+		| embedded_statement	{ $$ = $1; }
+		;
+embedded_statement : block 	{ $$ = $1; }
+		| empty_statement 	{ $$ = $1; }
+		| expression_statement 	{ $$ = $1; }
+		| selection_statement 	{ $$ = $1; }
+		| iteration_statement 	{ $$ = $1; }
+		| jump_statement 	{ $$ = $1; }
+		| try_statement 	{ $$ = $1; }
+		| using_statement	{ $$ = $1; }
+		;
+block : block_start '{' '}' 	{ $$ = NULL; ST->EndScope();	}
+		| block_start '{' statement_list '}'	{  $$ = $3; ST->EndScope(); }
+		;
+block_start : epsilon	
+		{ 
+			$$ = NULL; 
+			ST->BeginScope();	
+		}
+		;
+
+statement_list : statement 	{ $$ = $1; }
+		| statement_list statement	
+		{ 
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
+		;
+empty_statement : ';'	{  }
+		;
+labeled_statement :	identifier ':' statement	{  }
+		;
+declaration_statement :	local_variable_declaration ';'	 	{ $$ = $1; }
+		| local_constant_declaration ';'	{ $$ = $1; }
+		;
+local_variable_declaration : local_variable_type local_variable_declarators	
+		{ 
+			if($2->type != "None" && equal_compatible($2->type, $1->type) == "None"){
+				cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+				exit(1);
+			}
+			$$ = $2;
+			string typeName = $1->place;
+			int siz = $$->varDecs.size();
+			fori(0, siz){
+				($$->varDecs)[i]->type = typeName;
+			}
+
+			$$->type = typeName;
+		}
+		;
+local_variable_type : type 	{ $$ = $1; }
+		;
+local_variable_declarators : local_variable_declarator 	
+		{ 	
+			$$ = $1; 
+			Symbol* sym = ST->GetVar($1->place);
+			$$->varDecs.pb(sym);
+		}
+		| local_variable_declarators ',' local_variable_declarator	
+		{ 
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			if($3->isArray){
+				if($1->type == "None")
+					$$->type = $3->type;
+				else 
+					if($1->type != $3->type){
+						cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+						exit(1);
+					}
+			}
+			Symbol* sym = ST->GetVar($3->place);
+			$$->varDecs.pb(sym);
+		}
+		;
+local_variable_declarator : identifier 	
+		{ 
+			$$ = $1; 
+			Symbol* sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			
+		}
+		| identifier '=' local_variable_initializer	
+		{
+			$$ = $3;
+			$$->place = $1->place;
+			
+			TAC* tac1 = new TAC();
+			Symbol* sym;
+			
+			sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			tac1->dest = sym;
+			tac1->op = "=";
+
+			if($3->isLit == true){
+				tac1->isInt1 = true;
+				tac1->l1 = $3->place;
+				$$->code.pb(tac1);
+			}
+			else if($3->isArray){
+
+				sym->baseType = "array";
+				sym->type = $3->type;
+				$$->isArray = true;
+				for(int i=0; i<$3->varDecs.size(); i++){
+					TAC* tac = new TAC();
+					tac->op = "setarr";
+					tac->array_name = $1->place;
+					tac->opd2 = $3->varDecs[i];
+					tac->isInt1 = true;
+					tac->l1 = convertNumToString(i);
+					$$->code.pb(tac);
+				}
+				$$->varDecs.clear();
+			}
+			else{
+				Symbol* sym_ = ST->GetVar($3->place);
+				tac1->opd1 = sym_;
+				sym -> baseType = sym_->baseType;
+				$$->code.pb(tac1);
+			}
+
+		}
+		;
+local_variable_initializer : expression 	
+		{	 	
+			$$ = $1; 
+		}
+		| array_initializer	
+		{ 
+			$$ = $1; 
+		}
+		;
+local_constant_declaration :  CONST type constant_declarators	{  }
+		;
+expression_statement : statement_expression ';'	{ $$ = $1; }
+		;
+statement_expression : invocation_expression 	{  }
+		| object_creation_expression 	{  }
+		| assignment 	{ $$ = $1; }
+		| pre_increment_expression 	{  }
+		| pre_decrement_expression	{  }
+		;
+selection_statement : if_statement 	{ $$ = $1; }
+		| switch_statement	{ $$ = $1; }
+		;
+if_statement : IF '(' boolean_expression ')' embedded_statement 	
+		{ 
+			$$ = $3;
+			string trueLabel = getNewLabel();			
+			string ifEndLabel = getNewLabel();
+			TAC* tac1 = new TAC();
+			tac1->op = "label"; tac1->target = trueLabel;
+			TAC* tac2 = new TAC();
+			tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			TAC* tac3 = new TAC();
+			tac3->op = "goto"; tac3->target = ifEndLabel;
+			TAC* tac4 = new TAC();
+			tac4->op = "label"; tac4->target = ifEndLabel;
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac4);
+		} %prec IFX
+		| IF '(' boolean_expression ')' embedded_statement ELSE embedded_statement	
+		{  
+			$$ = $3;
+			TAC* tac1 = new TAC();	TAC* tac2 = new TAC();
+			TAC* tac3 = new TAC();	TAC* tac4 = new TAC();
+			TAC* tac5 = new TAC();	TAC* tac6 = new TAC();
+			string trueLabel = getNewLabel();			
+			string falseLabel = getNewLabel();
+			string endLabel = getNewLabel();
+			tac1->op = "label"; tac1->target = trueLabel;
+			tac2->op = "label"; tac2->target = falseLabel;
+			tac3->op = "ifgoto"; tac3->dest = ST->GetVar($3->place); tac3->target = trueLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			tac4->op = "goto"; tac4->target = falseLabel;
+			tac5->op = "goto"; tac5->target = endLabel;
+			tac6->op = "label"; tac6->target = endLabel;
+
+			$$->code.pb(tac3); $$->code.pb(tac4);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac2);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac6);
+		}
+		;
+switch_statement : SWITCH '(' expression ')' switch_block	{  }
+		;
+switch_block : '{' '}' 	{  }
+		| '{' switch_sections '}'	{  }
+		;
+switch_sections : switch_section 	{  }
+		| switch_sections switch_section	{  }
+		;
+switch_section : switch_labels statement_list	{  }
+		;
+switch_labels : switch_label 	{  }
+		| switch_labels switch_label	{  }
+		;
+switch_label : CASE constant_expression ':' 	{  }
+		| DEFAULT ':'	{  }
+		;
+iteration_statement : while_statement 	{ $$ = $1; }
+		| do_statement 	{ $$ = $1; }
+		| for_statement 	{ $$ = $1; }
+		;
+while_statement : WHILE '(' boolean_expression ')' embedded_statement	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($3->place); tac2->target = inLoopLabel;
+			if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+				cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+		}
+		;
+do_statement : DO embedded_statement WHILE '(' boolean_expression ')' ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC(); 	tac->op = "label";	tac->target = conditionLabel;
+
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+
+
+			$$->code.pb(tac1);
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+		}
+		;
+for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			if($7->code.size() > 0)
+				$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' ';' ')' embedded_statement
+		{  
+			$$ = $4;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			$$->code.pb(tac);
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' for_condition ';' ')' embedded_statement
+		{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' ';' for_iterator ')' embedded_statement
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			if($8->code.size() > 0)
+				$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' for_condition ';' ')' embedded_statement  	
+		{
+			$$ = $4;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+				cerr << "Symbol " << $6->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($9->code.size() > 0)
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, conditionLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' ';' for_iterator ')' embedded_statement  	
+		{  
+			$$ = $4;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = endLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "goto"; 	tac2->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			if($9->code.size() > 0)
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac2);
+			$$->code.pb(tac1);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' ';' for_condition ';' for_iterator ')' embedded_statement  	
+		{
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($5->place); tac2->target = inLoopLabel;
+			if(!($5->isLit) && ST->GetVar($5->place)->type == "None"){
+				cerr << "Symbol " << $5->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($9->code.empty()){
+				$$->code.insert($$->code.end(), $9->code.begin(), $9->code.end());
+			}
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $7->code.begin(), $7->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		| block_start FOR '(' for_initializer ';' for_condition ';' for_iterator ')' embedded_statement
+		{
+			$$ = $4;
+			string conditionLabel = getNewLabel();
+			TAC* tac = new TAC();
+			tac->op = "label";
+			tac->target = conditionLabel;
+
+			string inLoopLabel = getNewLabel();			
+			string endLoopLabel = getNewLabel();
+			
+			TAC* tac1 = new TAC();	tac1->op = "label"; tac1->target = inLoopLabel;
+
+			TAC* tac2 = new TAC();	tac2->op = "ifgoto"; tac2->dest = ST->GetVar($6->place); tac2->target = inLoopLabel;
+			if(!($6->isLit) && ST->GetVar($6->place)->type == "None"){
+				cerr << "Symbol " << $6->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+
+			TAC* tac3 = new TAC();	tac3->op = "goto"; tac3->target = endLoopLabel;
+
+			TAC* tac4 = new TAC();	tac4->op = "label"; tac4->target = endLoopLabel;
+
+			TAC* tac5 = new TAC();	tac5->op = "goto"; 	tac5->target = conditionLabel;
+
+			string updateLabel = getNewLabel();
+			TAC* tac_ = new TAC();	tac_->op = "label";	tac_->target = updateLabel;
+
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+
+			$$->code.pb(tac2);
+			$$->code.pb(tac3);
+			$$->code.pb(tac1);
+			if($10->code.size() > 0)
+				$$->code.insert($$->code.end(), $10->code.begin(), $10->code.end());
+			$$->code.pb(tac_);
+			$$->code.insert($$->code.end(), $8->code.begin(), $8->code.end());
+			$$->code.pb(tac5);
+			$$->code.pb(tac4);
+
+			updateBreak($$, endLoopLabel);
+			updateContinue($$, updateLabel);
+
+			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
+			ST->curEnv = ST->curEnv->prevEnv;
+			/////////////////////////////////////////////////////////////////////////////////////////////////
+		}
+		;
+for_initializer : local_variable_declaration 	{ $$ = $1; }
+		| statement_expression_list	{ $$ = $1; }
+		;
+for_condition : boolean_expression	{ 
+			$$ = $1;
+		}
+		;
+for_iterator : statement_expression_list	{ $$ = $1; }
+		;
+statement_expression_list : statement_expression 	{ $$ = $1; }
+		| statement_expression_list ',' statement_expression	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
+		;
+jump_statement : break_statement 	{ $$ = $1; }
+		| continue_statement 	{  }
+		| goto_statement 	{  }
+		| return_statement 	{  }
+		| throw_statement	{  }
+		;
+break_statement : BREAK ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			TAC* tac = new TAC();	tac -> op = "goto";	tac -> isBreak = true;
+
+			newNode->code.pb(tac);
+		}
+		;
+continue_statement : CONTINUE ';'	
+		{  
+			genNode* newNode = new genNode();
+			$$ = newNode;
+
+			TAC* tac = new TAC();	tac -> op = "goto";	tac -> isContinue = true;
+
+			newNode->code.pb(tac);
+		}
+		;
+goto_statement : GOTO identifier ';' 	{  }
+		| GOTO CASE constant_expression ';' 	{  }
+		| GOTO DEFAULT ';'	{  }
+		;
+return_statement : RETURN ';' 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			TAC* tac = new TAC();
+			tac->op = "ret";
+			$$->code.pb(tac);
+		}
+		| RETURN expression ';'	
+		{  
+			$$ = $2;
+			TAC* tac = new TAC();
+			tac->op = "retint";
+			if($2->isLit){
+				tac->l1=$2->place;
+				tac->isInt1 = true;
+			}
+			else
+				tac->dest = ST->GetVar($2->place);
+			if(!($2->isLit) && ST->GetVar($2->place)->type == "None"){
+				cerr << "Symbol " << $2->place << " not defined, at line: " <<lineNum;
+				exit(1);
+			}
+			vector <TAC*> tmp;
+			tmp.pb(tac);
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+		}
+		;
+throw_statement : THROW ';' 	{  }
+		| THROW expression ';'	{  }
+		;
+try_statement : TRY block catch_clauses 	{  }
+		| TRY block finally_clause 	{  }
+		| TRY block catch_clauses finally_clause	{  }
+		;
+catch_clauses : general_catch_clause	{  }
+		;
+general_catch_clause : CATCH block	{  }
+		;
+finally_clause : FINALLY block	{  }
+		;
+using_statement : USING '(' resource_acquisition ')' embedded_statement	{  }
+		;
+resource_acquisition : local_variable_declaration 	{  }
+		| expression	{  }
+		;
+
+/*B.2.6 Namespaces*/ 
+compilation_unit : using_directives namespace_member_declarations 	{ $$ = $2; }
+		| namespace_member_declarations 	{ $$ = $1; }
+		| using_directives 	{  }
+		| epsilon	{  }
+		;
+namespace_declaration :	block_start NAMESPACE qualified_identifier namespace_body
+		{
+			$$ = $3; 
+			$$->code.pb(genLabelTAC($3->place));
+			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
+			ST->curEnv->name = $3->place;
+			ST->EndScope();
+		}
+		| block_start NAMESPACE qualified_identifier namespace_body ';' 	
+		{
+			$$ = $3; 
+			$$->code.pb(genLabelTAC($3->place));
+			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
+			ST->curEnv->name = $3->place;
+			ST->EndScope();
+		}
+		;
+qualified_identifier :	identifier 	{ $$ = $1; }
+		| qualified_identifier '.' identifier	{ }
+		;
+namespace_body : '{' '}' 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+		}
+		| '{' namespace_member_declarations '}' 	{ $$ = $2; }
+		| '{' using_directives  '}' 	{ $$ = $2; }
+		| '{' using_directives namespace_member_declarations  '}'	{ $$ = $3; }
+		;
+using_directives : using_directive 	{ $$ = $1; }
+		| using_directives using_directive	{ $$ = $1; }
+		;
+using_directive : using_alias_directive 	{ $$ = $1; }
+		| using_namespace_directive	{ $$ = $1; }
+		;
+using_alias_directive : USING identifier '=' namespace_or_type_name ';'	{ $$ = $2; }
+		;
+using_namespace_directive : USING namespace_name ';'	{ $$ = $2; }
+		;
+namespace_member_declarations : namespace_member_declaration 	{ $$ = $1; }
+		| namespace_member_declarations namespace_member_declaration	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
+		;
+namespace_member_declaration : namespace_declaration 	{ $$ = $1; }
+		| struct_declaration	{ $$ = $1; }
+		| class_declaration     { $$ = $1; }
+		;
+qualified_alias_member : identifier DCLN identifier 	{ $$ = $1; }
+		;
+
+/*B.2.7 Classes;*/ 
+class_declaration : CLASS block_start class_init identifier class_body 	
+		{ 
+			$$ = $4;
+			$$->type = "class";
+			$$->code.pb(genLabelTAC($4->place));
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			ST->curEnv->name = $4->place;
+			ST->EndScope();
+		}
+		| modifiers CLASS block_start class_init identifier class_body 	
+		{ 
+			$$ = $5;
+			$$->type = "class";
+			$$->code.pb(genLabelTAC($5->place));
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+			ST->curEnv->name = $5->place;
+			ST->EndScope();
+		}
+		| CLASS block_start class_init identifier class_base class_body 	{  }
+		| CLASS block_start class_init identifier class_body ';' 	
+		{ 
+			$$ = $4;
+			$$->type = "class";
+			$$->code.pb(genLabelTAC($4->place));
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
+			ST->curEnv->name = $4->place;
+			ST->EndScope();
+		}
+		| modifiers CLASS block_start class_init identifier class_base class_body 	{  }
+		| modifiers CLASS block_start class_init identifier class_body ';' 	
+		{ 
+			$$ = $5;
+			$$->type = "class";
+			$$->code.pb(genLabelTAC($5->place));
+			$$->code.insert($$->code.end(), $6->code.begin(), $6->code.end());
+			ST->curEnv->name = $5->place;
+			ST->EndScope();
+		}
+		| CLASS block_start class_init identifier class_base class_body ';' 	{  }
+		| modifiers CLASS block_start class_init identifier class_base class_body ';' 	{  }
+		;
+
+class_init :	epsilon	
+		{ 
+			ST->curEnv->type = "CLASSTYPE";
+			$$ = NULL;
+		}
+		;
+
+modifiers : modifier 	{ $$ = $1; }
+		| modifiers modifier	{  }
+		;
+modifier : NEW 	{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		| PUBLIC 		{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		| PROTECTED 	{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		| PRIVATE	{ 
+			string s1($1);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->place = s1;
+		}
+		;
+class_base : ':' class_type	{ $$ = $2; }
+		;
+class_body : '{' '}' 	{ 
+			ST->curEnv->type = "CLASSTYPE";
+			genNode* newNode = new genNode();
+			$$ = newNode; 
+		}
+		| '{' class_member_declarations '}'	
+		{ 
+			ST->curEnv->type = "CLASSTYPE";
+			$$ = $2; 
+		}
+		;
+class_member_declarations : class_member_declaration 	{ $$ = $1; }
+		| class_member_declarations class_member_declaration	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+		}
+		;
+class_member_declaration : constant_declaration 	{ $$ = $1; }
+		| field_declaration 	{ $$ = $1; }
+		| method_declaration 	{ $$ = $1; }
+		| constructor_declaration 	{ $$ = $1; }
+		| destructor_declaration 	{  $$ = $1;  }
+		| struct_declaration	{  $$ = $1;  }
+		;
+constant_declaration : CONST type constant_declarators ';' 	{  }
+		| modifiers CONST type constant_declarators ';'	{  }
+		;
+
+constant_declarators : constant_declarator  	{  }
+		| constant_declarators ',' constant_declarator	{  }
+		;
+constant_declarator : identifier '=' constant_expression	{  }
+		;
+field_declaration : type variable_declarators ';' 	{  }
+		| modifiers type variable_declarators ';'	{  }
+		;
+
+variable_declarators : variable_declarator 	{  }
+		| variable_declarators ',' variable_declarator	{  }
+		;
+variable_declarator : identifier 	{  }
+		| identifier '=' variable_initializer 	{	}	
+
+variable_initializer : expression 	{ $$ = $1; }
+		| array_initializer	{ $$ = $1; }
+		;
+method_declaration : method_header method_body	
+		{
+			$$ = $1;
+			vector <TAC*> tmp;
+			tmp.pb(genLabelTAC(ST->curEnv->name));
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
+
+
+			ST->EndScope();
+		}
+		;
+method_header : type member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+		}
+		| modifiers type member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $2->place;
+			ST->curEnv->name = $3->place;
+		}
+		| type member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->returnType = $1->place;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
+		}
+		| modifiers type member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $3;
+			ST->curEnv->returnType = $2->place;
+			ST->curEnv->name = $3->place;
+			$$->code = $5->code;
+		}
+		| VOID member_name '(' ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = $2->place;
+		}
+		| modifiers VOID member_name '(' ')' 	
+		{ 
+			$$ = $3;
+			ST->curEnv->name = $3->place;
+		}
+		| VOID member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $2;
+			ST->curEnv->name = $2->place;
+			$$->code = $4->code;
+		}
+		| modifiers VOID member_name '(' formal_parameter_list ')' 	
+		{ 
+			$$ = $3;
+			ST->curEnv->name = $3->place;
+			$$->code = $5->code;
+		}
+		;
+
+member_name : qualified_identifier	
+		{ 
+			ST->BeginScope();
+			ST->curEnv->type = "METHODTYPE";
+
+			$$ = $1; 
+		}
+		;
+method_body : block 	
+		{ 
+			$$ = $1; 
+		}
+		| ';'	{ $$ = NULL; }
+		;
+formal_parameter_list : fixed_parameters 	{ $$ = $1; }
+		| fixed_parameters ',' parameter_array 	
+		{ 
+			$$ = $1; 
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+		}
+		| parameter_array	{ $$ = $1; }
+		;
+fixed_parameters : fixed_parameter 	{ $$ = $1; }
+		| fixed_parameters ',' fixed_parameter	
+		{ 
+			$$ = $3;
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+		}
+		;
+fixed_parameter : type identifier 	
+		{ 
+			$$ = $2; 
+			Symbol* sym = ST->GetVar($2->place);
+			sym->type = $1->place;
+			$$->type = $1->place;
+			ST->curEnv->argNum ++;
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $2->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
+
+		}
+		| parameter_modifier type identifier 	
+		{
+			$$ = $3; 
+
+			ST->curEnv->argTypeList.pb($2->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = $2->place;
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $3->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
+		}
+		| type identifier default_argument 	
+		{ 
+			$$ = $3; 
+
+			TAC* tac = new TAC();
+			tac->op = "=";
+			if($3->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($3->place);
+			}
+
+			tac -> dest = ST->GetVar($3->place);
+			$$->code.pb(tac);
+
+			ST->curEnv->argTypeList.pb($1->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = $1->place;
+
+			TAC* tac1 = new TAC();
+			tac1->op = "readParam";
+			tac1->target = $2->place;
+
+			$$->code.pb(tac1);
+		}
+		| parameter_modifier type identifier default_argument	
+		{ 
+			$$ = $4; 
+
+			TAC* tac = new TAC();
+			tac->op = "=";
+			if($4->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $4->place;
+			}
+			else{
+				tac->opd1 = ST->GetVar($4->place);
+			}
+
+			tac -> dest = ST->GetVar($3->place);
+			$$->code.pb(tac);
+
+			ST->curEnv->argTypeList.pb($2->place);
+			ST->curEnv->argNum ++;
+
+			$$->type = $2->place;
+
+			TAC* tac1 = new TAC();
+			tac1->op = "readParam";
+			tac1->target = $3->place;
+
+			$$->code.pb(tac1);
+		}
+		;
+default_argument : '=' expression	{ $$ = $2; }
+		;
+parameter_modifier : REF 	{  }
+		| THIS	{  }
+		;
+parameter_array : PARAMS array_type identifier	
+		{ 
+// -			// Not sure about this
+// 			$$ = $3; 
+// 			ST->curEnv->argNum++;
+// 			ST->curEnv->argTypeList.pb($2->place);
+		}
+		;
+constructor_declaration : constructor_declarator constructor_body 	{  }
+		| modifiers constructor_declarator constructor_body	{  }
+		;
+		
+constructor_declarator : identifier '(' ')' 	{  }
+		| identifier '(' ')' constructor_initializer 	{  }
+		| identifier '(' formal_parameter_list ')' 	{  }
+		| identifier '(' formal_parameter_list ')' constructor_initializer	{  }
+		;
+constructor_initializer : ':' BASE '(' ')' 	{  }
+		| ':' BASE '(' argument_list ')' 	{  }
+		| ':' THIS '(' ')' 	{  }
+		| ':' THIS '(' argument_list ')'	{  }
+		;
+constructor_body : block 	{  }
+		| ';'	{  }
+		;
+destructor_declaration : '~' identifier '(' ')' destructor_body	{  }
+		;
+destructor_body : block 	{  }
+		| ';'	{  }
+		;
+
+/*B.2.8 Structs*/ 
+struct_declaration : STRUCT identifier struct_body 	{  }
+		| modifiers STRUCT identifier struct_body 	{  }
+		| STRUCT identifier struct_body ';' 	{  }
+		| modifiers STRUCT identifier struct_body ';' 	{  }
+		;
+
+struct_body : '{' '}' 	{  }
+		| '{' struct_member_declarations '}'	{  }
+		;
+struct_member_declarations : struct_member_declaration 	{  }
+		| struct_member_declarations struct_member_declaration	{  }
+		;
+struct_member_declaration : constant_declaration 	{ $$ = $1; }
+		| field_declaration 	{ $$ = $1; }
+		| method_declaration 	{ $$ = $1; }
+		| constructor_declaration 	{ $$ = $1; }
+		;
+
+/*B.2.9 Arrays*/ 
+array_type : non_array_type rank_specifier	{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->type=$1->type;
+			$$->place=$1->place;
+			$$->isArray = true;
+		}
+		;
+rank_specifier : '[' ']' 	{   }
+		;
+array_initializer : '{' '}' 	
+		{ 
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->isArray = true;
+			$$->nodeLen = 0;
+		}
+		| '{' variable_initializer_list '}' 	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
+		| '{' variable_initializer_list ',' '}'	
+		{  
+			$$ = $2;
+			$$->isArray = true;
+		}
+		;
+variable_initializer_list : variable_initializer 	
+		{  
+			if($1->isArray){
+				cerr << "Incorrect array initialisation at line: " << lineNum;
+				exit(1);
+			}
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			$$->code = $1->code;
+			if($1->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $1->place;
+			}
+			else{
+				if(!($1->isLit) && ST->GetVar($1->place)->type == "None"){
+					cerr << "Symbol " << $1->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
+				tac->opd1 = ST->GetVar($1->place);
+			}
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
+		| variable_initializer_list ',' variable_initializer	
+		{  
+			if($3->isArray){
+				cerr << "Incorrect array initialisation at line: " << lineNum;
+				exit(1);
+			}
+			$$ = $1;
+			Symbol* temp =  ST->GetVar(ST->GenTemp());
+			TAC* tac = new TAC();
+			tac->op = "=";
+			tac->dest = temp;
+			if($3->isLit){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+			}
+			else{
+				if(!($3->isLit) && ST->GetVar($3->place)->type == "None"){
+					cerr << "Symbol " << $3->place << " not defined, at line: " <<lineNum;
+					exit(1);
+				}
+				tac->opd1 = ST->GetVar($3->place);
+			}
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			$$->varDecs.pb(tac->dest);
+			$$->code.pb(tac);
+		}
+
+
+
+epsilon : 	%empty 		{}
+			;
+
+%%	
+
+extern void yyerror(const char *c){
+		string str(c);
+		cerr << "Error at line: " << lineNum << "\n"<< str << endl;
+		exit(1);	
+	}
+
+
+int main(int argc, char* argv[]){
+	FILE *file;
+	if (argc==2 &&(file=fopen(argv[1],"r")))
+		yyin = file;
+	else if (argc!=2){
+		cerr<< "Exactly one file has to be passed as argument!\n";
+		exit(1);
+	}
+	else{
+		cerr<< "Please specify correct file name\n";
+		exit(1);
+	}
+
+	yydebug = 0;
+	yyparse();
+	
+	fclose(file);
+	return 0;
+}
