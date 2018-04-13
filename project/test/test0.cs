@@ -10,6 +10,7 @@ namespace Rextester
 
         public void Main(string[] args)
         {
+            string x = "Hello";
             int[] c = new int[5]{10,2,3,4,5}; 
             c[1] = 409;
             if(c[1] > 20){

@@ -52,7 +52,7 @@ void printTAC(genNode* node){
 			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
-		cerr<< t->op << "\t\t" ;
+		// cerr<< t->op << "\t\t" ;
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
