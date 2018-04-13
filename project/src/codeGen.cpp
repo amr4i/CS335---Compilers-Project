@@ -4,11 +4,28 @@ using namespace std;
 
 int main(int argc, char** argv){
 
+    FILE *file;
+    if (argc==2 &&(file=fopen(argv[1],"r")))
+        yyin = file;
+    else if (argc!=2){
+        cerr<< "Exactly one file has to be passed as argument!\n";
+        exit(1);
+    }
+    else{
+        cerr<< "Please specify correct file name\n";
+        exit(1);
+    }
+
+    yydebug = 0;
+    yyparse();
+    
+    fclose(file);
+
     int siz, blockSiz, blockNum;
     map <string, Symbol*> ::iterator itt;
 
     // Reading the text file and storing it in "ir" data structure
-    readFile(argv[1]);
+    // readFile(argv[1]);
 
     // Populating blocks
     getBlocks();
@@ -23,11 +40,11 @@ int main(int argc, char** argv){
         blocks[i]->computeNextUse();
     }
 
-    mipsCode* code = new mipsCode(symTable);
+    mipsCode* code = new mipsCode(ST);
     code->addLine(".data");
 
     // add all the data variables
-    for(itt = symTable.symbols.begin() ; itt != symTable.symbols.end() ; itt++)
+    for(itt = ST.symbols.begin() ; itt != ST.symbols.end() ; itt++)
     {
         if( (*itt).se->type == "int" )
         {

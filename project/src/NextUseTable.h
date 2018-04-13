@@ -1,5 +1,5 @@
 #include "config.h"
-#include "IR.cpp"
+#include "y.tab.c"
 
 // The definition of the global next use table.
 
