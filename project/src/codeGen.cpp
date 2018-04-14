@@ -924,7 +924,7 @@ void codeGen(){
             code->addLine("sw "+reg_in1+", 0($sp)");
         }
 
-        else if (ir->op == "readparam")
+        else if (ir->op == "readParam")
         {
             code->addLine("addi $sp, $sp, -4");
             reg_in1 = code->getReg(ir->target, (ir->lineNum), 0);
