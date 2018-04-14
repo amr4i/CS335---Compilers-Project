@@ -16,7 +16,7 @@ set<string> itype0= {"ret","exit"};
 // TODO :  TEST_CASES. 
 // Arrays need to neccessarily have a pre-defined integer size
 
-// New operations: call, param, readParam
+// New operations: call, param, readParam, ||, &&
 
 struct TAC
 {

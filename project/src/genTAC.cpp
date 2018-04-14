@@ -112,6 +112,7 @@ void printTAC(genNode* node){
 						cout<<t->lineNum<<", "<<t->op<<", "<<t->l1;
 					else
 						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+					break;
 				}
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
