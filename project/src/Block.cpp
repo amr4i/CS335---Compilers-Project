@@ -67,7 +67,7 @@ void Block::computeNextUse()
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 				visited[IR[i]->dest->name] = true;
 			}
-			else if(op == "callint")
+			else if(op == "call")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
