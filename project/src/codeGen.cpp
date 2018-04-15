@@ -1,10 +1,10 @@
 #include "mipsCode.cpp"
-#define wordType 1
-#define byteType 0
+#define wordType true
+#define byteType false
 
 using namespace std;
 
-void addDataSection(mipsCode* code, Env baseEnv, bool isWord){
+void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
     map <string, Symbol*> ::iterator itt;
     for(itt = baseEnv->addTable.begin() ; itt != baseEnv->addTable.end() ; itt++)
     {
@@ -12,31 +12,31 @@ void addDataSection(mipsCode* code, Env baseEnv, bool isWord){
         {
             if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
             {
-                code->addDataLine((*itt).fi + ":\t.word 0", "word");
+                code->addLine((*itt).fi + ":\t.word 0");
             }
             else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
             {
-                code->addDataLine((*itt).fi + ":\t.byte 1", "byte");
+                code->addLine((*itt).fi + ":\t.byte 1");
             }
         }
         else if( (*itt).se->baseType == "array")
         {
             if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
             {
-                code->addDataLine((*itt).fi + ":\t.space " + convertNumToString( 4 * (*itt).se->width), "word");
+                code->addLine((*itt).fi + ":\t.space " + convertNumToString( 4 * (*itt).se->width));
             }
             else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
             {
-                code->addDataLine((*itt).fi + ":\t.space " + convertNumToString( (*itt).se->width), "byte");
+                code->addLine((*itt).fi + ":\t.space " + convertNumToString( (*itt).se->width));
             }   
         }
 
     }
 
-    Env* ::iterator childEnv;
+    vector <Env*> ::iterator childEnv;
     for(childEnv = baseEnv->children.begin(); childEnv != baseEnv->children.end() ; childEnv++)
     {
-        addDataSection(code, *(childEnv));
+        addDataSection(code, *(childEnv), isWord);
     }
 
 }
@@ -100,9 +100,9 @@ void codeGen(){
             {
                 /* immediate assignment, e.g. a=5 */
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                if(l1 == "true")
+                if(ir->l1 == "true")
                     code->addLine("li "+reg_out+", 1");
-                else if(l1 == "false")
+                else if(ir->l1 == "false")
                     code->addLine("li "+reg_out+", 0");
                 else 
                     code->addLine("li "+reg_out+", "+ir->l1);
@@ -988,38 +988,38 @@ void codeGen(){
 
             if(ir->isInt1 && ir->isInt2)
             {
-                if(l1=="true")
+                if(ir->l1=="true")
                     op1 = "1";
                 else
                     op1 = "0";
-                if(l2=="true")
+                if(ir->l2=="true")
                     op2 = "1";
                 else
                     op2 = "0";
 
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+ir->op1);
-                code->addLine("ori "+reg_out+", "+reg_out+", "+ir->op2);
+                code->addLine("li "+reg_out+", "+op1);
+                code->addLine("ori "+reg_out+", "+reg_out+", "+op2);
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                if(l1=="true")
+                if(ir->l1=="true")
                     op1 = "1";
                 else
                     op1 = "0";
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->op1);
+                code->addLine("ori "+reg_out+", "+reg_in2+", "+op1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                if(l2=="true")
+                if(ir->l2=="true")
                     op2 = "1";
                 else
                     op2 = "0";
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->op2);
+                code->addLine("ori "+reg_out+", "+reg_in1+", "+op2);
             }
             else
             {
@@ -1037,38 +1037,38 @@ void codeGen(){
 
             if(ir->isInt1 && ir->isInt2)
             {
-                if(l1=="true")
+                if(ir->l1=="true")
                     op1 = "1";
                 else
                     op1 = "2";
-                if(l2=="true")
+                if(ir->l2=="true")
                     op2 = "1";
                 else
                     op2 = "2";
 
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+ir->op1);
-                code->addLine("ori "+reg_out+", "+reg_out+", "+ir->op2);
+                code->addLine("li "+reg_out+", "+op1);
+                code->addLine("ori "+reg_out+", "+reg_out+", "+op2);
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                if(l1=="true")
+                if(ir->l1=="true")
                     op1 = "1";
                 else
                     op1 = "2";
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->op1);
+                code->addLine("ori "+reg_out+", "+reg_in2+", "+op1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                if(l2=="true")
+                if(ir->l2=="true")
                     op2 = "1";
                 else
                     op2 = "2";
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->op2);
+                code->addLine("ori "+reg_out+", "+reg_in1+", "+op2);
             }
             else
             {
