@@ -1,11 +1,49 @@
 #include "mipsCode.cpp"
+#define wordType true
+#define byteType false
 
 using namespace std;
+
+void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
+    map <string, Symbol*> ::iterator itt;
+    for(itt = baseEnv->addTable.begin() ; itt != baseEnv->addTable.end() ; itt++)
+    {
+        if( (*itt).se->baseType == "simple")
+        {
+            if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
+            {
+                code->addLine((*itt).fi + ":\t.word 0");
+            }
+            else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
+            {
+                code->addLine((*itt).fi + ":\t.byte 1");
+            }
+        }
+        else if( (*itt).se->baseType == "array")
+        {
+            if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
+            {
+                code->addLine((*itt).fi + ":\t.space " + convertNumToString( 4 * (*itt).se->width));
+            }
+            else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
+            {
+                code->addLine((*itt).fi + ":\t.space " + convertNumToString( (*itt).se->width));
+            }   
+        }
+
+    }
+
+    vector <Env*> ::iterator childEnv;
+    for(childEnv = baseEnv->children.begin(); childEnv != baseEnv->children.end() ; childEnv++)
+    {
+        addDataSection(code, *(childEnv), isWord);
+    }
+
+}
 
 void codeGen(){
 
     int siz, blockSiz, blockNum;
-    map <string, Symbol*> ::iterator itt;
 
     // Reading the text file and storing it in "ir" data structure
     // readFile(argv[1]);
@@ -23,17 +61,14 @@ void codeGen(){
         blocks[i]->computeNextUse();
     }
 
+    Env *baseEnv = ST->baseEnv;
+
     mipsCode* code = new mipsCode(ST);
     code->addLine(".data");
 
     // add all the data variables
-    for(itt = ST->curEnv->addTable.begin() ; itt != ST->curEnv->addTable.end() ; itt++)
-    {
-        if( (*itt).se->type == "int" )
-        {
-            code->addLine((*itt).fi + ":\t.word 0");
-        }
-    }
+    addDataSection(code, baseEnv, byteType);
+    addDataSection(code, baseEnv, wordType);
 
     string reg_out, reg_in1, reg_in2;
 
@@ -926,7 +961,7 @@ void codeGen(){
 
         else if (ir->op == "readParam")
         {
-            code->addLine("addi $sp, $sp, -4");
+            code->addLine("addi $sp, $sp, 4");
             reg_in1 = code->getReg(ir->target, (ir->lineNum), 0);
             code->addLine("lw "+reg_in1+", 0($sp)");
         }
