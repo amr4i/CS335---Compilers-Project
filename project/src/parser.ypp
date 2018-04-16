@@ -75,7 +75,7 @@
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
 %type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list predefined_type 
-%type <node> variable_initializer 
+%type <node> variable_initializer variable_declarator variable_declarators
 
 
 %%
@@ -87,7 +87,7 @@ start :	compilation_unit
 			IR = $$->code;
 			cerr << "\n\n //////////////////////// IR Code ////////////////////////////// \n\n\n";
 			printTAC($$); 
-			cerr << "\n\n /////////////////////////////////////////////////////////////// \n\n\n";
+			cerr << "\n\n ////////////////////////////////////////////////////////////// \n\n\n";
 		}
 		;
 
@@ -1768,12 +1768,19 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 		}
 		;
 class_member_declaration : constant_declaration 	{ $$ = $1; }
-		| field_declaration 	{ $$ = $1; }
+		| field_declaration 	
+		{ 
+			ST->BeginScope("constructor", "METHODTYPE");
+			$$ = $1;
+			ST->EndScope();
+		}
 		| method_declaration 	{ $$ = $1; }
 		| constructor_declaration 	{ $$ = $1; }
 		| destructor_declaration 	{  $$ = $1;  }
 		| struct_declaration	{  $$ = $1;  }
 		;
+
+/////////////////// Assuming const declarations are not allowed /////////////////////
 constant_declaration : CONST type constant_declarators ';' 	{  }
 		| modifiers CONST type constant_declarators ';'	{  }
 		;
@@ -1783,16 +1790,81 @@ constant_declarators : constant_declarator  	{  }
 		;
 constant_declarator : identifier '=' constant_expression	{  }
 		;
-field_declaration : type variable_declarators ';' 	{  }
-		| modifiers type variable_declarators ';'	{  }
+field_declaration : type variable_declarators ';' 	
+		{  
+			$$ = $2;
+			int siz = $$->varDecs.size();
+			fori(0, siz){
+				string t = $$->varDecs[i]->type;
+				if(t == "None"){
+					t = $1->place;
+				}
+				else{
+					if(t != $1->place){
+						cerr << "Incompatible type in declaration at line: " << lineNum << "\n";
+						exit(1);
+					}
+				}
+				$$->varDecs[i]->type = t;
+			}
+		}
+		| modifiers type variable_declarators ';'	
+		{  
+			$$ = $3;
+			int siz = $$->varDecs.size();
+			fori(0, siz){
+				string t = $$->varDecs[i]->type;
+				if(t == "None"){
+					t = $2->place;
+				}
+				else{
+					if(t != $2->place){
+						cerr << "Incompatible type in declaration at line: " << lineNum << "\n";
+						exit(1);
+					}
+				}
+				$$->varDecs[i]->type = t;
+			}
+		}
 		;
 
-variable_declarators : variable_declarator 	{  }
-		| variable_declarators ',' variable_declarator	{  }
+variable_declarators : variable_declarator 	
+		{  
+			$$ = $1;
+			$$->varDecs.pb(ST->GetVar($1->place));
+		}
+		| variable_declarators ',' variable_declarator	
+		{  
+			$$ = $1;
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			if($3->isArray){
+				if($1->type == "None"){
+					$$->type = $3->type;
+				}
+				else{
+					if($1->type != $3->type){
+						cerr << "Incompatible types in declaration at line: " << lineNum << endl;
+						exit(1);
+					}
+				}
+			}
+			$$->varDecs.pb(ST->GetVar($3->place));
+		}
 		;
-variable_declarator : identifier 	{  }
-		| identifier '=' variable_initializer 	{	}	
+variable_declarator : identifier 	{ $$ = $1; }
+		| identifier '=' variable_initializer 	
+		{
+			genNode* newNode = new genNode();
+			$$ = newNode;
 
+			$$->code = $3->code;
+			gen2OpCode($$, "=", $1, $3, lineNum);
+
+			// Just added this as a check
+			delete $1;
+			delete $3;
+		}	
+		;
 variable_initializer : expression 	{ $$ = $1; }
 		| array_initializer	{ $$ = $1; }
 		;
