@@ -3,23 +3,26 @@ namespace Rextester
 {
     public class Program
     {
-	int a = 2;
-        
-	public Program(){
-		a = a * 2;
-	}
+		int a = 2, b = 3, c=4;
+		char d = 'c';
+		int [] e = new int[] {1, 2, 3, 4, 5, 6};
+	        
+		Program(){
+			a = a * 2;
+		}
 
-	public int foo(int x, int y){
-		a = a * x;
-		x = a + y;
-		return x;		
-	}
+		public int foo(int x, int y){
+			//a = a * x;
+			//x = a + y;
+			return x;		
+		}
 
         public void Main(string[] args)
         {
-		int a = 2, b = 2;
-            	Program obj = new Program();
-		a = obj.foo(a, b);
+			int a_ = 2;
+			int  b_ = 2;
+	  //   	Program obj = new Program();
+			// a = obj.foo(a, b);
         }
     }
 }

@@ -334,7 +334,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			}
 			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){
 				cerr << "Symbol " << s1->place << " not defined, at line: " <<lineNum;
-				exit(1);
+					exit(1);
 			}
 			if(s1->isArray){
 				temp = ST->GetVar(s1->arrayName);

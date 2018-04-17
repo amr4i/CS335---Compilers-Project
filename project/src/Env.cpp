@@ -76,7 +76,10 @@ Symbol* Env::getVar(string varName){
 	Symbol* temp = NULL;
 	Env* tmpEnv = this;
 
-	while(tmpEnv != NULL && tmpEnv->type != "CLASSTYPE"){
+	/////////// Why is there a restriction on the classtype //////////// 
+	/////////// There needs to be such restriction as methods must be able to declare local variables of the same name ////////////
+
+	while(tmpEnv != NULL/* && tmpEnv->type != "CLASSTYPE"*/){
 		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
 			temp = tmpEnv->addTable[varName];
 			break;

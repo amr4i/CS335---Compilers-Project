@@ -75,8 +75,8 @@
 %type <node> switch_statement do_statement while_statement for_statement for_initializer for_condition for_iterator
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
 %type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list predefined_type 
-%type <node> variable_initializer variable_declarator variable_declarators
-
+%type <node> variable_initializer variable_declarator variable_declarators  constructor_declarator constructor_initializer
+%type <node> constructor_name constructor_body class_name
 
 %%
 
@@ -1670,7 +1670,7 @@ qualified_alias_member : identifier DCLN identifier 	{ $$ = $1; }
 		;
 
 /*B.2.7 Classes;*/ 
-class_declaration : CLASS block_start class_init identifier class_body 	
+class_declaration : CLASS block_start class_init class_name class_body 	
 		{ 
 			$$ = $4;
 			$$->type = "class";
@@ -1679,7 +1679,7 @@ class_declaration : CLASS block_start class_init identifier class_body
 			ST->curEnv->name = $4->place;
 			ST->EndScope();
 		}
-		| modifiers CLASS block_start class_init identifier class_body 	
+		| modifiers CLASS block_start class_init class_name class_body 	
 		{ 
 			$$ = $5;
 			$$->type = "class";
@@ -1688,8 +1688,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 			ST->curEnv->name = $5->place;
 			ST->EndScope();
 		}
-		| CLASS block_start class_init identifier class_base class_body 	{  }
-		| CLASS block_start class_init identifier class_body ';' 	
+		| CLASS block_start class_init class_name class_base class_body 	{  }
+		| CLASS block_start class_init class_name class_body ';' 	
 		{ 
 			$$ = $4;
 			$$->type = "class";
@@ -1698,8 +1698,8 @@ class_declaration : CLASS block_start class_init identifier class_body
 			ST->curEnv->name = $4->place;
 			ST->EndScope();
 		}
-		| modifiers CLASS block_start class_init identifier class_base class_body 	{  }
-		| modifiers CLASS block_start class_init identifier class_body ';' 	
+		| modifiers CLASS block_start class_init class_name class_base class_body 	{  }
+		| modifiers CLASS block_start class_init class_name class_body ';' 	
 		{ 
 			$$ = $5;
 			$$->type = "class";
@@ -1708,14 +1708,22 @@ class_declaration : CLASS block_start class_init identifier class_body
 			ST->curEnv->name = $5->place;
 			ST->EndScope();
 		}
-		| CLASS block_start class_init identifier class_base class_body ';' 	{  }
-		| modifiers CLASS block_start class_init identifier class_base class_body ';' 	{  }
+		| CLASS block_start class_init class_name class_base class_body ';' 	{  }
+		| modifiers CLASS block_start class_init class_name class_base class_body ';' 	{  }
 		;
 
 class_init :	epsilon	
 		{ 
 			ST->curEnv->type = "CLASSTYPE";
 			$$ = NULL;
+		}
+		;
+
+////////// Added so that the body already knows the name of it's class //////////
+class_name : 	identifier
+		{
+			$$ = $1;
+			ST->curEnv->name = $$ -> place;
 		}
 		;
 
@@ -1750,37 +1758,126 @@ modifier : NEW 	{
 class_base : ':' class_type	{ $$ = $2; }
 		;
 class_body : '{' '}' 	{ 
-			ST->curEnv->type = "CLASSTYPE";
 			genNode* newNode = new genNode();
 			$$ = newNode; 
 		}
 		| '{' class_member_declarations '}'	
 		{ 
-			ST->curEnv->type = "CLASSTYPE";
-			$$ = $2; 
+			string consName = ST->curEnv->name + ST->curEnv->name;	
+
+			if(ST->GetMethod(consName) == NULL)
+			{
+				genNode* newNode = new genNode();
+				$$ = newNode;
+
+				$$->place = $2->place;
+				$$->type = $2->type;
+				$$->nodeLen = $2->nodeLen; 
+
+				Env* env = ST->BeginScope(consName, "METHODTYPE");
+				ST->EndScope();
+				
+				$$->code.pb(genLabelTAC(consName));
+
+				Symbol* sym = new Symbol("_obj", ST->curEnv->name);
+				env->addTable["_obj"] = sym;
+				env->argNum ++;
+				env->argTypeList.pb(ST->curEnv->name);
+
+				TAC* tac = new TAC();
+				tac->op = "readParam";
+				tac->target = sym->name;
+
+				$$->code.pb(tac);
+
+				vector <TAC*> ::iterator it;
+				it = $2->code.begin();
+				while(it != $2->code.end() && (*it)->op != "label")	it++;
+
+				$$->code.insert($$->code.end(), $2->code.begin(), it);
+
+				////////////////// Do we need to insert a return statement or something at the end of the code of the constructor //////////////////
+
+				$$->code.insert($$->code.end(), it, $2->code.end());
+			}
+			else 	$$ = $2;
+
 		}
 		;
 class_member_declarations : class_member_declaration 	{ $$ = $1; }
 		| class_member_declarations class_member_declaration	
 		{  
-			$$ = $1;
-			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+			// We need to create a constructor as soon as we get it because then the main may try to use without even declaring an object
+			string consName = ST->curEnv->name + ST->curEnv->name;	
+
+			if($2->code.size() > 0 && ($2->code[0])->op == "label" && ($2->code[0])->target == consName){
+				// Assuming all the members declarations are at the top and constructor can occur anywhere in the class but before the main I guess
+
+				genNode* newNode = new genNode();
+				$$ = newNode;
+				$$->place = $1->place;
+				$$->type = $1->type;
+				$$->nodeLen = $1->nodeLen;                                // don't remember what it does
+
+				vector<TAC*>::iterator it, jt, ct;
+
+				it = $2->code.begin();
+				
+				it++;
+				while(it != $2->code.end() && (*it)->op == "readParam")	it++;
+
+				jt = $1->code.begin();
+				while(jt != $1->code.end() && (*jt)->op != "label")	jt++;
+
+				$$->code.insert($$->code.end(), $2->code.begin(), it);
+				$$->code.insert($$->code.end(), $1->code.begin(), jt);
+				$$->code.insert($$->code.end(), it, $2->code.end());
+				$$->code.insert($$->code.end(), jt, $1->code.end());
+
+			}
+			else{
+				$$ = $1;
+				$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+			}
+
+			cerr << "\tclass_member_declaration:\n";
+			printTAC($2);
+
+			////////////////////////////////// Not doing right now //////////////////////////////////////
+
+			// env = ST->GetMethod(consName);
+
+			// if(env == NULL){
+			// 	cerr << "Error : Constructor code not working properly\n";
+			// 	exit(1);
+			// }
+
+			// // Moving the symbol table entries from class to the constructor
+			// vector <string> delSymbols;
+			// for(map <string, Symbol*> ::iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
+			// 	if(ST->GetMethod((*it).fi) == NULL){ 
+			// 		env->addTable[(*it).fi] = (*it).se; 
+			// 		delSymbols.pb((*it).fi);
+			// 	}
+			// }
+
+			// for(vector <string> ::iterator it = delSymbols.begin() ; it != delSymbols.end() ; it++){
+			// 	ST->curEnv->addTable.erase((*it));
+			// }
+
+			/////////////////////////////////////////////////////////////////////////////////////////////
+
 		}
 		;
 class_member_declaration : constant_declaration 	{ $$ = $1; }
-		| field_declaration 	
-		{ 
-			ST->BeginScope("constructor", "METHODTYPE");
-			$$ = $1;
-			ST->EndScope();
-		}
+		| field_declaration 	{ $$ = $1; }
 		| method_declaration 	{ $$ = $1; }
 		| constructor_declaration 	{ $$ = $1; }
 		| destructor_declaration 	{  $$ = $1;  }
 		| struct_declaration	{  $$ = $1;  }
 		;
 
-/////////////////// Assuming const declarations are not allowed /////////////////////
+/////////////////// Assuming const declarations are forbidden //////////////////////
 constant_declaration : CONST type constant_declarators ';' 	{  }
 		| modifiers CONST type constant_declarators ';'	{  }
 		;
@@ -1790,6 +1887,8 @@ constant_declarators : constant_declarator  	{  }
 		;
 constant_declarator : identifier '=' constant_expression	{  }
 		;
+/////////////////////////////////////////////////////////////////////////////////////
+
 field_declaration : type variable_declarators ';' 	
 		{  
 			$$ = $2;
@@ -1851,21 +1950,73 @@ variable_declarators : variable_declarator
 			$$->varDecs.pb(ST->GetVar($3->place));
 		}
 		;
-variable_declarator : identifier 	{ $$ = $1; }
+variable_declarator : identifier 	
+		{ 
+			$$ = $1; 
+			Symbol* sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+		}
 		| identifier '=' variable_initializer 	
 		{
 			genNode* newNode = new genNode();
 			$$ = newNode;
 
+			$$->type = $3->type;
 			$$->code = $3->code;
-			gen2OpCode($$, "=", $1, $3, lineNum);
+			$$->place = $1->place;
+
+			TAC* tac1 = new TAC();
+			Symbol* sym;
+			
+			sym = ST->GetVar($1->place);
+			if(sym->type != "None"){
+				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
+				exit(1);
+			}
+			tac1->dest = sym;
+			tac1->op = "=";
+
+			if($3->isLit == true){
+				tac1->isInt1 = true;
+				tac1->l1 = $3->place;
+				$$->code.pb(tac1);
+			}
+			else if($3->isArray){
+
+				sym->baseType = "array";
+				sym->type = $3->type;
+				$$->isArray = true;
+				for(int i=0; i<$3->varDecs.size(); i++){
+					TAC* tac = new TAC();
+					tac->op = "setarr";
+					tac->array_name = $1->place;
+					tac->opd2 = $3->varDecs[i];
+					tac->isInt1 = true;
+					tac->l1 = convertNumToString(i);
+					$$->code.pb(tac);
+				}
+				// $$->varDecs.clear();     $$ is a new node
+			}
+			else{
+				Symbol* sym_ = ST->GetVar($3->place);
+				tac1->opd1 = sym_;
+				sym -> baseType = sym_->baseType;
+				$$->code.pb(tac1);
+			}
 
 			// Just added this as a check
 			delete $1;
 			delete $3;
+		
 		}	
 		;
-variable_initializer : expression 	{ $$ = $1; }
+variable_initializer : expression 	
+		{ 
+			$$ = $1; 
+		}
 		| array_initializer	{ $$ = $1; }
 		;
 method_declaration : method_header method_body	
@@ -1875,7 +2026,6 @@ method_declaration : method_header method_body
 			tmp.pb(genLabelTAC(ST->curEnv->name));
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
-
 
 			ST->EndScope();
 		}
@@ -1966,6 +2116,7 @@ fixed_parameter : type identifier
 			sym->type = $1->place;
 			$$->type = $1->place;
 			ST->curEnv->argNum ++;
+			ST->curEnv->argTypeList.pb($1->place);
 
 			TAC* tac = new TAC();
 			tac->op = "readParam";
@@ -2055,25 +2206,132 @@ parameter_modifier : REF 	{  }
 		;
 parameter_array : PARAMS array_type identifier	
 		{ 
-// -			// Not sure about this
+// -		// Not sure about this
 // 			$$ = $3; 
 // 			ST->curEnv->argNum++;
 // 			ST->curEnv->argTypeList.pb($2->place);
 		}
 		;
-constructor_declaration : constructor_declarator constructor_body 	{  }
-		| modifiers constructor_declarator constructor_body	{  }
+constructor_declaration : constructor_declarator constructor_body 	
+		{  
+			$$ = $1;
+
+			///// constructor_name = class_name + class_name (class_name has a following "_") /////
+
+			string consName = ST->curEnv->name;
+
+			if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
+			{
+				Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
+				sym->name = consName;
+
+				ST->curEnv->addTable.erase(ST->curEnv->name);
+
+				ST->curEnv->addTable[consName] = sym;
+			}	
+
+			vector <TAC*> tmp;
+			tmp.pb(genLabelTAC(consName));
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+
+			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+
+			ST->EndScope();
+		}
+		| modifiers constructor_declarator constructor_body	
+		{
+			$$ = $2;
+
+			///// constructor_name = class_name + class_name (class_name has a following "_") /////
+
+			string consName = ST->curEnv->name + ST->curEnv->name;
+
+			if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
+			{
+				Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
+				sym->name = consName;
+
+				ST->curEnv->addTable.erase(ST->curEnv->name);
+				
+				ST->curEnv->addTable[consName] = sym;
+			}	
+
+			vector <TAC*> tmp;
+			tmp.pb(genLabelTAC(consName));
+			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
+
+			ST->EndScope();  
+		}
 		;
 		
-constructor_declarator : identifier '(' ')' 	{  }
-		| identifier '(' ')' constructor_initializer 	{  }
-		| identifier '(' formal_parameter_list ')' 	{  }
-		| identifier '(' formal_parameter_list ')' constructor_initializer	{  }
+// Not copying all the addTable entries of the parent class environment to this method's addTable.
+// I guess there will be no need to so ....... Every GetVar would yield a desired symbol table entry.
+constructor_declarator : constructor_name '(' ')' 	
+		{ 
+			$$ = $1;
+			ST->curEnv->name = ($1->place) + ($1->place);
+
+			Symbol* sym = ST->AddVar("_obj", $1->place, "simple");
+			ST->curEnv->argNum ++;
+			ST->curEnv->argTypeList.pb($1->place);
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $1->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
+		}
+		| constructor_name '(' ')' constructor_initializer 	
+		{  
+			////////////////// Don't know what to do for constructor initialier /////////////////////
+
+
+			// if(env == NULL) { ST->BeginScope("constructor", "METHODTYPE"); }
+			// else { ST->curEnv = env; }
+		}
+		| constructor_name '(' formal_parameter_list ')' 	
+		{  
+			$$ = $1;
+			ST->curEnv->name = ($1->place) + ($1->place);
+
+			Symbol* sym = ST->AddVar("_obj", $1->place, "simple");
+			ST->curEnv->argNum ++;
+			ST->curEnv->argTypeList.pb($1->place);
+
+			TAC* tac = new TAC();
+			tac->op = "readParam";
+			tac->target = $1->place;
+
+			$$->code.clear();
+			$$->code.pb(tac);
+			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+
+		}
+		| constructor_name '(' formal_parameter_list ')' constructor_initializer	
+		{  
+			////////////////// Don't know what to do constructor initialier /////////////////////
+
+
+			// if(env == NULL) { ST->BeginScope("constructor", "METHODTYPE"); }
+			// else { ST->curEnv = env; }
+		}
 		;
-constructor_initializer : ':' BASE '(' ')' 	{  }
-		| ':' BASE '(' argument_list ')' 	{  }
-		| ':' THIS '(' ')' 	{  }
-		| ':' THIS '(' argument_list ')'	{  }
+
+constructor_name : identifier 
+		{
+			ST->BeginScope();
+			ST->curEnv->type = "METHODTYPE";
+			$$ = $1;
+		}
+		;
+
+constructor_initializer : ':' BASE '(' ')' 	{ $$ = NULL; }
+		| ':' BASE '(' argument_list ')' 	{ $$ = $4; }
+		| ':' THIS '(' ')' 	{ $$ = NULL; }
+		| ':' THIS '(' argument_list ')'	{ $$ = $4; }
 		;
 constructor_body : block 	{  }
 		| ';'	{  }
