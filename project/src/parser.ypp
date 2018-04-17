@@ -100,7 +100,8 @@ identifier : 	ID
 					Symbol* sym = ST->GetVar("_" + s1);
 					
 					if(sym == NULL){
-						sym = ST->AddVar(s1);
+						sym = ST->GetVarInClass("_" + s1);
+						if(sym == NULL)	sym = ST->AddVar(s1);
 					}
 
 					genNode* newNode = new genNode();
@@ -1843,6 +1844,18 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 			cerr << "\tclass_member_declaration:\n";
 			printTAC($2);
 
+			if($2->code.size() > 0 && ($2->code[0])->op == "label"){
+				// Moving the symbol table entries from class to the constructor
+				vector <string> delSymbols;
+				for(map <string, Symbol*> ::iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
+						delSymbols.pb((*it).fi);
+				}
+
+				for(vector <string> ::iterator it = delSymbols.begin() ; it != delSymbols.end() ; it++){
+					ST->curEnv->addTable.erase((*it));
+				}
+			}
+
 			////////////////////////////////// Not doing right now //////////////////////////////////////
 
 			// env = ST->GetMethod(consName);
@@ -1894,6 +1907,12 @@ field_declaration : type variable_declarators ';'
 			$$ = $2;
 			int siz = $$->varDecs.size();
 			fori(0, siz){
+				// Adding a prefix : Class_name
+				string _name = $$->varDecs[i]->name;
+				$$->varDecs[i]->name = ST->curEnv->name + _name;
+				ST->curEnv->varList[$$->varDecs[i]->name] = $$->varDecs[i];
+
+				if($$->varDecs[i] == NULL)	cerr << "\tDEBUG: BUG\n";
 				string t = $$->varDecs[i]->type;
 				if(t == "None"){
 					t = $1->place;
@@ -1912,6 +1931,11 @@ field_declaration : type variable_declarators ';'
 			$$ = $3;
 			int siz = $$->varDecs.size();
 			fori(0, siz){
+				// Adding a prefix : Class_name
+				string _name = $$->varDecs[i]->name;
+				$$->varDecs[i]->name = ST->curEnv->name + _name;
+				ST->curEnv->varList[$$->varDecs[i]->name] = $$->varDecs[i];
+
 				string t = $$->varDecs[i]->type;
 				if(t == "None"){
 					t = $2->place;
@@ -1947,6 +1971,10 @@ variable_declarators : variable_declarator
 					}
 				}
 			}
+			// Symbol* sym = ST->GetVar($3->place);
+			// if(sym == NULL){
+			// 	ST->GetVarInClass($3->place);
+			// }
 			$$->varDecs.pb(ST->GetVar($3->place));
 		}
 		;
@@ -1954,6 +1982,17 @@ variable_declarator : identifier
 		{ 
 			$$ = $1; 
 			Symbol* sym = ST->GetVar($1->place);
+			// if(sym == NULL){
+			// 	sym = ST->GetVarInClass($1->place);
+				// sym->name = ST->curEnv->name + sym->name;
+			// 	ST->curEnv->varList[sym->name] = sym;
+				// ST->curEnv->addTable.erase($1->place);
+				// ST->curEnv->addTable[sym->name] = sym;
+			// }
+
+			$1->place = sym->name;
+			$$->place = $1->place;
+
 			if(sym->type != "None"){
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);
@@ -1961,17 +2000,29 @@ variable_declarator : identifier
 		}
 		| identifier '=' variable_initializer 	
 		{
+			
 			genNode* newNode = new genNode();
 			$$ = newNode;
 
 			$$->type = $3->type;
 			$$->code = $3->code;
-			$$->place = $1->place;
 
 			TAC* tac1 = new TAC();
 			Symbol* sym;
 			
+			cerr << "\t Debug: " << $1->place << "\n";
 			sym = ST->GetVar($1->place);
+			// if(sym == NULL){
+			// 	sym = ST->GetVarInClass($1->place);
+			// 	sym->name = ST->curEnv->name + sym->name;
+			// 	ST->curEnv->varList[sym->name] = sym;
+			// 	ST->curEnv->addTable.erase($1->place);
+			// 	ST->curEnv->addTable[sym->name] = sym;
+			// }
+
+			$1->place = sym->name;
+			$$->place = $1->place;
+
 			if(sym->type != "None"){
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);

@@ -12,7 +12,8 @@ namespace Rextester
 		}
 
 		public int foo(int x, int y){
-			//a = a * x;
+			int a = 10;
+			a = a * x;
 			//x = a + y;
 			return x;		
 		}

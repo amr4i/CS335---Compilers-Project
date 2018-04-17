@@ -44,6 +44,6 @@ public:
 	Env* getMethod(string methodName, Env* baseEnv);
 	Env* getMethodFromClass(string methodName, string className, Env* baseEnv);
 	void printTableEnv(Env* env);
-	// Symbol* getVarInClass(string varName, string className);
+	Symbol* getVarInClass(string varName);
 	// Symbol* getVarEnv(string varName);
 };

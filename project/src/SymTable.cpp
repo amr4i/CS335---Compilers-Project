@@ -35,9 +35,9 @@ Symbol* SymTable::GetVar(string varName){
 // }
 
 
-// Symbol* SymTable::GetVarInClass(string varName, string className){
-// 	return curEnv->getVarInClass(varName, className);
-// }
+Symbol* SymTable::GetVarInClass(string varName){
+	return curEnv->getVarInClass(varName);
+}
 
 string SymTable::GenTemp(){
 	return curEnv->genTemp();

@@ -13,7 +13,7 @@ public:
 	string GetMethodType();
 	Symbol* GetVar(string varName);
 	// Symbol* GetVarEnv(string varName);
-	// Symbol* GetVarInClass(string varName, string className);
+	Symbol* GetVarInClass(string varName);
 	string GenTemp();
 	Env* BeginScope(string scopeName, string scopeType, string returnType, string Class, string Parent_Class);
 	string GetEnvName();

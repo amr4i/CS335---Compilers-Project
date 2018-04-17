@@ -169,6 +169,7 @@ void gen2OpCode(genNode* d, string op = "", genNode* s1= NULL, genNode* s2 = NUL
 			Symbol* sym1 = ST->GetVar(s1->place);
 			if(sym1==NULL){
 				cerr << "Error: Symbol " << s1->place << " not defined in scope."  ;
+				cerr << "\tHere\n";
 				exit(1);
 			}
 			if(!(s1->isLit) && ST->GetVar(s1->place)->type == "None"){

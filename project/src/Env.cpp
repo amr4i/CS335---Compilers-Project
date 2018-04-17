@@ -84,10 +84,26 @@ Symbol* Env::getVar(string varName){
 			temp = tmpEnv->addTable[varName];
 			break;
 		}
+		if(tmpEnv->type == "CLASSTYPE")	{	
+			string className = tmpEnv->name;
+			if(varName.length() <= className.length() || varName.substr(0, className.length()) != className){
+				temp = tmpEnv->getVarInClass(tmpEnv->name + varName);
+			}
+			else		temp = tmpEnv->getVarInClass(varName);
+			break;
+		}
 		tmpEnv = tmpEnv->prevEnv;
 	}
 
 	return temp;
+}
+
+Symbol* Env::getVarInClass(string varName){
+	Env* Class = getClassEnv();
+	if(Class != NULL){ 		
+		if(Class->varList.find(varName)  != Class->varList.end())	return Class->varList[varName];
+	}
+	return NULL;
 }
 
 vector <string> Env::setArgTypeList(vector <string> args){
@@ -168,12 +184,6 @@ void Env::printTableEnv(Env* env){
 // Don't have a use yet
 /////////////////////////////////////////////////////////////////////////////////
 
-// Symbol* Env::getVarInClass(string varName, string className){
-// 	Env* Class = _cindClass(className);
-// 	if(Class != NULL){_p// 		if(Class->v_c_pList.find(varName)  != Class->varList.end())	return Class->varList[varName];
-//_c	}
-// _pretu_pn NULL;
-// }
 
 // Symbol* Env::getVarEnv(string varName){
 // 	if(this->varList.find(varName) != this->varList.end())	return this->varList[varName];
