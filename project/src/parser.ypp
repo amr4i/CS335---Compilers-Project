@@ -2082,6 +2082,10 @@ method_header : type member_name '(' ')'
 
 member_name : qualified_identifier	
 		{ 
+			/////////////// "Main" Bug : Can I do this //////////////////
+			if($1->place == "_main")	ST->EndScope();
+			///////////////////////////////////////////////////////////
+
 			ST->BeginScope();
 			ST->curEnv->type = "METHODTYPE";
 
