@@ -96,17 +96,25 @@ start :	compilation_unit
 /*B.1.6 Identifiers*/
 identifier : 	ID 		
 				{
+					genNode* newNode = new genNode();
+					$$ = newNode;
+
 					string s1($1);
 					Symbol* sym = ST->GetVar("_" + s1);
 					
+					if(ST->curEnv->inClass = true){
+						$$->checkDecl = true;
+						cerr << "\tDebug: Decl set\n";
+						ST->curEnv->inClass = false;
+					}
+
+
 					if(sym == NULL){
 						sym = ST->GetVarInClass("_" + s1);
 						if(sym == NULL)	sym = ST->AddVar(s1);
 					}
 
-					genNode* newNode = new genNode();
-					newNode->place = sym->name;
-					$$ = newNode;
+					$$->place = sym->name;
 					$$->type = sym->type;
 				}
 				;
@@ -949,6 +957,7 @@ local_variable_declaration : local_variable_type local_variable_declarators
 				($$->varDecs)[i]->type = typeName;
 			}
 
+
 			$$->type = typeName;
 		}
 		;
@@ -979,7 +988,11 @@ local_variable_declarators : local_variable_declarator
 		;
 local_variable_declarator : identifier 	
 		{ 
+			cerr << "\t Debug: Here0\n";
 			$$ = $1; 
+			if($1->checkDecl == true){
+				ST->AddVar($1->place);
+			}
 			Symbol* sym = ST->GetVar($1->place);
 			if(sym->type != "None"){
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
@@ -1000,7 +1013,14 @@ local_variable_declarator : identifier
 			TAC* tac1 = new TAC();
 			Symbol* sym;
 			
+			if($1->checkDecl == true){
+				cerr << "\tDebug: Adding new Symbol " << $1->place <<"\n";
+				if(ST->curEnv->addTable.find($1->place) != ST->curEnv->addTable.end())	cerr << "-------Tatti\n";
+				ST->AddVar($1->place);
+			}
+
 			sym = ST->GetVar($1->place);
+			cerr << "\t Debug: " << sym->type << "\n";
 			if(sym->type != "None"){
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);
@@ -1844,17 +1864,17 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 			cerr << "\tclass_member_declaration:\n";
 			printTAC($2);
 
-			if($2->code.size() > 0 && ($2->code[0])->op == "label"){
-				// Moving the symbol table entries from class to the constructor
-				vector <string> delSymbols;
-				for(map <string, Symbol*> ::iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
-						delSymbols.pb((*it).fi);
-				}
+			// if($2->code.size() > 0 && ($2->code[0])->op == "label"){
+			// 	// Moving the symbol table entries from class to the constructor
+			// 	vector <string> delSymbols;
+			// 	for(map <string, Symbol*> ::iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
+			// 			delSymbols.pb((*it).fi);
+			// 	}
 
-				for(vector <string> ::iterator it = delSymbols.begin() ; it != delSymbols.end() ; it++){
-					ST->curEnv->addTable.erase((*it));
-				}
-			}
+			// 	for(vector <string> ::iterator it = delSymbols.begin() ; it != delSymbols.end() ; it++){
+			// 		ST->curEnv->addTable.erase((*it));
+			// 	}
+			// }
 
 			////////////////////////////////// Not doing right now //////////////////////////////////////
 
@@ -1909,8 +1929,9 @@ field_declaration : type variable_declarators ';'
 			fori(0, siz){
 				// Adding a prefix : Class_name
 				string _name = $$->varDecs[i]->name;
-				$$->varDecs[i]->name = ST->curEnv->name + _name;
-				ST->curEnv->varList[$$->varDecs[i]->name] = $$->varDecs[i];
+				// $$->varDecs[i]->name = ST->curEnv->name + _name;
+				ST->curEnv->varList[ST->curEnv->name + _name] = $$->varDecs[i];
+
 
 				if($$->varDecs[i] == NULL)	cerr << "\tDEBUG: BUG\n";
 				string t = $$->varDecs[i]->type;
@@ -1924,6 +1945,7 @@ field_declaration : type variable_declarators ';'
 					}
 				}
 				$$->varDecs[i]->type = t;
+				cerr << "\tDebug: " << $$->varDecs[i]->name << " field_declaration\n";
 			}
 		}
 		| modifiers type variable_declarators ';'	
@@ -1933,8 +1955,8 @@ field_declaration : type variable_declarators ';'
 			fori(0, siz){
 				// Adding a prefix : Class_name
 				string _name = $$->varDecs[i]->name;
-				$$->varDecs[i]->name = ST->curEnv->name + _name;
-				ST->curEnv->varList[$$->varDecs[i]->name] = $$->varDecs[i];
+				// $$->varDecs[i]->name = ST->curEnv->name + _name;
+				ST->curEnv->varList[ST->curEnv->name + _name] = $$->varDecs[i];
 
 				string t = $$->varDecs[i]->type;
 				if(t == "None"){

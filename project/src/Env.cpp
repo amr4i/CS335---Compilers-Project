@@ -11,6 +11,7 @@ Env::Env(string _name = "None", string _type = "BLOCKTYPE", Env *prev_env = NULL
 	offset = 0;
 	maxWidth = 0;
 	argNum = 0;
+	inClass = false;
 }
 
 string Env::getMethodType(){
@@ -76,20 +77,23 @@ Symbol* Env::getVar(string varName){
 	Symbol* temp = NULL;
 	Env* tmpEnv = this;
 
-	/////////// Why is there a restriction on the classtype //////////// 
 	/////////// There needs to be such restriction as methods must be able to declare local variables of the same name ////////////
 
 	while(tmpEnv != NULL/* && tmpEnv->type != "CLASSTYPE"*/){
 		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
 			temp = tmpEnv->addTable[varName];
+			cerr << "\tDebug: Found\n";
+			if(tmpEnv->type == "CLASSTYPE")	tmpEnv->inClass = true;
 			break;
 		}
 		if(tmpEnv->type == "CLASSTYPE")	{	
-			string className = tmpEnv->name;
-			if(varName.length() <= className.length() || varName.substr(0, className.length()) != className){
-				temp = tmpEnv->getVarInClass(tmpEnv->name + varName);
-			}
-			else		temp = tmpEnv->getVarInClass(varName);
+			// string className = tmpEnv->name;
+			// if(varName.length() <= className.length() || varName.substr(0, className.length()) != className){
+			// 	temp = tmpEnv->getVarInClass(varName);
+			// }
+			// else		temp = tmpEnv->getVarInClass(varName);
+			// cerr << "\tLoda\n";
+			// if(temp != NULL)	tmpEnv->inClass = true;
 			break;
 		}
 		tmpEnv = tmpEnv->prevEnv;
@@ -103,6 +107,7 @@ Symbol* Env::getVarInClass(string varName){
 	if(Class != NULL){ 		
 		if(Class->varList.find(varName)  != Class->varList.end())	return Class->varList[varName];
 	}
+	cerr << "\tDebug: " << varName << " GetVarInClass\n";
 	return NULL;
 }
 

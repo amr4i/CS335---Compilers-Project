@@ -25,6 +25,8 @@ public:
 	int maxWidth;	
 	int offset;
 
+	bool inClass;
+
 	// string type;
 	string type; 
 

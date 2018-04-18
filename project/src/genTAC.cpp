@@ -10,12 +10,15 @@ struct genNode{
 	string arrayName;
 	string arrayIndex; 
 
+	bool checkDecl;
+
 	genNode(){
 		place = "None";
 		type = "None";
 		isLit = false;
 		isArray = false;
 		nodeLen = 0;
+		checkDecl = false;
 	}
 
 	vector <TAC*> code;
