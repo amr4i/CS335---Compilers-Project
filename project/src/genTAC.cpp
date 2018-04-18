@@ -561,3 +561,12 @@ string convertNumToString(int x){
 	ss << x;
 	return ss.str();
 }
+
+void changeMemberVariableNames(Env* env){
+	int siz = env->children.size();
+	fori(0, siz){
+		for(map <string, Symbol*> ::iterator it = env->children[i]->varList.begin() ; it != env->children[i]->varList.end() ; it++){
+			(*it).se->name = env->children[i]->name + (*it).se->name;
+		}
+	}
+}

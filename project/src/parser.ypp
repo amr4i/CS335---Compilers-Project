@@ -85,6 +85,7 @@ start :	compilation_unit
 		{ 
 			$$ = $1; /*cerr << "Completed Parsing." << endl; */ 
 			IR = $$->code;
+
 			cerr << "\n\n //////////////////////// IR Code ////////////////////////////// \n\n\n";
 			printTAC($$); 
 			cerr << "\n\n ////////////////////////////////////////////////////////////// \n\n\n";
@@ -554,8 +555,112 @@ postfix_expression : 	primary_expression 		{ $$ = $1; }
 		| qualified_identifier 		{ $$ = $1; }
 		;
 
-object_creation_expression : NEW type '(' ')' 	{  }
-		| NEW type '(' argument_list ')' 	{  }
+object_creation_expression : NEW type '(' ')' 	
+		{
+			$$ = $1;  
+			// genNode* newNode = new genNode();
+			// $$ = newNode;
+
+			// string tmpObjName = ST->GenTemp();
+			// Symbol* sym = ST->GetVar(tmpObjName);
+			// sym->type = $2->place;
+			// sym->baseType = "object";
+
+			// Env* newEnv = new Env(tmpObjName);
+			
+			// Env* classEnv = ST->FindClass($2->place);
+			// classEnv->objs[tmpObjName] = newEnv;
+
+			// Env* consEnv = classEnv->getMethod(classEnv->name + classEnv->name);
+
+			// if(consEnv->argNum != 0){
+			// 	cerr << "Error: \n";
+			// 	exit(1);
+			// }
+
+			// TAC* tac = new TAC();
+			// tac->op = "call";
+			// tac->target = classEnv->name + classEnv->name;
+
+			// $$->code.pb(tac);
+
+			// for(map <string, Symbol*> ::iterator it = classEnv->varList.begin() ; it != classEnv->varList.end() ; it++){
+			// 	string varName = (*it).fi;
+			// 	varName.erase(0, classEnv->name.length());
+			// 	varName = tmpObjName + varName;
+				
+			// 	varName.erase(0, 1);
+			// 	Symbol* sym1 = newEnv->addVar(varName);
+				
+			// 	varName = "_" + varName;
+
+			// 	tac = new TAC();
+			// 	tac->op = "=";
+			// 	tac->dest = sym1;
+			// 	tac->opd1 = (*it).se;
+
+			// 	$$->code.pb(tac);
+			// }
+
+		}
+		| NEW type '(' argument_list ')' 	
+		{  
+			// genNode* newNode = new genNode();
+			// $$ = newNode;
+
+			// string tmpObjName = ST->GenTemp();
+			// Symbol* sym = ST->GetVar(tmpObjName);
+			// sym->type = $2->place;
+			// sym->baseType = "object";
+
+			// Env* newEnv = new Env(tmpObjName);
+			
+			// Env* classEnv = ST->FindClass($2->place);
+			// classEnv->objs[tmpObjName] = newEnv;
+
+			// Env* consEnv = classEnv->getMethod(classEnv->name + classEnv->name);
+
+			// if(consEnv->argNum != $4->code.size()){
+			// 	cerr << "Error: \n";
+			// 	exit(1);
+			// }
+			// else{
+			// 	int siz = $4->code.size();
+			// 	fori(0, siz){
+			// 		Symbol* tmpSym = ST->GetVar($4->code[i]->target);
+			// 		if(tmpSym->type != consEnv->argTypeList[i]){
+			// 			cerr << "Error: Invalid types\n";
+			// 			exit(1);
+			// 		}
+			// 	}
+			// }
+
+			// $$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
+
+			// TAC* tac = new TAC();
+			// tac->op = "call";
+			// tac->target = classEnv->name + classEnv->name;
+
+			// $$->code.pb(tac);
+
+			// for(map <string, Symbol*> ::iterator it = classEnv->varList.begin() ; it != classEnv->varList.end() ; it++){
+			// 	strin-g varName = (*it).fi;
+			// 	varName.erase(0, classEnv->name.length());
+			// 	varName = tmpObjName + varName;
+				
+			// 	varName.erase(0, 1);
+			// 	Symbol* sym1 = newEnv->addVar(varName);
+				
+			// 	varName = "_" + varName;
+
+			// 	tac = new TAC();
+			// 	tac->op = "=";
+			// 	tac->dest = sym1;
+			// 	tac->opd1 = (*it).se;
+
+			// 	$$->code.pb(tac);
+			// }
+		}
 		| NEW type '(' ')' object_or_collection_initializer 	{  }
 		| NEW type '(' argument_list ')' object_or_collection_initializer 	{  }
 		;
@@ -1015,8 +1120,9 @@ local_variable_declarator : identifier
 			
 			if($1->checkDecl == true){
 				cerr << "\tDebug: Adding new Symbol " << $1->place <<"\n";
+				string _name = $1->place;
+				ST->AddVar(_name.erase(0,1));
 				if(ST->curEnv->addTable.find($1->place) != ST->curEnv->addTable.end())	cerr << "-------Tatti\n";
-				ST->AddVar($1->place);
 			}
 
 			sym = ST->GetVar($1->place);
@@ -1643,6 +1749,10 @@ namespace_declaration :	block_start NAMESPACE qualified_identifier namespace_bod
 			$$->code.pb(genLabelTAC($3->place));
 			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
 			ST->curEnv->name = $3->place;
+
+			// Change the name of all member variables of all classes to class_name + variable_name
+			changeMemberVariableNames(ST->curEnv);
+
 			ST->EndScope();
 		}
 		| block_start NAMESPACE qualified_identifier namespace_body ';' 	
@@ -1651,6 +1761,10 @@ namespace_declaration :	block_start NAMESPACE qualified_identifier namespace_bod
 			$$->code.pb(genLabelTAC($3->place));
 			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
 			ST->curEnv->name = $3->place;
+
+			// Change the name of all member variables of all classes to class_name + variable_name
+			changeMemberVariableNames(ST->curEnv);
+
 			ST->EndScope();
 		}
 		;
@@ -1800,16 +1914,6 @@ class_body : '{' '}' 	{
 				
 				$$->code.pb(genLabelTAC(consName));
 
-				Symbol* sym = new Symbol("_obj", ST->curEnv->name);
-				env->addTable["_obj"] = sym;
-				env->argNum ++;
-				env->argTypeList.pb(ST->curEnv->name);
-
-				TAC* tac = new TAC();
-				tac->op = "readParam";
-				tac->target = sym->name;
-
-				$$->code.pb(tac);
 
 				vector <TAC*> ::iterator it;
 				it = $2->code.begin();
@@ -1863,18 +1967,6 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 
 			cerr << "\tclass_member_declaration:\n";
 			printTAC($2);
-
-			// if($2->code.size() > 0 && ($2->code[0])->op == "label"){
-			// 	// Moving the symbol table entries from class to the constructor
-			// 	vector <string> delSymbols;
-			// 	for(map <string, Symbol*> ::iterator it = ST->curEnv->addTable.begin() ; it != ST->curEnv->addTable.end() ; it++){
-			// 			delSymbols.pb((*it).fi);
-			// 	}
-
-			// 	for(vector <string> ::iterator it = delSymbols.begin() ; it != delSymbols.end() ; it++){
-			// 		ST->curEnv->addTable.erase((*it));
-			// 	}
-			// }
 
 			////////////////////////////////// Not doing right now //////////////////////////////////////
 
@@ -2350,16 +2442,7 @@ constructor_declarator : constructor_name '(' ')'
 			$$ = $1;
 			ST->curEnv->name = ($1->place) + ($1->place);
 
-			Symbol* sym = ST->AddVar("_obj", $1->place, "simple");
-			ST->curEnv->argNum ++;
-			ST->curEnv->argTypeList.pb($1->place);
-
-			TAC* tac = new TAC();
-			tac->op = "readParam";
-			tac->target = $1->place;
-
 			$$->code.clear();
-			$$->code.pb(tac);
 		}
 		| constructor_name '(' ')' constructor_initializer 	
 		{  
@@ -2374,16 +2457,7 @@ constructor_declarator : constructor_name '(' ')'
 			$$ = $1;
 			ST->curEnv->name = ($1->place) + ($1->place);
 
-			Symbol* sym = ST->AddVar("_obj", $1->place, "simple");
-			ST->curEnv->argNum ++;
-			ST->curEnv->argTypeList.pb($1->place);
-
-			TAC* tac = new TAC();
-			tac->op = "readParam";
-			tac->target = $1->place;
-
 			$$->code.clear();
-			$$->code.pb(tac);
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 
 		}

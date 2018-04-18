@@ -82,8 +82,12 @@ Symbol* Env::getVar(string varName){
 	while(tmpEnv != NULL/* && tmpEnv->type != "CLASSTYPE"*/){
 		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
 			temp = tmpEnv->addTable[varName];
-			cerr << "\tDebug: Found\n";
-			if(tmpEnv->type == "CLASSTYPE")	tmpEnv->inClass = true;
+			cerr << "\tDebug: Found";
+			if(tmpEnv->type == "CLASSTYPE"){
+				cerr << " in Class";
+				tmpEnv->inClass = true;
+			}
+			cerr << "\n";
 			break;
 		}
 		if(tmpEnv->type == "CLASSTYPE")	{	

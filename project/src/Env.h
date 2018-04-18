@@ -25,6 +25,8 @@ public:
 	int maxWidth;	
 	int offset;
 
+	map <string, Env*> objs;
+
 	bool inClass;
 
 	// string type;
