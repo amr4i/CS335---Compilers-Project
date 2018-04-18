@@ -80,8 +80,25 @@ Env* SymTable::EndScope(){
 	// int cur_width = max(curEnv->maxWidth, curEnv->width);
 	// curEnv->maxWidth = cur_width;
 
-	curEnv = curEnv->prevEnv;
 
+	//////////////////////////////////////////// DEBUG code ///////////////////////////////////////
+
+	cerr << "Symbol Table corresponding to the scope: " << curEnv->name << "\n";
+	// for(auto sym : curEnv->addTable){
+	// 	cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << "\n";
+	// }
+	// cerr << "\n\n";
+	int offset = 0;
+	for(auto sym : curEnv->addTable){
+		sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
+		sym.se->offset = offset;
+		offset += sym.se->width;
+		cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << ", offset: " << sym.se->offset << "\n";
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
+	curEnv = curEnv->prevEnv;
 	cerr << "--------<<<<<<<<<<\n";
 
 	// curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);

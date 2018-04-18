@@ -557,7 +557,7 @@ postfix_expression : 	primary_expression 		{ $$ = $1; }
 
 object_creation_expression : NEW type '(' ')' 	
 		{
-			$$ = $1;  
+			$$ = $2;  
 			// genNode* newNode = new genNode();
 			// $$ = newNode;
 
@@ -605,6 +605,7 @@ object_creation_expression : NEW type '(' ')'
 		}
 		| NEW type '(' argument_list ')' 	
 		{  
+
 			// genNode* newNode = new genNode();
 			// $$ = newNode;
 
@@ -1143,6 +1144,7 @@ local_variable_declarator : identifier
 
 				sym->baseType = "array";
 				sym->type = $3->type;
+				sym->width = $3->varDecs.size();
 				$$->isArray = true;
 				for(int i=0; i<$3->varDecs.size(); i++){
 					TAC* tac = new TAC();
@@ -1965,9 +1967,6 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 				$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
 			}
 
-			cerr << "\tclass_member_declaration:\n";
-			printTAC($2);
-
 			////////////////////////////////// Not doing right now //////////////////////////////////////
 
 			// env = ST->GetMethod(consName);
@@ -2153,6 +2152,7 @@ variable_declarator : identifier
 
 				sym->baseType = "array";
 				sym->type = $3->type;
+				sym->width = $3->varDecs.size();
 				$$->isArray = true;
 				for(int i=0; i<$3->varDecs.size(); i++){
 					TAC* tac = new TAC();
