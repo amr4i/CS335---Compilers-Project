@@ -327,7 +327,6 @@ argument_list : argument
 			if($1->isLit == true){
 				tac->isInt1 = true;
 				tac->l1 = $1->place;
-				cerr << "\t1Here " << $1->place << "\n";
 			}
 			else{
 				Symbol* sym = ST->GetVar($1->place);
@@ -351,7 +350,6 @@ argument_list : argument
 			if($3->isLit == true){
 				tac->isInt1 = true;
 				tac->l1 = $3->place;
-				cerr << "\tHere\n";
 			}
 			else{
 				Symbol* sym = ST->GetVar($3->place);
