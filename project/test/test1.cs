@@ -12,7 +12,7 @@ namespace check1
             void Main(string[] args)
             {
                 int i=9;
-                int res;;
+                int res;
                 if(i<9)
                     ;
                 else if(i==9)

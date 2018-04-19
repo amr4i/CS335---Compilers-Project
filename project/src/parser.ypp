@@ -1145,7 +1145,6 @@ local_variable_declarator : identifier
 				cerr << "\tDebug: Adding new Symbol " << $1->place <<"\n";
 				string _name = $1->place;
 				ST->AddVar(_name.erase(0,1));
-				if(ST->curEnv->addTable.find($1->place) != ST->curEnv->addTable.end())	cerr << "-------Tatti\n";
 			}
 
 			sym = ST->GetVar($1->place);
@@ -2213,6 +2212,12 @@ method_declaration : method_header method_body
 			tmp.pb(genLabelTAC(ST->curEnv->name));
 			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
+
+			if(ST->curEnv->name == "_Main"){
+				TAC* tac = new TAC();
+				tac->op = "ret";
+				$$->code.pb(tac);
+			}
 
 			ST->EndScope();
 		}

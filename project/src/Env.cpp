@@ -33,6 +33,7 @@ string Env::genTemp(string varType = "None", string genericType = "simple", int 
 	Symbol* symbol = new Symbol(place, varType, _width, genericType, offset);
 	place = symbol->name;
 	addTable[place] = symbol;
+	symbol->isTemp = true;
 
 	offset += _width;
 	width += _width;
@@ -46,8 +47,8 @@ int Env::getWidth(string varType, string genericType, int _width = -1){
 
 	typeMap["int"] = 4;
 	typeMap["long"] = 8;
-	typeMap["char"] = 1;
-	typeMap["bool"] = 1;
+	typeMap["char"] = 4;
+	typeMap["bool"] = 4;
 	typeMap["void"] = 0;
 	typeMap["null"] = 0;
 
@@ -82,12 +83,12 @@ Symbol* Env::getVar(string varName){
 	while(tmpEnv != NULL/* && tmpEnv->type != "CLASSTYPE"*/){
 		if(tmpEnv->addTable.find(varName) != tmpEnv->addTable.end()){
 			temp = tmpEnv->addTable[varName];
-			cerr << "\tDebug: Found";
+			// cerr << "\tDebug: Found";
 			if(tmpEnv->type == "CLASSTYPE"){
-				cerr << " in Class";
+				// cerr << " in Class";
 				tmpEnv->inClass = true;
 			}
-			cerr << "\n";
+			// cerr << "\n";
 			break;
 		}
 		if(tmpEnv->type == "CLASSTYPE")	{	

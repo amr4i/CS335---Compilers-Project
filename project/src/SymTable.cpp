@@ -83,18 +83,39 @@ Env* SymTable::EndScope(){
 
 	//////////////////////////////////////////// DEBUG code ///////////////////////////////////////
 
-	cerr << "Symbol Table corresponding to the scope: " << curEnv->name << "\n";
 	// for(auto sym : curEnv->addTable){
 	// 	cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << "\n";
 	// }
 	// cerr << "\n\n";
+
+	for(auto env : curEnv->children){
+		if(curEnv->addTable.find(env->name) != curEnv->addTable.end()){
+			// cerr << "\tBeware : Method in addTable: " << env->name << "\n";
+			curEnv->addTable.erase(env->name);
+		}
+	}
+
+	map <string, Symbol*> ::iterator it = curEnv->addTable.begin();
+	while(it != curEnv->addTable.end()){
+		if((*it).se->type == "label" || (*it).se->name == curEnv->name){
+			it = curEnv->addTable.erase(it);
+		}
+		else	it++;
+	}
+
+	cerr << "addTable of scope: " << curEnv->name << "\n";
+
 	int offset = 0;
 	for(auto sym : curEnv->addTable){
-		sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
+		string _name = sym.se->name;
+		if( _name.length() > 6 && _name.substr(0, 6) == "_tVar_" )	sym.se->width = 0;
+		else sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
 		sym.se->offset = offset;
 		offset += sym.se->width;
 		cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << ", offset: " << sym.se->offset << "\n";
 	}
+
+	curEnv->width = offset;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 

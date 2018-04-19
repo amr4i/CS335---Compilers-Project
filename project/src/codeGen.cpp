@@ -16,7 +16,7 @@ void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
             }
             else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
             {
-                code->addLine((*itt).fi + ":\t.byte 1");
+                code->addLine((*itt).fi + ":\t.word 0");
             }
         }
         else if( (*itt).se->baseType == "array")
@@ -27,7 +27,7 @@ void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
             }
             else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
             {
-                code->addLine((*itt).fi + ":\t.space " + convertNumToString( (*itt).se->width));
+                code->addLine((*itt).fi + ":\t.space " + convertNumToString( 4 * (*itt).se->width));
             }   
         }
 
@@ -51,7 +51,10 @@ void codeGen(){
     // Populating blocks
     getBlocks();
 
+    cerr << "\tDebug:1\n";
+
     nextUseTable.resize(IR.size()+1);
+
 
     blockSiz = blocks.size();
 
@@ -61,6 +64,7 @@ void codeGen(){
         blocks[i]->computeNextUse();
     }
 
+    cerr << "\tDebug:2\n";
     Env *baseEnv = ST->baseEnv;
 
     mipsCode* code = new mipsCode(ST);
@@ -74,12 +78,17 @@ void codeGen(){
 
     code->addLine(".text");
     code->addLine("main:");
-    code->addLine("j _Main");
+    code->addLine("jal _Main");
+    code->addLine("li $v0, 10");
+    code->addLine("syscall");
 
     /* 
     -> Arrays are to be implemented
     -> String printing is to be allowed
     */
+
+    bool raUpdation = false;
+
     blockNum = 0;
     siz = IR.size();
     fori(0,siz){
@@ -490,7 +499,7 @@ void codeGen(){
                 code->addLine("mfhi "+reg_out);
             }
         }
-        else if (ir->op == "&")
+        else if (ir->op == "&" || ir->op == "&&")
         {
             /* code */
 
@@ -520,7 +529,7 @@ void codeGen(){
                 code->addLine("and "+reg_out+", "+reg_in1+", "+reg_in2);
             }
         }
-        else if (ir->op == "|")
+        else if (ir->op == "|" || ir->op == "||")
         {
             /* code */
 
@@ -932,42 +941,13 @@ void codeGen(){
             code->addLine("syscall"); 
         }
 
-        //Flush all variables to memory on block end, but before any jump
-        if(ir->lineNum == blocks[blockNum]->endLine)
-        {
-            code->flushAll();
-            blockNum++;
-        }
-        
-
-        if (ir->op == "ifgoto")
-        {
-            reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
-            code->addLine("bne "+reg_out+", $zero, "+ir->target);
-        }
-        else if (ir->op == "goto")
-        {
-            code->addLine("j "+ir->target);
-        }
-        // else if (ir->op == "callvoid")
-        // {
-        // 	code->addLine("addi $sp, $sp, -4");
-        // 	code->addLine("sw $ra, 0($sp)");
-        //     code->addLine("jal "+ir->target);
-        // }
-
-        // I have not pushed #arguments (stored in ir->l1) into the stack because I found it redundant
-        else if (ir->op == "call")
-        {
-        	code->addLine("addi $sp, $sp, -4");
-        	code->addLine("sw $ra, 0($sp)");
-            reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-            code->addLine("jal "+ir->target);
-            code->addLine("move "+reg_out+", $v0");
-        }
-
         else if (ir->op == "param")
         {
+            if(raUpdation == false){
+                code->addLine("addi $sp, $sp, -4");
+                code->addLine("sw $ra, 0($sp)");       
+                raUpdation = true;
+            }
             code->addLine("addi $sp, $sp, -4");
             if(!ir->isInt1){
                 reg_in1 = code->getReg(ir->dest->name, (ir->lineNum), 0);
@@ -985,11 +965,62 @@ void codeGen(){
             code->addLine("lw "+reg_in1+", 0($sp)");
             code->addLine("addi $sp, $sp, 4");
         }
+        // else if (ir->op == "||")
+        // {
+        //         /* code */
+        //     if(ir->isInt1 && ir->isInt2)
+        //     {
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("li "+reg_out+", "+ir->l1);
+        //         code->addLine("ori "+reg_out+", "+reg_out+", "+ir->l2);
+        //     }
+        //     else if (ir->isInt1 && !ir->isInt2)
+        //     {
+        //         reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->l1);
+        //     }
+        //     else if (!ir->isInt1 && ir->isInt2)
+        //     {
+        //         reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->l2);
+        //     }
+        //     else
+        //     {
+        //         reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+        //         reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("or "+reg_out+", "+reg_in1+", "+reg_in2);
+        //     }
+        // }  
+
+        // else if (ir->op == "callvoid")
+        // {
+        //  code->addLine("addi $sp, $sp, -4");
+        //  code->addLine("sw $ra, 0($sp)");
+        //     code->addLine("jal "+ir->target);
+        // }
+
+        // I have not pushed #arguments (stored in ir->l1) into the stack because I found it redundant
+        else if (ir->op == "call")
+        {
+            if(raUpdation == false){
+                code->addLine("addi $sp, $sp, -4");
+                code->addLine("sw $ra, 0($sp)");
+            }
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+            code->addLine("jal "+ir->target);
+            code->addLine("lw $ra, 0($sp)");
+            code->addLine("addi $sp, $sp, 4");
+            code->addLine("move "+reg_out+", $v0");
+
+            raUpdation = false;
+
+        }
 
         else if (ir->op == "retint")
         {
-            code->addLine("lw $ra, 0($sp)");
-            code->addLine("addi $sp, $sp, 4");
             if(ir->isInt1){
                 code->addLine("li $v0, "+ir->l1);
             }
@@ -999,72 +1030,57 @@ void codeGen(){
             }
             code->addLine("jr $ra");
         }
+
         else if (ir->op == "ret")
         {
-        	code->addLine("lw $ra, 0($sp)");
-        	code->addLine("addi $sp, $sp, 4");
             code->addLine("jr $ra");
         }
 
-        else if (ir->op == "||")
+        else if (ir->op == "ifgoto")
         {
-                /* code */
-            if(ir->isInt1 && ir->isInt2)
-            {
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("ori "+reg_out+", "+reg_out+", "+ir->l2);
-            }
-            else if (ir->isInt1 && !ir->isInt2)
-            {
-                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->l1);
-            }
-            else if (!ir->isInt1 && ir->isInt2)
-            {
-                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->l2);
-            }
-            else
-            {
-                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
-                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("or "+reg_out+", "+reg_in1+", "+reg_in2);
-            }
-        }  
-
-        else if (ir->op == "&&")
-        {
-                /* code */
-            if(ir->isInt1 && ir->isInt2)
-            {
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+ir->l1);
-                code->addLine("andi "+reg_out+", "+reg_out+", "+ir->l2);
-            }
-            else if (ir->isInt1 && !ir->isInt2)
-            {
-                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("andi "+reg_out+", "+reg_in2+", "+ir->l1);
-            }
-            else if (!ir->isInt1 && ir->isInt2)
-            {
-                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("andi "+reg_out+", "+reg_in1+", "+ir->l2);
-            }
-            else
-            {
-                reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
-                reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
-                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("and "+reg_out+", "+reg_in1+", "+reg_in2);
-            }
+            reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
+            code->addLine("bne "+reg_out+", $zero, "+ir->target);
         }
+        else if (ir->op == "goto")
+        {
+            code->addLine("j "+ir->target);
+        }
+
+        //Flush all variables to memory on block end, but before any jump
+        if(ir->lineNum == blocks[blockNum]->endLine)
+        {
+            code->flushAll();
+            blockNum++;
+        }
+        // else if (ir->op == "&&")
+        // {
+        //         /* code */
+        //     if(ir->isInt1 && ir->isInt2)
+        //     {
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("li "+reg_out+", "+ir->l1);
+        //         code->addLine("andi "+reg_out+", "+reg_out+", "+ir->l2);
+        //     }
+        //     else if (ir->isInt1 && !ir->isInt2)
+        //     {
+        //         reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("andi "+reg_out+", "+reg_in2+", "+ir->l1);
+        //     }
+        //     else if (!ir->isInt1 && ir->isInt2)
+        //     {
+        //         reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("andi "+reg_out+", "+reg_in1+", "+ir->l2);
+        //     }
+        //     else
+        //     {
+        //         reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
+        //         reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
+        //         reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
+        //         code->addLine("and "+reg_out+", "+reg_in1+", "+reg_in2);
+        //     }
+        // }
 
     }
 

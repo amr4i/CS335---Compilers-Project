@@ -7,6 +7,7 @@ public:
 	// array, simple
 	string type;
 	bool isKeyword;
+	bool isTemp;
 	int width;
 	int offset;
 	map<string, string> attr;

@@ -36,8 +36,9 @@ string mipsCode::getReg(string var, int ins, int isDst)
 
 
 	// If variable already has a register 
-	if(addDesc.find(var) != addDesc.end() && addDesc[var]["register"]!="NONE")
+	if(addDesc.find(var) != addDesc.end() && addDesc[var]["register"] != "NONE")
 	{
+		// addLine("\tPuppy\n");
 		if(isDst==1) 	addDesc[var]["memory"]="false";
 		reg = addDesc[var]["register"];
 		return reg;
@@ -51,6 +52,7 @@ string mipsCode::getReg(string var, int ins, int isDst)
 	{
 		addDesc[var]["memory"] = "false";
 
+
 		if(IR[ins-1]->opd1 != NULL)
 		{
 			tempVarName = IR[ins-1]->opd1->name;
@@ -60,6 +62,7 @@ string mipsCode::getReg(string var, int ins, int isDst)
 				regDesc[reg] = var;
 				addDesc[var]["register"] = reg;
 				addDesc[tempVarName]["register"] = "NONE";
+				// addLine("\tPuppy1: " + var + addDesc[var]["register"] + "\n");
 
 				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
 				{
@@ -84,6 +87,8 @@ string mipsCode::getReg(string var, int ins, int isDst)
 			tempVarName = IR[ins-1]->opd2->name;
 			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
+				// addLine("\tPuppy3\n");
+
 				reg = addDesc[ tempVarName ]["register"];
 				regDesc[reg] = var;
 				addDesc[var]["register"] = reg;
@@ -111,6 +116,8 @@ string mipsCode::getReg(string var, int ins, int isDst)
 	// If there is a free"register"	
 	if(flag == false && freeRegs.size() > 0)
 	{
+		// addLine("\tPuppy2 "+ var + ":" + addDesc[var]["register"] + "\n");
+
 		reg = getFreeReg();
 		regDesc[reg] = var;
 		usedRegs.push_back( mp( (nextUseTable[ins-1].se)[var].se, reg ) );
@@ -136,13 +143,15 @@ string mipsCode::getReg(string var, int ins, int isDst)
 		exit(1);
 	}
 
-	if((isDst!=1) || (IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
+	if((isDst != 1) || (IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
 		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
 		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))
 	{
 		addLine("lw " + reg + ", " + var);
 		if(isDst==1) addDesc[var]["memory"]="false";
 	}
+
+	// if(var == "_tVar_7")	cerr << "\tDebug:" << addDesc[var]["register"] << "\n";
 
 	return reg;
 
@@ -183,8 +192,8 @@ string mipsCode::spillReg(string var, int ins)
 	string varName = regDesc[spilledReg];
 
 	// If the variable is a temporary then delete it from all the data structures right away
-	if(varName.substr(0, 6) == "_tVar_"){
-		cerr << "This is a temporary variable: " << varName << "\n";
+	if(/*(nextUseTable[ins-1].se)[varName].se == INF && */varName.substr(0, 6) == "_tVar_"){
+		cerr << "Ola\tThis is a temporary variable: " << varName << "\n";
 		ST->curEnv->addTable.erase(varName);
 		addDesc.erase(varName);
 	}
@@ -205,10 +214,13 @@ string mipsCode::spillReg(string var, int ins)
 
 void mipsCode::printCode()
 {
+	cerr << "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \n\n";
+
 	vector <string> ::iterator it;
 	for(it = code.begin(); it != code.end() ; it++){
 		cout<<(*it)<<"\n";
 	}
+	cerr << "\n\n \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \n\n";
 }
 
 // to clear the registers at the end of blocks, 
@@ -223,7 +235,7 @@ void mipsCode::flushAll()
 
 		// If the variable is a temp then we just need to delete from all the records
 		if(varName.substr(0, 6) == "_tVar_"){
-			cerr << "This is a temporary variable: " << varName << "\n";
+			cerr << "Oji\tThis is a temporary variable: " << varName << "\n";
 			ST->curEnv->addTable.erase(varName);
 			addDesc.erase(varName);
 		}
