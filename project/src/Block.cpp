@@ -6,21 +6,35 @@ Block::Block(int s, int e)
 	endLine = e;
 }
 		
+
+// 3 operand instructions
+// set<string> itype3= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call", "||", "&&"};
+
+// // 2 operand instructions
+// set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
+
+// // 1 operand instructions
+// set<string> itype1= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
+
+// // No operand instruction
+// set<string> itype0= {"ret","exit"};
+
+
 // For computng the nextUse within the block for all of the symbols.	
 void Block::computeNextUse()
 {
+	// cerr << "Debug:\n";
 	forin(endLine-1, startLine-1)
 	{
 		string op = IR[i]->op;
 		int opType = IR[i]->opType;
 		map <string, pair < string, int > > temp;
 
-		// cout<<op<<"\n";
 
 		if(opType == 0)	continue;
 		else if(opType == 1)
 		{
-			if(op == "++" || op == "--" || op == "printint" || op == "retint")
+			if(op == "++" || op == "--" || op == "printint" || (op == "retint" && IR[i]->isInt1 == false) || op == "param")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -34,7 +48,7 @@ void Block::computeNextUse()
 				visited[IR[i]->dest->name] = true;
 
 			}
-			else if(op == "scan")
+			else if(op == "scan" || op == "readParam")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -67,21 +81,21 @@ void Block::computeNextUse()
 				varStack[IR[i]->dest->name] = mp(string("Live"), IR[i]->lineNum);
 				visited[IR[i]->dest->name] = true;
 			}
-			else if(op == "call")
-			{
-				if(varStack.find(IR[i]->dest->name) != varStack.end())
-				{
-					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
-					varStack.erase(IR[i]->dest->name);
-				}
-				else
-				{
-					if(visited.find(IR[i]->dest->name) != visited.end()) { temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
-					else { temp[IR[i]->dest->name] = mp(string("Live"), INF); }
-				}
-				visited[IR[i]->dest->name] = true;
+			// else if(op == "call")
+			// {
+			// 	if(varStack.find(IR[i]->dest->name) != varStack.end())
+			// 	{
+			// 		temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
+			// 		varStack.erase(IR[i]->dest->name);
+			// 	}
+			// 	else
+			// 	{
+			// 		if(visited.find(IR[i]->dest->name) != visited.end()) { temp[IR[i]->dest->name] = mp(string("Dead"), INF); }
+			// 		else { temp[IR[i]->dest->name] = mp(string("Live"), INF); }
+			// 	}
+			// 	visited[IR[i]->dest->name] = true;
 
-			}
+			// }
 			else if(op == "=")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
@@ -114,7 +128,7 @@ void Block::computeNextUse()
 				}
 				
 			}
-			else if(op != "array")
+			else if(op != "array" && op != "call")
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
@@ -149,7 +163,7 @@ void Block::computeNextUse()
 		}
 		else
 		{
-			if(op!="setarr"){
+			if(op!="setarr" && op != "call"){
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{
 					temp[IR[i]->dest->name] = mp(string("Live"), varStack[IR[i]->dest->name].se);
@@ -163,7 +177,7 @@ void Block::computeNextUse()
 				visited[IR[i]->dest->name] = true;
 			}
 
-			if(IR[i]->isInt1 == false && op!="getarr")
+			if(IR[i]->isInt1 == false && op!="getarr" && op != "call")
 			{
 				if(varStack.find(IR[i]->opd1->name) != varStack.end())
 				{
@@ -180,7 +194,7 @@ void Block::computeNextUse()
 
 			}
 
-			if(IR[i]->isInt2 == false)
+			if(IR[i]->isInt2 == false && op != "call")
 			{
 				if(varStack.find(IR[i]->opd2->name) != varStack.end())
 				{
@@ -196,6 +210,7 @@ void Block::computeNextUse()
 				visited[IR[i]->opd2->name] = true;
 			}
 		}
+
 
 		nextUseTable[i] = mp(IR[i], temp);
 
