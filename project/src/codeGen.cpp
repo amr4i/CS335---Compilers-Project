@@ -72,8 +72,6 @@ void codeGen(){
 
     string reg_out, reg_in1, reg_in2;
 
-    
-
     code->addLine(".text");
     code->addLine("main:");
 
@@ -85,6 +83,7 @@ void codeGen(){
     siz = IR.size();
     fori(0,siz){
         TAC* ir = IR[i];
+        cout<<ir->lineNum<<"\t" <<ir->op<<endl;
         if (ir->op == "exit")
         {
             code->addLine("li $v0, 10");
@@ -968,10 +967,15 @@ void codeGen(){
 
         else if (ir->op == "retint")
         {
-        	code->addLine("lw $ra, 0($sp)");
-        	code->addLine("addi $sp, $sp, 4");
-            reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
-            code->addLine("move $v0, "+reg_out);
+            code->addLine("lw $ra, 0($sp)");
+            code->addLine("addi $sp, $sp, 4");
+            if(ir->isInt1){
+                code->addLine("li $v0, "+ir->l1);
+            }
+            else{
+                reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
+                code->addLine("move $v0, "+reg_out);
+            }
             code->addLine("jr $ra");
         }
         else if (ir->op == "ret")
