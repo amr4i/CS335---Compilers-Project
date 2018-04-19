@@ -34,7 +34,7 @@ void Block::computeNextUse()
 		if(opType == 0)	continue;
 		else if(opType == 1)
 		{
-			if(op == "++" || op == "--" || op == "printint" || (op == "retint" && IR[i]->isInt1 == false) || op == "param")
+			if(op == "++" || op == "--" || op == "printint" || (op == "retint" && IR[i]->isInt1 == false) || (op == "param" && IR[i]->isInt1 == false))
 			{
 				if(varStack.find(IR[i]->dest->name) != varStack.end())
 				{

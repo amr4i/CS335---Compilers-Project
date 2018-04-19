@@ -106,11 +106,11 @@ void printTAC(genNode* node){
 					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
-				if(t->op=="++" || t->op=="--" || t->op=="printint" || t->op=="scan" || t->op == "param" || t->op == "readParam"){
+				if(t->op=="++" || t->op=="--" || t->op=="printint" || t->op=="scan" || t->op == "readParam"){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
 				}
-				else if( t->op == "retint"){
+				else if( t->op == "retint" || t->op == "param"){
 					if(t->isInt1)
 						cout<<t->lineNum<<", "<<t->op<<", "<<t->l1;
 					else
@@ -126,7 +126,6 @@ void printTAC(genNode* node){
 				cerr<<"Error: Wrong opType\n";
 				exit(1);
 		}
-
 		cout<<endl;
 	}
 }

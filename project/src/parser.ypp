@@ -324,7 +324,19 @@ argument_list : argument
 			$$ = $1; 
 			TAC* tac = new TAC();
 			tac->op = "param";
-			tac->dest = ST->GetVar($1->place);
+			if($1->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $1->place;
+				cerr << "\t1Here " << $1->place << "\n";
+			}
+			else{
+				Symbol* sym = ST->GetVar($1->place);
+				if(sym == NULL){
+					tac->isInt1 = true;
+					tac->l1 = $1->place;		
+				}
+				else 	tac->dest = sym;
+			}
 			$$->code.pb(tac);
 		}
 		| argument_list ',' argument	
@@ -336,7 +348,19 @@ argument_list : argument
 			$$ = $1;
 			TAC* tac = new TAC();
 			tac->op = "param";
-			tac->dest = ST->GetVar($3->place);
+			if($3->isLit == true){
+				tac->isInt1 = true;
+				tac->l1 = $3->place;
+				cerr << "\tHere\n";
+			}
+			else{
+				Symbol* sym = ST->GetVar($3->place);
+				if(sym == NULL){
+					tac->isInt1 = true;
+					tac->l1 = $3->place;		
+				}
+				else 	tac->dest = sym;
+			}
 			$$->code.pb(tac);
 		}
 		;
