@@ -26,9 +26,9 @@ namespace Program
             }
             void Main()
             {
-                int y;
+                int y1;
                 bool isLeap;
-                y= readdata();
+                y1= readdata();
                 isLeap = leap(2016);
             }
         }

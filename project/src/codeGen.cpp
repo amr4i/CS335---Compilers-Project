@@ -74,6 +74,7 @@ void codeGen(){
 
     code->addLine(".text");
     code->addLine("main:");
+    code->addLine("j _Main");
 
     /* 
     -> Arrays are to be implemented
@@ -84,6 +85,20 @@ void codeGen(){
     fori(0,siz){
         TAC* ir = IR[i];
         cout<<ir->lineNum<<"\t" <<ir->op<<endl;
+                if(ir->isInt1 == true){
+            if(ir->l1== "true"){
+                ir->l1 = "1";
+            }
+            else if(ir->l1 == "false")  ir->l1 = "0";
+        } 
+
+        if(ir->isInt2 == true){
+            if(ir->l2== "true"){
+                ir->l2 = "1";
+            }
+            else if(ir->l2 == "false")  ir->l2 = "0";
+        } 
+
         if (ir->op == "exit")
         {
             code->addLine("li $v0, 10");
@@ -954,15 +969,21 @@ void codeGen(){
         else if (ir->op == "param")
         {
             code->addLine("addi $sp, $sp, -4");
-            reg_in1 = code->getReg(ir->target, (ir->lineNum), 0);
-            code->addLine("sw "+reg_in1+", 0($sp)");
+            if(!ir->isInt1){
+                reg_in1 = code->getReg(ir->dest->name, (ir->lineNum), 0);
+                code->addLine("sw "+reg_in1+", 0($sp)");
+            }
+            else {
+                code->addLine("li $t0, "+ir->l1);
+                code->addLine("sw $t0, 0($sp)");
+            }
         }
 
         else if (ir->op == "readParam")
         {
-            code->addLine("addi $sp, $sp, 4");
-            reg_in1 = code->getReg(ir->target, (ir->lineNum), 0);
+            reg_in1 = code->getReg(ir->dest->name, (ir->lineNum), 0);
             code->addLine("lw "+reg_in1+", 0($sp)");
+            code->addLine("addi $sp, $sp, 4");
         }
 
         else if (ir->op == "retint")
@@ -988,42 +1009,23 @@ void codeGen(){
         else if (ir->op == "||")
         {
                 /* code */
-            string op1, op2;
-
             if(ir->isInt1 && ir->isInt2)
             {
-                if(ir->l1=="true")
-                    op1 = "1";
-                else
-                    op1 = "0";
-                if(ir->l2=="true")
-                    op2 = "1";
-                else
-                    op2 = "0";
-
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+op1);
-                code->addLine("ori "+reg_out+", "+reg_out+", "+op2);
+                code->addLine("li "+reg_out+", "+ir->l1);
+                code->addLine("ori "+reg_out+", "+reg_out+", "+ir->l2);
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                if(ir->l1=="true")
-                    op1 = "1";
-                else
-                    op1 = "0";
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in2+", "+op1);
+                code->addLine("ori "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                if(ir->l2=="true")
-                    op2 = "1";
-                else
-                    op2 = "0";
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in1+", "+op2);
+                code->addLine("ori "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
@@ -1031,55 +1033,36 @@ void codeGen(){
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
                 code->addLine("or "+reg_out+", "+reg_in1+", "+reg_in2);
-            }    
-        }
+            }
+        }  
 
         else if (ir->op == "&&")
         {
                 /* code */
-            string op1, op2;
-
             if(ir->isInt1 && ir->isInt2)
             {
-                if(ir->l1=="true")
-                    op1 = "1";
-                else
-                    op1 = "2";
-                if(ir->l2=="true")
-                    op2 = "1";
-                else
-                    op2 = "2";
-
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("li "+reg_out+", "+op1);
-                code->addLine("ori "+reg_out+", "+reg_out+", "+op2);
+                code->addLine("li "+reg_out+", "+ir->l1);
+                code->addLine("andi "+reg_out+", "+reg_out+", "+ir->l2);
             }
             else if (ir->isInt1 && !ir->isInt2)
             {
-                if(ir->l1=="true")
-                    op1 = "1";
-                else
-                    op1 = "2";
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in2+", "+op1);
+                code->addLine("andi "+reg_out+", "+reg_in2+", "+ir->l1);
             }
             else if (!ir->isInt1 && ir->isInt2)
             {
-                if(ir->l2=="true")
-                    op2 = "1";
-                else
-                    op2 = "2";
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("ori "+reg_out+", "+reg_in1+", "+op2);
+                code->addLine("andi "+reg_out+", "+reg_in1+", "+ir->l2);
             }
             else
             {
                 reg_in1 = code->getReg(ir->opd1->name, (ir->lineNum), 0);
                 reg_in2 = code->getReg(ir->opd2->name, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 1);
-                code->addLine("or "+reg_out+", "+reg_in1+", "+reg_in2);
+                code->addLine("and "+reg_out+", "+reg_in1+", "+reg_in2);
             }
         }
 
