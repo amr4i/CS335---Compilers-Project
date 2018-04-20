@@ -525,7 +525,7 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 		}
 		| qualified_identifier '[' expression ']'	
 		{  
-			genNode* newNode = new genNode;
+			genNode* newNode = new genNode();
 			$$ = newNode;
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 			Symbol* temp = ST->GetVar(ST->GenTemp());
@@ -1155,7 +1155,8 @@ local_variable_declarator : identifier
 			cerr << "\t Debug: Here0\n";
 			$$ = $1; 
 			if($1->checkDecl == true){
-				ST->AddVar($1->place);
+				string _name = $1->place;
+				ST->AddVar(_name.erase(0,1));
 			}
 			Symbol* sym = ST->GetVar($1->place);
 			if(sym->type != "None"){

@@ -30,6 +30,7 @@ typedef vector<ii> vii;
 typedef pair<int, ii> iii;
 typedef vector<iii> viii;
 typedef set<int> si;
+typedef pair<string, string> ss;
 
 #define pb push_back
 #define mp make_pair

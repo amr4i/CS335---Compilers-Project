@@ -9,15 +9,15 @@ public:
 	// I will use the nextUse as a key
 	vector < pair < int, string > > usedRegs;
 
-	map <string, string> regDesc;
-	map <string, map<string, string> > addDesc; 
+	map <string, pair< string, string > > regDesc;
+	map < pair<string, string>, map<string, string> > addDesc; 
 	SymTable* ST;
 
 	mipsCode(SymTable* SymT);
 	void addLine(string line);
 	string getFreeReg(void);
-	string getReg(string var, int ins, int isDst);
+	string getReg(Symbol* sym, int ins, int isDst);
 	void printCode(void);
-	string spillReg(string var, int ins);
+	string spillReg(ss vr, int ins);
 	void flushAll(void);
 };

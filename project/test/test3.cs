@@ -13,7 +13,7 @@ namespace Program
             {
                 return 2018;
             }
-            public bool leap(int y)
+            public bool leap(int y, int x)
             {
                 if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0))
                 {
@@ -26,10 +26,11 @@ namespace Program
             }
             void Main()
             {
-                int y1;
+                int y1, x1;
                 bool isLeap;
                 y1= readdata();
-                isLeap = leap(y1);
+                x1 = 2;
+                isLeap = leap(y1, x1);
             }
         }
     }

@@ -1,5 +1,16 @@
 #include "mipsCode.h"
 
+Env* curEnv;
+
+string returnOffset(Env* env, Symbol* sym){
+    int off = 0;
+    while(env->addTable.find(sym->name) == env->addTable.end()){
+        off += env->width;
+        env = env->prevEnv;
+    }
+    return convertNumToString(off + sym->width);
+}
+
 mipsCode::mipsCode(SymTable* SymT)
 {
 
@@ -23,24 +34,27 @@ string mipsCode::getFreeReg(){
 		reg = freeRegs.back();
 		freeRegs.pop_back();
 	}
-	regDesc[reg] = "NONE";
+	regDesc[reg] = mp("NONE", "NONE");
 	return reg;
 }
 
-string mipsCode::getReg(string var, int ins, int isDst)
+
+string mipsCode::getReg(Symbol* sym, int ins, int isDst)
 {
-	string reg, tempVarName;
+	string reg, tempVarOff, tempVarName;
 	vector < pair < int, string > > :: iterator it;
 	bool flag = false;
+	string off = returnOffset(curEnv, sym);
+	string var = sym->name;
 
-
+	ss vr = mp(var, off);
 
 	// If variable already has a register 
-	if(addDesc.find(var) != addDesc.end() && addDesc[var]["register"] != "NONE")
+	if(addDesc.find(vr) != addDesc.end() && addDesc[vr]["register"] != "NONE")
 	{
 		// addLine("\tPuppy\n");
-		if(isDst==1) 	addDesc[var]["memory"]="false";
-		reg = addDesc[var]["register"];
+		if(isDst==1) 	addDesc[vr]["stack"]="false";
+		reg = addDesc[vr]["register"];
 		return reg;
 	} 
 	
@@ -50,18 +64,21 @@ string mipsCode::getReg(string var, int ins, int isDst)
 		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
 		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))
 	{
-		addDesc[var]["memory"] = "false";
+		addDesc[vr]["stack"] = "false";
 
 
 		if(IR[ins-1]->opd1 != NULL)
 		{
+			tempVarOff = returnOffset(curEnv, IR[ins-1]->opd1);
 			tempVarName = IR[ins-1]->opd1->name;
-			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
+			ss tmpVar = mp(tempVarName, tempVarOff);
+
+			if(addDesc.find(tmpVar) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
-				reg = addDesc[tempVarName]["register"];
-				regDesc[reg] = var;
-				addDesc[var]["register"] = reg;
-				addDesc[tempVarName]["register"] = "NONE";
+				reg = addDesc[tmpVar]["register"];
+				regDesc[reg] = vr;
+				addDesc[vr]["register"] = reg;
+				addDesc[tmpVar]["register"] = "NONE";
 				// addLine("\tPuppy1: " + var + addDesc[var]["register"] + "\n");
 
 				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
@@ -75,23 +92,26 @@ string mipsCode::getReg(string var, int ins, int isDst)
 				flag = true;
 				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	
 				{ 
-					addLine("sw "+reg+", "+tempVarName); 
-					addDesc[tempVarName]["memory"] = "true";
-					addDesc[tempVarName]["register"] = "NONE";
+					addLine("sw "+reg+", " + tempVarOff + "($sp)"); 
+					addDesc[tmpVar]["stack"] = off;
+					addDesc[tmpVar]["register"] = "NONE";
 				}
 			}
 		}
 		
 		if(flag == false && IR[ins-1]->opd2 != NULL)
 		{
+			tempVarOff = returnOffset(curEnv, IR[ins-1]->opd2);
 			tempVarName = IR[ins-1]->opd2->name;
-			if(addDesc.find(tempVarName) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
+			ss tmpVar = mp(tempVarName, tempVarOff);
+
+			if(addDesc.find(tmpVar) != addDesc.end() && (nextUseTable[ins-1].se)[tempVarName].se == INF )
 			{
 				// addLine("\tPuppy3\n");
 
-				reg = addDesc[ tempVarName ]["register"];
-				regDesc[reg] = var;
-				addDesc[var]["register"] = reg;
+				reg = addDesc[ tmpVar ]["register"];
+				regDesc[reg] = vr;
+				addDesc[vr]["register"] = reg;
 
 				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
 				{
@@ -104,9 +124,9 @@ string mipsCode::getReg(string var, int ins, int isDst)
 				flag = true;
 				if((nextUseTable[ins-1].se)[tempVarName].fi == "Live")	
 				{ 
-					addLine("sw "+reg+", "+tempVarName);
-					addDesc[tempVarName]["memory"] = "true";
-					addDesc[tempVarName]["register"] = "NONE";
+					addLine("sw "+reg+", "+tempVarOff + "($sp)");
+					addDesc[tmpVar]["stack"] = "true";
+					addDesc[tmpVar]["register"] = "NONE";
 				}
 			}
 		}
@@ -119,11 +139,11 @@ string mipsCode::getReg(string var, int ins, int isDst)
 		// addLine("\tPuppy2 "+ var + ":" + addDesc[var]["register"] + "\n");
 
 		reg = getFreeReg();
-		regDesc[reg] = var;
+		regDesc[reg] = vr;
 		usedRegs.push_back( mp( (nextUseTable[ins-1].se)[var].se, reg ) );
-		addDesc[var]["register"] = reg;	
-		if(addDesc[var]["memory"] != "true"){
-			addDesc[var]["memory"] = "false";
+		addDesc[vr]["register"] = reg;	
+		if(addDesc[vr]["stack"] != "true"){
+			addDesc[vr]["stack"] = "false";
 		}
 
 		flag = true;
@@ -132,10 +152,11 @@ string mipsCode::getReg(string var, int ins, int isDst)
 	// Spilling
 	if(flag == false)
 	{
-		reg = spillReg(var, ins);
+		// TODO: change it accordingly
+		reg = spillReg(vr, ins);
 		flag = true;
-		if(addDesc[var]["memory"] != "true"){
-			addDesc[var]["memory"] = "false";
+		if(addDesc[vr]["stack"] != "true"){
+			addDesc[vr]["stack"] = "false";
 		}
 	}
 
@@ -147,8 +168,8 @@ string mipsCode::getReg(string var, int ins, int isDst)
 		IR[ins-1]->op == "*=" || IR[ins-1]->op == "%=" || IR[ins-1]->op == ">>=" || IR[ins-1]->op == "<<=" ||
 		IR[ins-1]->op == "&=" || IR[ins-1]->op == "|=" || IR[ins-1]->op == "^="))
 	{
-		addLine("lw " + reg + ", " + var);
-		if(isDst==1) addDesc[var]["memory"]="false";
+		addLine("lw " + reg + ", " + off + "($sp)");
+		if(isDst==1) addDesc[vr]["stack"]="false";
 	}
 
 	// if(var == "_tVar_7")	cerr << "\tDebug:" << addDesc[var]["register"] << "\n";
@@ -157,18 +178,18 @@ string mipsCode::getReg(string var, int ins, int isDst)
 
 }
 
-string mipsCode::spillReg(string var, int ins)
+string mipsCode::spillReg(ss vr, int ins)
 {
 	vector < pair < int, string > >::iterator far, it; 
-	vector <string> varsPresent;
-	vector <string>:: iterator itt;
+	vector <ss> varsPresent;
+	vector <ss>:: iterator itt;
 	string spilledReg, reg;
 	int farthest;
 	bool flag;
 
-	if(IR[ins-1]->dest != NULL)	varsPresent.pb(IR[ins-1]->dest->name);
-	if(IR[ins-1]->opd1 != NULL)	varsPresent.pb(IR[ins-1]->opd1->name);
-	if(IR[ins-1]->opd2 != NULL)	varsPresent.pb(IR[ins-1]->opd2->name);
+	if(IR[ins-1]->dest != NULL)	varsPresent.pb(mp(IR[ins-1]->dest->name, returnOffset(curEnv, IR[ins-1]->dest)));
+	if(IR[ins-1]->opd1 != NULL)	varsPresent.pb(mp(IR[ins-1]->opd1->name, returnOffset(curEnv, IR[ins-1]->opd1)));
+	if(IR[ins-1]->opd2 != NULL)	varsPresent.pb(mp(IR[ins-1]->opd2->name, returnOffset(curEnv, IR[ins-1]->opd2)));
 
 	far = usedRegs.end();
 	farthest = 0;
@@ -189,25 +210,26 @@ string mipsCode::spillReg(string var, int ins)
 
 	spilledReg = (*far).se;
 
-	string varName = regDesc[spilledReg];
+	// varName : spilled register offset
+	ss tmpVr = regDesc[spilledReg];
 
 	// If the variable is a temporary then delete it from all the data structures right away
-	if(/*(nextUseTable[ins-1].se)[varName].se == INF && */varName.substr(0, 6) == "_tVar_"){
-		cerr << "Ola\tThis is a temporary variable: " << varName << "\n";
-		ST->curEnv->addTable.erase(varName);
-		addDesc.erase(varName);
+	if(/*(nextUseTable[ins-1].se)[varName].se == INF && */(tmpVr.fi).substr(0, 6) == "_tVar_"){
+		cerr << "Ola\tThis is a temporary variable: " << (tmpVr.fi) << "\n";
+		ST->curEnv->addTable.erase(tmpVr.fi);
+		addDesc.erase(tmpVr);
 	}
 	else{
 		// Write store instructions to transfer the data in the variable to the stack
-		addLine("sw "+spilledReg+", "+varName);
-		addDesc[varName]["memory"] = "true";
+		addLine("sw "+spilledReg+", "+tmpVr.se + "($sp)");
+		addDesc[tmpVr]["stack"] = "true";
 	}
 
 	reg = spilledReg;
-	regDesc[reg] = var;
+	regDesc[reg] = vr;
 
-	(*far).fi = (nextUseTable[ins-1].se)[var].se;
-	addDesc[var]["register"] = reg;
+	(*far).fi = (nextUseTable[ins-1].se)[vr.fi].se;
+	addDesc[vr]["register"] = reg;
 
 	return reg;
 }
@@ -228,24 +250,25 @@ void mipsCode::printCode()
 void mipsCode::flushAll()
 {
 	vector< pair<int, string> >::iterator it;
-	string reg, varName;
+	string reg;
+	ss vr;
 	for(it=usedRegs.begin(); it!=usedRegs.end(); it++){
 		reg = (*it).se;
-		varName = regDesc[reg];
+		vr = regDesc[reg];
 
 		// If the variable is a temp then we just need to delete from all the records
-		if(varName.substr(0, 6) == "_tVar_"){
-			cerr << "Oji\tThis is a temporary variable: " << varName << "\n";
-			ST->curEnv->addTable.erase(varName);
-			addDesc.erase(varName);
+		if((vr.fi).substr(0, 6) == "_tVar_"){
+			cerr << "Oji\tThis is a temporary variable: " << (vr.fi) << "\n";
+			ST->curEnv->addTable.erase(vr.fi);
+			addDesc.erase(vr);
 		}
 		else{
-			if(addDesc[varName]["memory"] != "true")
+			if(addDesc[vr]["stack"] != "true")
 			{
-				addLine("sw "+reg+", "+varName);
-				addDesc[varName]["memory"] = "true";
+				addLine("sw "+reg+", "+vr.se + "($sp)");
+				addDesc[vr]["stack"] = "true";
 			}
-			addDesc[varName]["register"] = "NONE";
+			addDesc[vr]["register"] = "NONE";
 		}
 	}
 
