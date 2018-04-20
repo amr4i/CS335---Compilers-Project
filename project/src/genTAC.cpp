@@ -109,7 +109,18 @@ void printTAC(genNode* node){
 					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
-				if(t->op=="++" || t->op=="--" || t->op=="printint" || t->op=="scan" || t->op == "readParam"){
+				if ( t->op == "printint"){
+					if(t->isInt1){
+						cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
+						break;
+					}
+					else{
+						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+						break;
+					}
+
+				}
+				else if(t->op=="++" || t->op=="--"  || t->op=="scan" || t->op == "readParam"){
 					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
 				}

@@ -1059,7 +1059,8 @@ print_statement : PRINT '(' string_literal ')' ';'
 		| PRINT '(' DINT_LITERAL ')' ';'
 		{
 			TAC* tac = new TAC();
-			tac->op = "printstr";
+			tac->op = "printint";
+			tac->isInt1 = true;
 			tac->target = convertNumToString($3);
 			genNode* newNode = new genNode();
 			$$ = newNode;

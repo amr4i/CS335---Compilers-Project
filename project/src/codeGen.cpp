@@ -915,11 +915,17 @@ void codeGen(){
         else if (ir->op == "printint")
         {
             // printing integer
-            reg_out = code->getReg(ir->dest, (ir->lineNum), 0);
-            code->addLine("li $v0, 1");
-            code->addLine("move $a0, "+reg_out);
-            code->addLine("syscall");
-
+            if(!ir->isInt1){
+                reg_out = code->getReg(ir->dest, (ir->lineNum), 0);
+                code->addLine("li $v0, 1");
+                code->addLine("move $a0, "+reg_out);
+                code->addLine("syscall");
+            }
+            else{
+                code->addLine("li $v0 1");
+                code->addLine("li $a0, "+ir->target);
+                code->addLine("syscall");
+            }
         }
         else if (ir->op == "label")
         {
