@@ -30,6 +30,9 @@ string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">
 string op1 [10]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 string op0 [2]= {"ret","exit"};
 
+// map from all the symbol pointers to their corresponding environment pointers - to be used in codeGen
+map <Symbol*, Env*> symToEnv;
+
 bool isOpIn(string *opA, int n, string op){
 	fori(0, n){
 		if(op == opA[i]){

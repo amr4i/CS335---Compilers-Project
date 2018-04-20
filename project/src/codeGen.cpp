@@ -41,6 +41,16 @@ void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
 
 }
 
+// To create a map from symbol* to Env*
+void initSymToEnv(Env* env){
+    for(auto symEntry : env->addTable){
+        symToEnv[symEntry.se] = env;
+    }
+    for(auto chld : env->children){
+        initSymToEnv(chld);
+    }
+}
+
 void codeGen(){
 
     int siz, blockSiz, blockNum;
