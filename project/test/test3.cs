@@ -29,7 +29,7 @@ namespace Program
                 int y1;
                 bool isLeap;
                 y1= readdata();
-                isLeap = leap(2016);
+                isLeap = leap(y1);
             }
         }
     }

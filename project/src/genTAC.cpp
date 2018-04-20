@@ -28,7 +28,7 @@ struct genNode{
 string op3 [21]= {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "==", "<", ">", "!=", "<=", ">=", "setarr", "getarr", "call", "||", "&&"};
 string op2 [14]= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "ifgoto", "array"};
 string op1 [10]= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
-string op0 [2]= {"ret","exit"};
+string op0 [4]= {"ret", "exit", "beginScope", "endScope"};
 
 // map from all the symbol pointers to their corresponding environment pointers - to be used in codeGen
 map <Symbol*, Env*> symToEnv;
@@ -52,7 +52,7 @@ void printTAC(genNode* node){
 		if(isOpIn(op3,21,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;
 		else if(isOpIn(op1,10,t->op)) t->opType = 1;
-		else if(isOpIn(op0,2,t->op)){ t->opType = -1;}
+		else if(isOpIn(op0,4,t->op)){ t->opType = -1;}
 
 		if(t==NULL){
 			cerr<<"line number %d has the tac struct empty\n";
@@ -123,7 +123,10 @@ void printTAC(genNode* node){
 				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
 			case -1:
-				cout<<t->lineNum<<", "<<t->op;
+				if(t->op == "beginScope" || t->op == "endScope"){
+					cout << t->lineNum << ", " << t->op << ", " << t->oldScope->name << ", " << t->newScope->name;
+				}
+				else	cout<<t->lineNum<<", "<<t->op;
 				break;
 			default:
 				cerr<<"Error: Wrong opType\n";

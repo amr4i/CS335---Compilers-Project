@@ -55,6 +55,10 @@ void codeGen(){
 
     int siz, blockSiz, blockNum;
 
+    cerr << "\tDebug:2\n";
+    Env *baseEnv = ST->baseEnv;
+    Env* curEnv = baseEnv;
+
     // Reading the text file and storing it in "ir" data structure
     // readFile(argv[1]);
 
@@ -74,8 +78,6 @@ void codeGen(){
         blocks[i]->computeNextUse();
     }
 
-    cerr << "\tDebug:2\n";
-    Env *baseEnv = ST->baseEnv;
 
     mipsCode* code = new mipsCode(ST);
     code->addLine(".data");
@@ -1038,6 +1040,16 @@ void codeGen(){
                 reg_out = code->getReg(ir->dest->name, (ir->lineNum), 0);
                 code->addLine("move $v0, "+reg_out);
             }
+
+            while(1){
+                code->addLine("addi $sp, $sp, " + convertNumToString(curEnv->width));
+                if(curEnv->type == "METHODTYPE"){
+                    curEnv = curEnv->prevEnv;
+                    break;
+                }
+                curEnv = curEnv->prevEnv;
+            }
+
             code->addLine("jr $ra");
         }
 
@@ -1054,6 +1066,15 @@ void codeGen(){
         else if (ir->op == "goto")
         {
             code->addLine("j "+ir->target);
+        }
+        else if (ir->op == "beginScope"){
+            curEnv = ir->newScope;
+            code->addLine("addi $sp, $sp, -" + convertNumToString(curEnv->width));
+        }
+        else if (ir->op == "endScope"){
+            curEnv = ir->oldScope;
+            code->addLine("addi $sp, $sp, " + convertNumToString(curEnv->width));
+            curEnv = ir->newScope;
         }
 
         //Flush all variables to memory on block end, but before any jump

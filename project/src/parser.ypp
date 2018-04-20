@@ -1048,13 +1048,49 @@ embedded_statement : block 	{ $$ = $1; }
 		| try_statement 	{ $$ = $1; }
 		| using_statement	{ $$ = $1; }
 		;
-block : block_start '{' '}' 	{ $$ = NULL; ST->EndScope();	}
-		| block_start '{' statement_list '}'	{  $$ = $3; ST->EndScope(); }
+block : block_start '{' '}' 	
+		{ 
+			$$ = $1; 
+
+			TAC* tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
+			ST->EndScope();	
+		}
+		| block_start '{' statement_list '}'	
+		{  
+			$$ = $3; 
+
+			vector <TAC*> code = $3->code;
+
+			$$->code.clear();
+			$$->code.insert($$->code.end(), $1->code.begin(), $1->code.end());
+			$$->code.insert($$->code.end(), code.begin(), code.end());
+
+			TAC* tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
+			ST->EndScope(); 
+		}
 		;
 block_start : epsilon	
 		{ 
-			$$ = NULL; 
-			ST->BeginScope();	
+			genNode* newNode = new genNode();
+			$$ = newNode; 
+
+			TAC* tac = new TAC();
+			tac->op = "beginScope";
+			tac->oldScope = ST->curEnv;
+			ST->BeginScope();
+
+			tac->newScope = ST->curEnv;
+			$$->code.pb(tac);
 		}
 		;
 
@@ -1381,6 +1417,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, conditionLabel);
 
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1409,6 +1451,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, conditionLabel);
+
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1454,6 +1502,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, conditionLabel);
 
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1487,6 +1541,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, updateLabel);
+
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1531,6 +1591,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, conditionLabel);
 
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1563,6 +1629,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, updateLabel);
+
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1614,6 +1686,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, updateLabel);
 
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1661,6 +1739,12 @@ for_statement : block_start FOR '(' ';' ';' ')' embedded_statement
 
 			updateBreak($$, endLoopLabel);
 			updateContinue($$, updateLabel);
+
+			tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
 
 			////////////////////////////////// BLOCK END ////////////////////////////////////////////////////
 			ST->curEnv = ST->curEnv->prevEnv;
@@ -1717,13 +1801,49 @@ return_statement : RETURN ';'
 		{ 
 			genNode* newNode = new genNode();
 			$$ = newNode;
-			TAC* tac = new TAC();
+
+			Env* env = ST->curEnv;
+
+			TAC* tac;
+
+			while(1){
+				tac = new TAC();
+				tac->op = "endScope";
+				tac->oldScope = env;
+				tac->newScope = env->prevEnv;
+
+				$$->code.pb(tac);
+
+				if(env->type == "METHODTYPE")	break;
+
+				env = env->prevEnv;
+			}
+
+			tac = new TAC();
 			tac->op = "ret";
 			$$->code.pb(tac);
 		}
 		| RETURN expression ';'	
 		{  
 			$$ = $2;
+			
+			// Env* env = ST->curEnv;
+
+			// TAC* tac;
+
+			// while(1){
+			// 	tac = new TAC();
+			// 	tac->op = "endScope";
+			// 	tac->oldScope = env;
+			// 	tac->newScope = env->prevEnv;
+				
+			// 	$$->code.pb(tac);
+
+			// 	if(env->type == "METHODTYPE")	break;
+
+			// 	env = env->prevEnv;
+			// }
+
 			TAC* tac = new TAC();
 			tac->op = "retint";
 			if($2->isLit){
@@ -1736,9 +1856,8 @@ return_statement : RETURN ';'
 				cerr << "Symbol " << $2->place << " not defined, at line: " <<lineNum;
 				exit(1);
 			}
-			vector <TAC*> tmp;
-			tmp.pb(tac);
-			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+
+			$$->code.pb(tac);
 		}
 		;
 throw_statement : THROW ';' 	{  }
@@ -2207,10 +2326,14 @@ variable_initializer : expression
 		;
 method_declaration : method_header method_body	
 		{
+
 			$$ = $1;
-			vector <TAC*> tmp;
-			tmp.pb(genLabelTAC(ST->curEnv->name));
-			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+			
+			vector <TAC*> tmp = $1->code;
+
+			$$->code.clear();
+			$$->code.pb(genLabelTAC(ST->curEnv->name));
+			$$->code.insert($$->code.end(), tmp.begin(), tmp.end());
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());		
 
 			if(ST->curEnv->name == "_Main"){
@@ -2218,6 +2341,16 @@ method_declaration : method_header method_body
 				tac->op = "ret";
 				$$->code.pb(tac);
 			}
+
+			///////////////////////////////////////////////////////////////
+
+			TAC* tac = new TAC();
+			tac->op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+			$$->code.pb(tac);
+
+			///////////////////////////////////////////////////////////////
 
 			ST->EndScope();
 		}
@@ -2239,14 +2372,15 @@ method_header : type member_name '(' ')'
 			$$ = $2;
 			ST->curEnv->returnType = $1->place;
 			ST->curEnv->name = $2->place;
-			$$->code = $4->code;
+			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
 		}
 		| modifiers type member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $3;
 			ST->curEnv->returnType = $2->place;
 			ST->curEnv->name = $3->place;
-			$$->code = $5->code;
+
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 		}
 		| VOID member_name '(' ')' 	
 		{ 
@@ -2262,26 +2396,51 @@ method_header : type member_name '(' ')'
 		{ 
 			$$ = $2;
 			ST->curEnv->name = $2->place;
-			$$->code = $4->code;
+			$$->code.insert($$->code.end(), $4->code.begin(), $4->code.end());
 		}
 		| modifiers VOID member_name '(' formal_parameter_list ')' 	
 		{ 
 			$$ = $3;
 			ST->curEnv->name = $3->place;
-			$$->code = $5->code;
+			$$->code.insert($$->code.end(), $5->code.begin(), $5->code.end());
 		}
 		;
 
 member_name : qualified_identifier	
 		{ 
+			$$ = $1; 
+
+			TAC* tac;
+
 			/////////////// "Main" Bug : Can I do this //////////////////
-			if($1->place == "_main")	ST->EndScope();
+			if($1->place == "_main"){
+				tac = new TAC();
+				tac->op = "endScope";
+				tac->oldScope = ST->curEnv;
+				tac->newScope = ST->curEnv->prevEnv;
+
+				$$->code.pb(tac);
+
+				ST->EndScope();
+			}
 			///////////////////////////////////////////////////////////
 
+			//////////////////////////////////////////////////////////
+
+			tac = new TAC();
+			tac->op = "beginScope";
+			tac->oldScope = ST->curEnv;
+			tac->isArgScope = true;
+
+			//////////////////////////////////////////////////////////
+
 			ST->BeginScope();
+
+			tac->newScope = ST->curEnv;
+			$$->code.pb(tac);
+
 			ST->curEnv->type = "METHODTYPE";
 
-			$$ = $1; 
 		}
 		;
 method_body : block 	
@@ -2428,11 +2587,20 @@ constructor_declaration : constructor_declarator constructor_body
 				ST->curEnv->addTable[consName] = sym;
 			}	
 
-			vector <TAC*> tmp;
-			tmp.pb(genLabelTAC(consName));
-			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+			vector <TAC*> tmp = $1->code;
+
+			$$->code.clear();
+			$$->code.pb(genLabelTAC(consName));
+			$$->code.insert($$->code.end(), tmp.begin(), tmp.end());
 
 			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+
+			TAC* tac = new TAC();
+			tac-> op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+
+			$$->code.pb(tac);
 
 			ST->EndScope();
 		}
@@ -2454,11 +2622,19 @@ constructor_declaration : constructor_declarator constructor_body
 				ST->curEnv->addTable[consName] = sym;
 			}	
 
-			vector <TAC*> tmp;
-			tmp.pb(genLabelTAC(consName));
-			$$->code.insert($$->code.begin(), tmp.begin(), tmp.end());
+			vector <TAC*> tmp = $2->code;
+			$$->code.clear();
+			$$->code.pb(genLabelTAC(consName));
+			$$->code.insert($$->code.end(), tmp.begin(), tmp.end());
 
 			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
+
+			TAC* tac = new TAC();
+			tac-> op = "endScope";
+			tac->oldScope = ST->curEnv;
+			tac->newScope = ST->curEnv->prevEnv;
+
+			$$->code.pb(tac);
 
 			ST->EndScope();  
 		}
@@ -2502,8 +2678,16 @@ constructor_declarator : constructor_name '(' ')'
 
 constructor_name : identifier 
 		{
+			TAC* tac = new TAC();
+			tac->op = "beginScope";
+			tac->oldScope = ST->curEnv;
+
 			ST->BeginScope();
 			ST->curEnv->type = "METHODTYPE";
+
+			tac->oldScope = ST->curEnv;
+			$$->code.pb(tac);
+
 			$$ = $1;
 		}
 		;

@@ -11,7 +11,7 @@ set<string> itype2= {"=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=",
 set<string> itype1= {"++", "--", "label", "printint", "scan", "goto", "retint", "printstr", "param", "readParam"};
 
 // No operand instruction
-set<string> itype0= {"ret","exit"};
+set<string> itype0= {"ret","exit", "beginScope", "endScope"};
 
 // TODO :  TEST_CASES. 
 // Arrays need to neccessarily have a pre-defined integer size
@@ -44,6 +44,7 @@ struct TAC
 
 	bool isBreak;
 	bool isContinue;
+	bool isArgScope;
 
 	TAC(){
 		isInt1 = false;
@@ -52,7 +53,12 @@ struct TAC
 		opd2 = NULL;
 		dest = NULL;
 		isBreak = false;
+		isArgScope = false;
 	}
+
+	Env* oldScope;
+	Env* newScope;
+
 };
 
 vector < TAC* > IR;
