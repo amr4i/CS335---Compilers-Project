@@ -108,8 +108,8 @@ Env* SymTable::EndScope(){
 	int offset = 0;
 	for(auto sym : curEnv->addTable){
 		string _name = sym.se->name;
-		if( _name.length() > 6 && _name.substr(0, 6) == "_tVar_" )	sym.se->width = 0;
-		else sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
+		/*if( _name.length() > 6 && _name.substr(0, 6) == "_tVar_" )	sym.se->width = 0;
+		else */sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
 		sym.se->offset = offset;
 		offset += sym.se->width;
 		cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << ", offset: " << sym.se->offset << "\n";
