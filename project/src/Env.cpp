@@ -126,8 +126,9 @@ vector <string> Env::setArgTypeList(vector <string> args){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Env* Env::findClass(string className, Env* baseEnv){
-	fori(0, baseEnv->children.size()){
-		if((baseEnv->children)[i]->type == "CLASSTYPE" && (baseEnv->children)[i]->name == className)	return (baseEnv->children)[i];
+	Env* env = baseEnv->children[0];
+	fori(0, env->children.size()){
+		if((env->children)[i]->type == "CLASSTYPE" && (env->children)[i]->name == className)	return (env->children)[i];
 	}
 	return NULL;
 }

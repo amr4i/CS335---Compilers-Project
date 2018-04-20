@@ -583,6 +583,7 @@ postfix_expression : 	primary_expression 		{ $$ = $1; }
 object_creation_expression : NEW type '(' ')' 	
 		{
 			$$ = $2;  
+			$$->isObjInit = true;
 			// genNode* newNode = new genNode();
 			// $$ = newNode;
 
@@ -1227,36 +1228,49 @@ local_variable_declarator : identifier
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);
 			}
-			tac1->dest = sym;
-			tac1->op = "=";
 
-			if($3->isLit == true){
-				tac1->isInt1 = true;
-				tac1->l1 = $3->place;
-				$$->code.pb(tac1);
-			}
-			else if($3->isArray){
 
-				sym->baseType = "array";
-				sym->type = $3->type;
-				sym->width = $3->varDecs.size();
-				$$->isArray = true;
-				for(int i=0; i<$3->varDecs.size(); i++){
-					TAC* tac = new TAC();
-					tac->op = "setarr";
-					tac->array_name = $1->place;
-					tac->opd2 = $3->varDecs[i];
-					tac->isInt1 = true;
-					tac->l1 = convertNumToString(i);
-					$$->code.pb(tac);
+			if($3->isObjInit){
+				$$->type = $3->place;
+				Env* env = ST->FindClass($3->place);
+				for(auto ent : env->varList){
+					// cerr << "\tDebug: Here " << ent.fi << "\n";
+					string _name = $1->place + ent.fi;
+					ST->AddVar(_name.erase(0, 1), ent.se->type);
 				}
-				$$->varDecs.clear();
+				// cerr << "\t" << $$->type << "\n";
 			}
 			else{
-				Symbol* sym_ = ST->GetVar($3->place);
-				tac1->opd1 = sym_;
-				sym -> baseType = sym_->baseType;
-				$$->code.pb(tac1);
+				tac1->dest = sym;
+				tac1->op = "=";
+				if($3->isLit == true){
+					tac1->isInt1 = true;
+					tac1->l1 = $3->place;
+					$$->code.pb(tac1);
+				}
+				else if($3->isArray){
+
+					sym->baseType = "array";
+					sym->type = $3->type;
+					sym->width = $3->varDecs.size();
+					$$->isArray = true;
+					for(int i=0; i<$3->varDecs.size(); i++){
+						TAC* tac = new TAC();
+						tac->op = "setarr";
+						tac->array_name = $1->place;
+						tac->opd2 = $3->varDecs[i];
+						tac->isInt1 = true;
+						tac->l1 = convertNumToString(i);
+						$$->code.pb(tac);
+					}
+					$$->varDecs.clear();
+				}
+				else{
+					Symbol* sym_ = ST->GetVar($3->place);
+					tac1->opd1 = sym_;
+					sym -> baseType = sym_->baseType;
+					$$->code.pb(tac1);
+				}
 			}
 
 		}

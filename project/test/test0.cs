@@ -10,6 +10,7 @@ namespace Rextester
             // if(c[1] > 20){
                 // int m = 3;
             // }
+            Program obj = new Program();
             int k = 10;  
             print("i am a string");
             print(k);

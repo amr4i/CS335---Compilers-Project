@@ -11,6 +11,7 @@ struct genNode{
 	string arrayIndex; 
 
 	bool checkDecl;
+	bool isObjInit;
 
 	genNode(){
 		place = "None";
@@ -19,6 +20,7 @@ struct genNode{
 		isArray = false;
 		nodeLen = 0;
 		checkDecl = false;
+		isObjInit = false;
 	}
 
 	vector <TAC*> code;
