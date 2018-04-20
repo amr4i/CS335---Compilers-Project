@@ -6,6 +6,8 @@ using namespace std;
 
 extern Env* curEnv;
 extern string returnOffset(Env* env, Symbol* sym);
+extern int tmpCnt;
+extern map <string, string> tmpMap;
 
 void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
     map <string, Symbol*> ::iterator itt;
@@ -109,7 +111,7 @@ void codeGen(){
     fori(0,siz){
         TAC* ir = IR[i];
         cout<<ir->lineNum<<"\t" <<ir->op<<endl;
-                if(ir->isInt1 == true){
+        if(ir->isInt1 == true){
             if(ir->l1== "true"){
                 ir->l1 = "1";
             }
@@ -128,6 +130,43 @@ void codeGen(){
             code->addLine("li $v0, 10");
             code->addLine("syscall");
         }   
+
+        if(ir->dest != NULL){
+            Symbol* sym = ir->dest;
+            string _name = sym->name;
+            if(_name.substr(0, 6) == "_tVar_" && tmpMap.find(sym->name) == tmpMap.end()){
+                sym->offset = tmpCnt;
+                tmpMap[sym->name] = convertNumToString(tmpCnt);
+                tmpCnt += 4;
+                cerr << ir->lineNum << " dest: " << sym->name << "\n";
+            }
+
+
+        }
+
+        if(ir->opd1 != NULL){
+            Symbol* sym = ir->opd1;
+            string _name = sym->name;
+            if(_name.substr(0, 6) == "_tVar_" && tmpMap.find(sym->name) == tmpMap.end()){
+                sym->offset = tmpCnt;
+                tmpMap[sym->name] = convertNumToString(tmpCnt);
+                tmpCnt += 4;
+                cerr << ir->lineNum << " opd1: " << sym->name << "\n";
+            }
+
+        }
+
+        if(ir->opd2 != NULL){
+            Symbol* sym = ir->opd2;
+            string _name = sym->name;
+            if(_name.substr(0, 6) == "_tVar_" && tmpMap.find(sym->name) == tmpMap.end()){
+                sym->offset = tmpCnt;
+                tmpMap[sym->name] = convertNumToString(tmpCnt);
+                tmpCnt += 4;
+                cerr << ir->lineNum << " opd2: " << sym->name << "\n";
+            }
+
+        }
 
         // Check: I have incorporated bool functionanlity in here, && and ||. Please check if I have left it somewhere
         // Also please do the 'char' functionality
@@ -864,14 +903,14 @@ void codeGen(){
             /* code */
             reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
             code->addLine("addi "+reg_out+", "+reg_out+", 1");
-            code->addLine("sw " + reg_out + ", " + ir->dest->name);
+            code->addLine("sw " + reg_out + ", " + returnOffset(curEnv, ir->dest) + "($sp)");
         }
         else if (ir->op == "--")
         {
             /* code */
             reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
             code->addLine("addi "+reg_out+", "+reg_out+", -1");
-            code->addLine("sw "+reg_out+", " + ir->dest->name);
+            code->addLine("sw "+reg_out+", " + returnOffset(curEnv, ir->dest) + "($sp)");
         }
         else if (ir->op == "printint")
         {
@@ -892,7 +931,7 @@ void codeGen(){
         {
             code->addLine("li $v0, 5");
             code->addLine("syscall");
-            code->addLine("sw $v0, " + ir->dest->name);
+            code->addLine("sw $v0, " + returnOffset(curEnv, ir->dest) + "($sp)");
 
         }
         else if (ir->op == "array")
@@ -977,9 +1016,9 @@ void codeGen(){
 
         else if (ir->op == "readParam")
         {
-            reg_in1 = code->getReg(ir->dest, (ir->lineNum), 0);
-            code->addLine("lw "+reg_in1+", 0($sp)");
-            code->addLine("addi $sp, $sp, 4");
+            reg_in1 = code->getReg(ir->dest, (ir->lineNum), 1);
+            code->addLine("lw "+reg_in1+", " + returnOffset(curEnv, ir->dest) + "($sp)");
+            // code->addLine("addi $sp, $sp, 4");
         }
         // else if (ir->op == "||")
         // {
@@ -1025,11 +1064,15 @@ void codeGen(){
                 code->addLine("addi $sp, $sp, -4");
                 code->addLine("sw $ra, 0($sp)");
             }
+
+            cerr << "\tDebug: " << returnOffset(curEnv, ir->dest) << "\n";
+
             reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
             code->addLine("jal "+ir->target);
             code->addLine("lw $ra, 0($sp)");
             code->addLine("addi $sp, $sp, 4");
             code->addLine("move "+reg_out+", $v0");
+            // code->
 
             raUpdation = false;
 
@@ -1047,6 +1090,7 @@ void codeGen(){
 
             while(1){
                 code->addLine("addi $sp, $sp, " + convertNumToString(curEnv->width));
+                cerr << "\tDebug: puppy " << curEnv->name << "\n";
                 if(curEnv->type == "METHODTYPE"){
                     curEnv = curEnv->prevEnv;
                     break;

@@ -1,14 +1,20 @@
 #include "mipsCode.h"
 
 Env* curEnv;
+int tmpCnt = 4;
+map <string, string> tmpMap;
 
 string returnOffset(Env* env, Symbol* sym){
+	string _name = sym->name;
+	if(_name.substr(0, 6) == "_tVar_"){
+		return ("-" + convertNumToString(sym->offset));
+	}
     int off = 0;
     while(env->addTable.find(sym->name) == env->addTable.end()){
         off += env->width;
         env = env->prevEnv;
     }
-    return convertNumToString(off + sym->width);
+    return convertNumToString(off + sym->offset);
 }
 
 mipsCode::mipsCode(SymTable* SymT)
@@ -79,7 +85,7 @@ string mipsCode::getReg(Symbol* sym, int ins, int isDst)
 				regDesc[reg] = vr;
 				addDesc[vr]["register"] = reg;
 				addDesc[tmpVar]["register"] = "NONE";
-				// addLine("\tPuppy1: " + var + addDesc[var]["register"] + "\n");
+				// addLine("\tPuppy1: " + var + " - " + addDesc[vr]["register"] + "\n");
 
 				for(it = usedRegs.begin() ; it != usedRegs.end() ; it++)
 				{
@@ -136,11 +142,17 @@ string mipsCode::getReg(Symbol* sym, int ins, int isDst)
 	// If there is a free"register"	
 	if(flag == false && freeRegs.size() > 0)
 	{
-		// addLine("\tPuppy2 "+ var + ":" + addDesc[var]["register"] + "\n");
+		// addLine("\tPuppy2 "+ var + ":" + addDesc[vr]["register"] + "\n");
+
+		// for(auto s : freeRegs){
+		// 	cerr << s << " ";
+		// }
+		// cerr << "\n";
 
 		reg = getFreeReg();
 		regDesc[reg] = vr;
 		usedRegs.push_back( mp( (nextUseTable[ins-1].se)[var].se, reg ) );
+
 		addDesc[vr]["register"] = reg;	
 		if(addDesc[vr]["stack"] != "true"){
 			addDesc[vr]["stack"] = "false";
@@ -172,7 +184,7 @@ string mipsCode::getReg(Symbol* sym, int ins, int isDst)
 		if(isDst==1) addDesc[vr]["stack"]="false";
 	}
 
-	// if(var == "_tVar_7")	cerr << "\tDebug:" << addDesc[var]["register"] << "\n";
+	if(var == "_tVar_8")	cerr << "\tDebug:" << addDesc[vr]["register"] << "\n";
 
 	return reg;
 
@@ -249,6 +261,8 @@ void mipsCode::printCode()
 // and move them to memory locations. 
 void mipsCode::flushAll()
 {
+
+	// addLine("\tFlush\n");
 	vector< pair<int, string> >::iterator it;
 	string reg;
 	ss vr;
@@ -257,21 +271,23 @@ void mipsCode::flushAll()
 		vr = regDesc[reg];
 
 		// If the variable is a temp then we just need to delete from all the records
-		if((vr.fi).substr(0, 6) == "_tVar_"){
-			cerr << "Oji\tThis is a temporary variable: " << (vr.fi) << "\n";
-			ST->curEnv->addTable.erase(vr.fi);
-			addDesc.erase(vr);
-		}
-		else{
+		// if((vr.fi).substr(0, 6) == "_tVar_"){
+		// 	cerr << "Oji\tThis is a temporary variable: " << (vr.fi) << "\n";
+		// 	ST->curEnv->addTable.erase(vr.fi);
+		// 	addDesc.erase(vr);
+		// }
+		// else{
 			if(addDesc[vr]["stack"] != "true")
 			{
 				addLine("sw "+reg+", "+vr.se + "($sp)");
 				addDesc[vr]["stack"] = "true";
 			}
 			addDesc[vr]["register"] = "NONE";
-		}
+		// }
 	}
 
+	tmpCnt = 4;
+	tmpMap.clear();
 	usedRegs.clear();
 	regDesc.clear();
 
