@@ -6,9 +6,9 @@ map <string, string> tmpMap;
 
 string returnOffset(Env* env, Symbol* sym){
 	string _name = sym->name;
-	if(_name.substr(0, 6) == "_tVar_"){
-		return ("-" + convertNumToString(sym->offset));
-	}
+	// if(_name.substr(0, 6) == "_tVar_"){
+	// 	return ("-" + convertNumToString(sym->offset));
+	// }
     int off = 0;
     while(env->addTable.find(sym->name) == env->addTable.end()){
         off += env->width;
@@ -226,16 +226,16 @@ string mipsCode::spillReg(ss vr, int ins)
 	ss tmpVr = regDesc[spilledReg];
 
 	// If the variable is a temporary then delete it from all the data structures right away
-	if(/*(nextUseTable[ins-1].se)[varName].se == INF && */(tmpVr.fi).substr(0, 6) == "_tVar_"){
-		cerr << "Ola\tThis is a temporary variable: " << (tmpVr.fi) << "\n";
-		ST->curEnv->addTable.erase(tmpVr.fi);
-		addDesc.erase(tmpVr);
-	}
-	else{
+	// if(/*(nextUseTable[ins-1].se)[varName].se == INF && */(tmpVr.fi).substr(0, 6) == "_tVar_"){
+	// 	cerr << "Ola\tThis is a temporary variable: " << (tmpVr.fi) << "\n";
+	// 	ST->curEnv->addTable.erase(tmpVr.fi);
+	// 	addDesc.erase(tmpVr);
+	// }
+	// else{
 		// Write store instructions to transfer the data in the variable to the stack
 		addLine("sw "+spilledReg+", "+tmpVr.se + "($sp)");
 		addDesc[tmpVr]["stack"] = "true";
-	}
+	// }
 
 	reg = spilledReg;
 	regDesc[reg] = vr;

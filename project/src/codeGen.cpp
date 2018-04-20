@@ -170,7 +170,7 @@ void codeGen(){
 
         // Check: I have incorporated bool functionanlity in here, && and ||. Please check if I have left it somewhere
         // Also please do the 'char' functionality
-        else if (ir->op == "=")
+        if (ir->op == "=")
         {
             /* code */
             if (ir->isInt1)

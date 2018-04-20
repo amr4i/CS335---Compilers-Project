@@ -10,6 +10,7 @@ class prog
             if(i>1){
                 int a = i*compute_factorial(i-1);
                 print(a);
+                print("\n");
                 return a;
             }
             else{
