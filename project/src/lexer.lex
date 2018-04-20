@@ -48,6 +48,7 @@ NEW				new
 NULL_LIT		null
 OBJECT			object
 PARAMS			params
+PRINT 			print
 PRIVATE  	  	private
 PROTECTED		protected
 PUBLIC			public
@@ -154,6 +155,7 @@ UNDEF			{WHITESPACE}*#{WHITESPACE}*undef
 {NULL_LIT} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return NULL_LIT; }
 {OBJECT} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return OBJECT; }
 {PARAMS} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return PARAMS; }
+{PRINT} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return PRINT; }
 {PRIVATE} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return PRIVATE; }
 {PROTECTED} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return PROTECTED; }
 {PUBLIC} { yylval.sVal = strdup(yytext); cerr << (yytext) << "\n"; return PUBLIC; }

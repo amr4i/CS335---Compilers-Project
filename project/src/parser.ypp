@@ -40,7 +40,7 @@
 %token <sVal> STRUCT SWITCH THROW TRY TYPEOF USING VOID WHILE SIMPLE_ESC_SEQ CHAR_LITERAL REG_STR_LITERAL VER_STR_LITERAL
 %token <sVal> DQM RAND ROR REQ RNE LE GE APLUS AMINUS AMULT ADIV AMOD AAND AOR ACARET LSHIFT LSHIFTEQ WHERE
 %token <sVal> TRUE FALSE DCLN RSHIFT RSHIFTEQ INT CHAR LONG OBJECT STRING BOOL ID NULL_LIT THIS INCR DECR 
-%token <sVal> NEW PUBLIC PROTECTED PRIVATE BREAK CASE CATCH BASE CLASS
+%token <sVal> NEW PUBLIC PROTECTED PRIVATE BREAK CASE CATCH BASE CLASS PRINT
 // %token NEWLINE
 %token <iVal> DINT_LITERAL HDINT_LITERAL
 
@@ -76,7 +76,7 @@
 %type <node> break_statement goto_statement throw_statement continue_statement return_statement default_argument
 %type <node> struct_member_declarations struct_member_declaration class_init variable_initializer_list predefined_type 
 %type <node> variable_initializer variable_declarator variable_declarators  constructor_declarator constructor_initializer
-%type <node> constructor_name constructor_body class_name
+%type <node> constructor_name constructor_body class_name print_statement
 
 %%
 
@@ -1038,7 +1038,36 @@ boolean_expression : expression	{ $$ = $1; }
 statement :	labeled_statement 	{  $$ = $1;  }
 		| declaration_statement 	{ $$ = $1; }
 		| embedded_statement	{ $$ = $1; }
+		| print_statement 	{ $$ = $1; }
 		;
+print_statement : PRINT '(' string_literal ')' ';'
+		{
+			TAC* tac = new TAC();
+			tac->op = "printstr";
+			tac->target = $3->place;
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code.pb(tac);
+		}
+		| PRINT '(' DINT_LITERAL ')' ';'
+		{
+			TAC* tac = new TAC();
+			tac->op = "printstr";
+			tac->target = convertNumToString($3);
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code.pb(tac);
+		}
+		| PRINT '(' qualified_identifier ')' ';'  
+		{
+			TAC* tac = new TAC();
+			Symbol* sym = ST->GetVar($3->place);
+			tac->op = "printint";
+			tac->dest = sym;
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code.pb(tac);
+		}
 embedded_statement : block 	{ $$ = $1; }
 		| empty_statement 	{ $$ = $1; }
 		| expression_statement 	{ $$ = $1; }
