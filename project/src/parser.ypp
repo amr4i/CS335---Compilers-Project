@@ -83,12 +83,11 @@
 
 start :	compilation_unit	
 		{ 
-			$$ = $1; /*cerr << "Completed Parsing." << endl; */ 
+			$$ = $1;
+			setLineNum($$);
 			IR = $$->code;
 
-			cerr << "\n\n //////////////////////// IR Code ////////////////////////////// \n\n\n";
-			printTAC($$); 
-			cerr << "\n\n ////////////////////////////////////////////////////////////// \n\n\n";
+			// printTAC($$); 
 		}
 		;
 
@@ -105,7 +104,7 @@ identifier : 	ID
 					
 					if(ST->curEnv->inClass = true){
 						$$->checkDecl = true;
-						cerr << "\tDebug: Decl set\n";
+						// cerr << "\tDebug: Decl set\n";
 						ST->curEnv->inClass = false;
 					}
 
@@ -479,9 +478,9 @@ invocation_expression : primary_no_array_creation_expression '(' ')' 	{  }
 			$$->place = str1;
 			$$->type = methodEnv->returnType;
 			$$->code.pb(tac);
-			cerr << "\t";
-			printTAC($$);
-			cerr << "//////////////////////////////////////////////////\n";
+			// cerr << "\t";
+			// printTAC($$);
+			// cerr << "//////////////////////////////////////////////////\n";
 		}
 		;
 
@@ -508,10 +507,12 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			tac->dest = temp;
 			tac->array_name = $1->place;
 			$$->isArray = true;
+			$$->isLit = false;	
+
 			if($3->isLit){
 				tac->isInt2 = true;
 				tac->l2 = $3->place;
-				$$->isLit=true;
+				// $$->isLit=true;
 			}
 			else{
 				tac->opd2 = ST->GetVar($3->place);
@@ -544,10 +545,13 @@ element_access : primary_no_array_creation_expression '[' expression ']'
 			tac->dest = temp;
 			tac->array_name = $1->place;
 			$$->isArray = true;
+			$$->isLit = false;
+			// cerr << $3->place << endl;
+			// cerr << $3->isLit << endl;
 			if($3->isLit){
 				tac->isInt2 = true;
 				tac->l2 = $3->place;
-				$$->isLit=true;
+				// $$->isLit=true;
 			}
 			else{
 				tac->opd2 = ST->GetVar($3->place);
@@ -1003,12 +1007,14 @@ assignment : unary_expression assignment_operator expression	{
 			}
 			gen2OpCode($$, $2, $1, $3, lineNum);
 			if($1->isArray == true){
+				// cerr << "debug" << endl;
 				TAC* tac = new TAC();
 				tac->op = "setarr";
 				tac->array_name = $1->arrayName;
-				if($1->isLit){
+				if($3->isLit){
 					tac->isInt1 = true;
 					tac->l1 = $1->arrayIndex;
+					$$->isLit = false;
 				}
 				else{
 					tac->opd1 = ST->GetVar($1->arrayIndex);
@@ -1189,7 +1195,6 @@ local_variable_declarators : local_variable_declarator
 		;
 local_variable_declarator : identifier 	
 		{ 
-			cerr << "\t Debug: Here0\n";
 			$$ = $1; 
 			if($1->checkDecl == true){
 				string _name = $1->place;
@@ -1216,13 +1221,12 @@ local_variable_declarator : identifier
 			Symbol* sym;
 			
 			if($1->checkDecl == true){
-				cerr << "\tDebug: Adding new Symbol " << $1->place <<"\n";
+				// cerr << "\tDebug: Adding new Symbol " << $1->place <<"\n";
 				string _name = $1->place;
 				ST->AddVar(_name.erase(0,1));
 			}
 
 			sym = ST->GetVar($1->place);
-			cerr << "\t Debug: " << sym->type << "\n";
 			if(sym->type != "None"){
 				cerr << "Error: Symbol "<< $1->place <<" is already defined. Redefinition at line num: " << lineNum << endl;
 				exit(1);
@@ -2078,34 +2082,35 @@ class_body : '{' '}' 	{
 		}
 		| '{' class_member_declarations '}'	
 		{ 
-			string consName = ST->curEnv->name + ST->curEnv->name;	
+			// string consName = ST->curEnv->name + ST->curEnv->name;	
 
-			if(ST->GetMethod(consName) == NULL)
-			{
-				genNode* newNode = new genNode();
-				$$ = newNode;
+			// if(0/*ST->GetMethod(consName) == NULL*/)
+			// {
+			// 	genNode* newNode = new genNode();
+			// 	$$ = newNode;
 
-				$$->place = $2->place;
-				$$->type = $2->type;
-				$$->nodeLen = $2->nodeLen; 
+			// 	$$->place = $2->place;
+			// 	$$->type = $2->type;
+			// 	$$->nodeLen = $2->nodeLen; 
 
-				Env* env = ST->BeginScope(consName, "METHODTYPE");
-				ST->EndScope();
+			// 	Env* env = ST->BeginScope(consName, "METHODTYPE");
+			// 	ST->EndScope();
 				
-				$$->code.pb(genLabelTAC(consName));
+			// 	$$->code.pb(genLabelTAC(consName));
 
 
-				vector <TAC*> ::iterator it;
-				it = $2->code.begin();
-				while(it != $2->code.end() && (*it)->op != "label")	it++;
+			// 	vector <TAC*> ::iterator it;
+			// 	it = $2->code.begin();
+			// 	while(it != $2->code.end() && (*it)->op != "label")	it++;
 
-				$$->code.insert($$->code.end(), $2->code.begin(), it);
+			// 	$$->code.insert($$->code.end(), $2->code.begin(), it);
 
-				////////////////// Do we need to insert a return statement or something at the end of the code of the constructor //////////////////
+			// 	////////////////// Do we need to insert a return statement or something at the end of the code of the constructor //////////////////
 
-				$$->code.insert($$->code.end(), it, $2->code.end());
-			}
-			else 	$$ = $2;
+			// 	$$->code.insert($$->code.end(), it, $2->code.end());
+			// }
+			// else 	
+				$$ = $2;
 
 		}
 		;
@@ -2113,37 +2118,36 @@ class_member_declarations : class_member_declaration 	{ $$ = $1; }
 		| class_member_declarations class_member_declaration	
 		{  
 			// We need to create a constructor as soon as we get it because then the main may try to use without even declaring an object
-			string consName = ST->curEnv->name + ST->curEnv->name;	
+			// string consName = ST->curEnv->name + ST->curEnv->name;	
 
-			if($2->code.size() > 0 && ($2->code[0])->op == "label" && ($2->code[0])->target == consName){
-				// Assuming all the members declarations are at the top and constructor can occur anywhere in the class but before the main I guess
+			// if(0/*$2->code.size() > 0 && ($2->code[0])->op == "label" && ($2->code[0])->target == consName*/){
+			// 	// Assuming all the members declarations are at the top and constructor can occur anywhere in the class but before the main I guess
 
-				genNode* newNode = new genNode();
-				$$ = newNode;
-				$$->place = $1->place;
-				$$->type = $1->type;
-				$$->nodeLen = $1->nodeLen;                                // don't remember what it does
+			// 	genNode* newNode = new genNode();
+			// 	$$ = newNode;
+			// 	$$->place = $1->place;
+			// 	$$->type = $1->type;
+			// 	$$->nodeLen = $1->nodeLen;                                // don't remember what it does
 
-				vector<TAC*>::iterator it, jt, ct;
+			// 	vector<TAC*>::iterator it, jt, ct;
 
-				it = $2->code.begin();
-				
-				it++;
-				while(it != $2->code.end() && (*it)->op == "readParam")	it++;
+			// 	it = $2->code.begin();
+			// 	it++;
+			// 	while(it != $2->code.end() && (*it)->op == "readParam")	it++;
 
-				jt = $1->code.begin();
-				while(jt != $1->code.end() && (*jt)->op != "label")	jt++;
+			// 	jt = $1->code.begin();
+			// 	while(jt != $1->code.end() && (*jt)->op != "label")	jt++;
 
-				$$->code.insert($$->code.end(), $2->code.begin(), it);
-				$$->code.insert($$->code.end(), $1->code.begin(), jt);
-				$$->code.insert($$->code.end(), it, $2->code.end());
-				$$->code.insert($$->code.end(), jt, $1->code.end());
+			// 	$$->code.insert($$->code.end(), $2->code.begin(), it);
+			// 	$$->code.insert($$->code.end(), $1->code.begin(), jt);
+			// 	$$->code.insert($$->code.end(), it, $2->code.end());
+			// 	$$->code.insert($$->code.end(), jt, $1->code.end());
 
-			}
-			else{
+			// }
+			// else{
 				$$ = $1;
 				$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
-			}
+			// }
 
 			////////////////////////////////// Not doing right now //////////////////////////////////////
 
@@ -2202,7 +2206,7 @@ field_declaration : type variable_declarators ';'
 				ST->curEnv->varList[ST->curEnv->name + _name] = $$->varDecs[i];
 
 
-				if($$->varDecs[i] == NULL)	cerr << "\tDEBUG: BUG\n";
+				// if($$->varDecs[i] == NULL)	cerr << "\tDEBUG: BUG\n";
 				string t = $$->varDecs[i]->type;
 				if(t == "None"){
 					t = $1->place;
@@ -2214,7 +2218,7 @@ field_declaration : type variable_declarators ';'
 					}
 				}
 				$$->varDecs[i]->type = t;
-				cerr << "\tDebug: " << $$->varDecs[i]->name << " field_declaration\n";
+				// cerr << "\tDebug: " << $$->varDecs[i]->name << " field_declaration\n";
 			}
 		}
 		| modifiers type variable_declarators ';'	
@@ -2301,7 +2305,6 @@ variable_declarator : identifier
 			TAC* tac1 = new TAC();
 			Symbol* sym;
 			
-			cerr << "\t Debug: " << $1->place << "\n";
 			sym = ST->GetVar($1->place);
 			// if(sym == NULL){
 			// 	sym = ST->GetVarInClass($1->place);
@@ -2613,34 +2616,34 @@ constructor_declaration : constructor_declarator constructor_body
 
 			///// constructor_name = class_name + class_name (class_name has a following "_") /////
 
-			string consName = ST->curEnv->name;
+			// string consName = ST->curEnv->name;
 
-			if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
-			{
-				Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
-				sym->name = consName;
+			// if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
+			// {
+			// 	Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
+			// 	sym->name = consName;
 
-				ST->curEnv->addTable.erase(ST->curEnv->name);
+			// 	ST->curEnv->addTable.erase(ST->curEnv->name);
 
-				ST->curEnv->addTable[consName] = sym;
-			}	
+			// 	ST->curEnv->addTable[consName] = sym;
+			// }	
 
-			vector <TAC*> tmp = $1->code;
+			// vector <TAC*> tmp = $1->code;
 
-			$$->code.clear();
-			$$->code.pb(genLabelTAC(consName));
-			$$->code.insert($$->code.end(), tmp.begin(), tmp.end());
+			// $$->code.clear();
+			// $$->code.pb(genLabelTAC(consName));
+			// $$->code.insert($$->code.end(), tmp.begin(), tmp.end());
 
-			$$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
+			// $$->code.insert($$->code.end(), $2->code.begin(), $2->code.end());
 
-			TAC* tac = new TAC();
-			tac-> op = "endScope";
-			tac->oldScope = ST->curEnv;
-			tac->newScope = ST->curEnv->prevEnv;
+			// TAC* tac = new TAC();
+			// tac-> op = "endScope";
+			// tac->oldScope = ST->curEnv;
+			// tac->newScope = ST->curEnv->prevEnv;
 
-			$$->code.pb(tac);
+			// $$->code.pb(tac);
 
-			ST->EndScope();
+			// ST->EndScope();
 		}
 		| modifiers constructor_declarator constructor_body	
 		{
@@ -2648,33 +2651,33 @@ constructor_declaration : constructor_declarator constructor_body
 
 			///// constructor_name = class_name + class_name (class_name has a following "_") /////
 
-			string consName = ST->curEnv->name + ST->curEnv->name;
+			// string consName = ST->curEnv->name + ST->curEnv->name;
 
-			if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
-			{
-				Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
-				sym->name = consName;
+			// if(ST->curEnv->addTable.find(ST->curEnv->name) != ST->curEnv->addTable.end())
+			// {
+			// 	Symbol* sym = ST->curEnv->addTable[ST->curEnv->name];
+			// 	sym->name = consName;
 
-				ST->curEnv->addTable.erase(ST->curEnv->name);
+			// 	ST->curEnv->addTable.erase(ST->curEnv->name);
 				
-				ST->curEnv->addTable[consName] = sym;
-			}	
+			// 	ST->curEnv->addTable[consName] = sym;
+			// }	
 
-			vector <TAC*> tmp = $2->code;
-			$$->code.clear();
-			$$->code.pb(genLabelTAC(consName));
-			$$->code.insert($$->code.end(), tmp.begin(), tmp.end());
+			// vector <TAC*> tmp = $2->code;
+			// $$->code.clear();
+			// $$->code.pb(genLabelTAC(consName));
+			// $$->code.insert($$->code.end(), tmp.begin(), tmp.end());
 
-			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
+			// $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());		
 
-			TAC* tac = new TAC();
-			tac-> op = "endScope";
-			tac->oldScope = ST->curEnv;
-			tac->newScope = ST->curEnv->prevEnv;
+			// TAC* tac = new TAC();
+			// tac-> op = "endScope";
+			// tac->oldScope = ST->curEnv;
+			// tac->newScope = ST->curEnv->prevEnv;
 
-			$$->code.pb(tac);
+			// $$->code.pb(tac);
 
-			ST->EndScope();  
+			// ST->EndScope();  
 		}
 		;
 		
@@ -2683,9 +2686,9 @@ constructor_declaration : constructor_declarator constructor_body
 constructor_declarator : constructor_name '(' ')' 	
 		{ 
 			$$ = $1;
-			ST->curEnv->name = ($1->place) + ($1->place);
+			// ST->curEnv->name = ($1->place) + ($1->place);
 
-			$$->code.clear();
+			// $$->code.clear();
 		}
 		| constructor_name '(' ')' constructor_initializer 	
 		{  
@@ -2698,10 +2701,10 @@ constructor_declarator : constructor_name '(' ')'
 		| constructor_name '(' formal_parameter_list ')' 	
 		{  
 			$$ = $1;
-			ST->curEnv->name = ($1->place) + ($1->place);
+			// ST->curEnv->name = ($1->place) + ($1->place);
 
-			$$->code.clear();
-			$$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
+			// $$->code.clear();
+			// $$->code.insert($$->code.end(), $3->code.begin(), $3->code.end());
 
 		}
 		| constructor_name '(' formal_parameter_list ')' constructor_initializer	
@@ -2716,15 +2719,15 @@ constructor_declarator : constructor_name '(' ')'
 
 constructor_name : identifier 
 		{
-			TAC* tac = new TAC();
-			tac->op = "beginScope";
-			tac->oldScope = ST->curEnv;
+			// TAC* tac = new TAC();
+			// tac->op = "beginScope";
+			// tac->oldScope = ST->curEnv;
 
-			ST->BeginScope();
-			ST->curEnv->type = "METHODTYPE";
+			// ST->BeginScope();
+			// ST->curEnv->type = "METHODTYPE";
 
-			tac->oldScope = ST->curEnv;
-			$$->code.pb(tac);
+			// tac->oldScope = ST->curEnv;
+			// $$->code.pb(tac);
 
 			$$ = $1;
 		}

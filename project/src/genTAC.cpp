@@ -42,108 +42,127 @@ bool isOpIn(string *opA, int n, string op){
 	return false;
 }
 
-void printTAC(genNode* node){
+void setLineNum(genNode* node){
 	int siz = node->code.size();
 	TAC *t;
 	fori(0, siz){
 		t=node->code[i];
 		t->lineNum = i+1;
-
 		if(isOpIn(op3,21,t->op)) t->opType = 3;
 		else if(isOpIn(op2,14,t->op)) t->opType = 2;
 		else if(isOpIn(op1,10,t->op)) t->opType = 1;
 		else if(isOpIn(op0,4,t->op)){ t->opType = -1;}
 
+	}
+}
+
+void printTAC(genNode* node){
+	int siz = node->code.size();
+	TAC *t;
+	// setLineNum(node);
+	fori(0, siz){
+		t=node->code[i];
+		t->lineNum = i+1;
+		if(isOpIn(op3,21,t->op)) t->opType = 3;
+		else if(isOpIn(op2,14,t->op)) t->opType = 2;
+		else if(isOpIn(op1,10,t->op)) t->opType = 1;
+		else if(isOpIn(op0,4,t->op)){ t->opType = -1;}
 		if(t==NULL){
 			cerr<<"line number %d has the tac struct empty\n";
 			exit(1);
 		}
+		
 		// cerr<< t->op << "\t\t" ;
 		switch(t->opType){
 			case 3: 
 				if(t->op=="call"){
-					cout << t->lineNum<< ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
+					cerr << t->lineNum<< ", " << t->op << ", " << t->dest->name << ", " << t->target << ", " << t->l1;
 				}
 				else if(t->op=="setarr"){
 					if(!t->isInt1 && !t->isInt2){
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->opd1->name<<", "<<t->opd2->name;
+						cerr << "1" << endl;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->opd1->name<<", "<<t->opd2->name;
 					}
 					else if(t->isInt1 && !t->isInt2){
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->l1<<", "<<t->opd2->name;
+						cerr << "2" << endl;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->l1<<", "<<t->opd2->name;
 					}
 					else if(!t->isInt1 && t->isInt2){
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->opd1->name<<", "<<t->l2;
+						cerr << "3" << endl;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->opd1->name<<", "<<t->l2;
 					}
 					else{
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->l1<<", "<<t->l2;
+						cerr << "4" << endl;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->array_name<<", "<<t->l1<<", "<<t->l2;
 					}
 				}
 				else if(t->op=="getarr"){
 					if(!t->isInt2){
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->array_name<<", "<<t->opd2->name;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->array_name<<", "<<t->opd2->name;
 					}
 					else{
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->array_name<<", "<<t->l2;					}
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->array_name<<", "<<t->l2;					}
 				}
 				else if(!t->isInt1 && !t->isInt2){
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->opd2->name;
 				}
 				else if(t->isInt1 && !t->isInt2){
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->opd2->name;
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->opd2->name;
 				}
 				else if(!t->isInt1 && t->isInt2){
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->l2;
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->opd1->name<<", "<<t->l2;
 				}
 				else{
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->l2;
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name<<", "<<t->l1<<", "<<t->l2;
 				}
 				break;
 			case 2:
 				if(!(t->isInt1)){
 					if(t->op=="ifgoto")
-						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->target;
+						cerr << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->target;
 					else
-						cout << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
+						cerr << t->lineNum << ", "<< t->op << ", " << t->dest->name << ", " << t->opd1->name;
 				}
 				else
-					cout<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
+					cerr<< t->lineNum << ", " << t->op << ", " << t->dest->name << ", " << t->l1;
 				break;
 			case 1:
 				if ( t->op == "printint"){
 					if(t->isInt1){
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->target;
 						break;
 					}
 					else{
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 						break;
 					}
 
 				}
 				else if(t->op=="++" || t->op=="--"  || t->op=="scan" || t->op == "readParam"){
-					cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
 				}
 				else if( t->op == "retint" || t->op == "param"){
 					if(t->isInt1)
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->l1;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->l1;
 					else
-						cout<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
+						cerr<<t->lineNum<<", "<<t->op<<", "<<t->dest->name;
 					break;
 				}
-				cout<<t->lineNum<<", "<<t->op<<", "<<t->target;
+				else
+					cerr<<t->lineNum<<", "<<t->op<<", "<<t->target;
 				break;
 			case -1:
 				if(t->op == "beginScope" || t->op == "endScope"){
-					cout << t->lineNum << ", " << t->op << ", " << t->oldScope->name << ", " << t->newScope->name;
+					cerr << t->lineNum << ", " << t->op << ", " << t->oldScope->name << ", " << t->newScope->name;
 				}
-				else	cout<<t->lineNum<<", "<<t->op;
+				else	cerr<<t->lineNum<<", "<<t->op;
 				break;
 			default:
 				cerr<<"Error: Wrong opType\n";
 				exit(1);
 		}
-		cout<<endl;
+		cerr<<endl;
 	}
 }
 

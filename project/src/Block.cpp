@@ -24,6 +24,7 @@ Block::Block(int s, int e)
 void Block::computeNextUse()
 {
 	// cerr << "Debug:\n";
+
 	forin(endLine-1, startLine-1)
 	{
 
@@ -31,11 +32,12 @@ void Block::computeNextUse()
 		string op = IR[i]->op;
 		int opType = IR[i]->opType;
 		map <string, pair < string, int > > temp;
-
+		
 		if(opType == -1)	{
 			// cerr << "\t\tOperator: " << IR[i]->op << "\n";
 			continue;
 		}
+        // cerr<< "DEBUG2" << endl; 
 		else if(opType == 1)
 		{
 			if(op == "++" || op == "--" || (op == "printint" && IR[i]->isInt1==false) || (op == "retint" && IR[i]->isInt1 == false) || (op == "param" && IR[i]->isInt1 == false))

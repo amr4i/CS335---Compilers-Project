@@ -6,14 +6,16 @@ map <string, string> tmpMap;
 
 string returnOffset(Env* env, Symbol* sym){
 	string _name = sym->name;
+
 	// if(_name.substr(0, 6) == "_tVar_"){
 	// 	return ("-" + convertNumToString(sym->offset));
 	// }
     int off = 0;
-    while(env->addTable.find(sym->name) == env->addTable.end()){
-        off += env->width;
+    while(env!=NULL && env->addTable.find(sym->name) == env->addTable.end()){
+    	    off += env->width;
         env = env->prevEnv;
     }
+
     return convertNumToString(off + sym->offset);
 }
 
@@ -64,6 +66,7 @@ string mipsCode::getReg(Symbol* sym, int ins, int isDst)
 		return reg;
 	} 
 	
+
 	// If there is variable on the RHS that has no nextUse
 	// This should be done only when the register is destination register (i.e. on the LHS)
 	if(isDst==1 && !(IR[ins-1]->op == "+=" || IR[ins-1]->op == "-=" || IR[ins-1]->op == "/=" || 
@@ -248,13 +251,11 @@ string mipsCode::spillReg(ss vr, int ins)
 
 void mipsCode::printCode()
 {
-	cerr << "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \n\n";
 
 	vector <string> ::iterator it;
 	for(it = code.begin(); it != code.end() ; it++){
 		cout<<(*it)<<"\n";
 	}
-	cerr << "\n\n \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \n\n";
 }
 
 // to clear the registers at the end of blocks, 

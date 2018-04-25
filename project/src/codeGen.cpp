@@ -13,18 +13,18 @@ void addDataSection(mipsCode* code, Env* baseEnv, bool isWord){
     map <string, Symbol*> ::iterator itt;
     for(itt = baseEnv->addTable.begin() ; itt != baseEnv->addTable.end() ; itt++)
     {
-        if( (*itt).se->baseType == "simple")
-        {
-            if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
-            {
-                code->addLine((*itt).fi + ":\t.word 0");
-            }
-            else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
-            {
-                code->addLine((*itt).fi + ":\t.word 0");
-            }
-        }
-        else if( (*itt).se->baseType == "array")
+        // if( (*itt).se->baseType == "simple")
+        // {
+        //     if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
+        //     {
+        //         code->addLine((*itt).fi + ":\t.word 0");
+        //     }
+        //     else if( ((*itt).se->type == "char" || (*itt).se->type == "bool") && !isWord)
+        //     {
+        //         code->addLine((*itt).fi + ":\t.word 0");
+        //     }
+        // }
+        if( (*itt).se->baseType == "array")
         {
             if( ((*itt).se->type == "int" || (*itt).se->type == "long") && isWord)
             {
@@ -60,7 +60,6 @@ void codeGen(){
 
     int siz, blockSiz, blockNum;
 
-    cerr << "\tDebug:2\n";
     Env *baseEnv = ST->baseEnv;
     curEnv = baseEnv;
 
@@ -70,7 +69,6 @@ void codeGen(){
     // Populating blocks
     getBlocks();
 
-    cerr << "\tDebug:1\n";
 
     nextUseTable.resize(IR.size()+1);
 
@@ -88,7 +86,7 @@ void codeGen(){
     code->addLine(".data");
 
     // add all the data variables
-    addDataSection(code, baseEnv, byteType);
+    // addDataSection(code, baseEnv, byteType);
     addDataSection(code, baseEnv, wordType);
 
     string reg_out, reg_in1, reg_in2;
@@ -110,7 +108,7 @@ void codeGen(){
     siz = IR.size();
     fori(0,siz){
         TAC* ir = IR[i];
-        cout<<ir->lineNum<<"\t" <<ir->op<<endl;
+        // cout<<ir->lineNum<<"\t" <<ir->op<<endl;
         if(ir->isInt1 == true){
             if(ir->l1== "true"){
                 ir->l1 = "1";
@@ -138,7 +136,6 @@ void codeGen(){
                 sym->offset = tmpCnt;
                 tmpMap[sym->name] = convertNumToString(tmpCnt);
                 tmpCnt += 4;
-                cerr << ir->lineNum << " dest: " << sym->name << "\n";
             }
 
 
@@ -151,7 +148,6 @@ void codeGen(){
                 sym->offset = tmpCnt;
                 tmpMap[sym->name] = convertNumToString(tmpCnt);
                 tmpCnt += 4;
-                cerr << ir->lineNum << " opd1: " << sym->name << "\n";
             }
 
         }
@@ -163,7 +159,6 @@ void codeGen(){
                 sym->offset = tmpCnt;
                 tmpMap[sym->name] = convertNumToString(tmpCnt);
                 tmpCnt += 4;
-                cerr << ir->lineNum << " opd2: " << sym->name << "\n";
             }
 
         }
@@ -951,12 +946,14 @@ void codeGen(){
         else if (ir->op == "getarr")
         {
             if(ir->isInt2){
+                // cerr << " DEBUG\n";
                 reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
                 code->addLine("li $t0, "+ir->l2);
                 code->addLine("sll $t0, $t0, 2");
                 code->addLine("lw "+reg_out+", "+ir->array_name+"($t0)");
             }
             else{
+                // cerr << " DEBUG2\n";
                 reg_in2 = code->getReg(ir->opd2, (ir->lineNum), 0);
                 reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
                 code->addLine("sll $t0, "+reg_in2+", 2");
@@ -1071,7 +1068,6 @@ void codeGen(){
                 code->addLine("sw $ra, 0($sp)");
             }
 
-            cerr << "\tDebug: " << returnOffset(curEnv, ir->dest) << "\n";
 
             reg_out = code->getReg(ir->dest, (ir->lineNum), 1);
             code->addLine("jal "+ir->target);
@@ -1096,7 +1092,6 @@ void codeGen(){
 
             while(1){
                 code->addLine("addi $sp, $sp, " + convertNumToString(curEnv->width));
-                cerr << "\tDebug: puppy " << curEnv->name << "\n";
                 if(curEnv->type == "METHODTYPE"){
                     curEnv = curEnv->prevEnv;
                     break;

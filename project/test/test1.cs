@@ -8,13 +8,14 @@ using System.Text;
 namespace check1
 {
     class Program
-        {
-            void Main(string[] args)
+        {   
+            void Main()
             {
                 int i=9;
                 int res;
-                if(i<9)
-                    ;
+                if(i<9){
+                    
+                }
                 else if(i==9)
                     res=0;
                 else 

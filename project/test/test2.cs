@@ -5,16 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Program
+namespace RetardProgram
     {
         class Program
         {
             void Main(string[] args)
             {
-                int i=8,count=0;
-                for(;i<90;i*=2){
-                    ++count;
-                }
+                int i=10;
+                int arr = new int[5]{1,2,3,4,5};
+                print(i);
             }
         }
     }

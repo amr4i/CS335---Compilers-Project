@@ -112,7 +112,7 @@ Symbol* Env::getVarInClass(string varName){
 	if(Class != NULL){ 		
 		if(Class->varList.find(varName)  != Class->varList.end())	return Class->varList[varName];
 	}
-	cerr << "\tDebug: " << varName << " GetVarInClass\n";
+	// cerr << "\tDebug: " << varName << " GetVarInClass\n";
 	return NULL;
 }
 

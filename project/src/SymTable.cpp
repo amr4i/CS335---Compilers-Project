@@ -48,7 +48,7 @@ Env* SymTable::BeginScope(string scopeName = "None", string scopeType = "BLOCKTY
 	(curEnv->children).pb(newEnv);
 
 	// if(scopeType == "BLOCKTYPE") { newEnv->offset = curEnv->offset; }
-	cerr << "-------->>>>>>>>>>>\n";
+	// cerr << "-------->>>>>>>>>>>\n";
 	
 	curEnv = newEnv;
 
@@ -81,7 +81,6 @@ Env* SymTable::EndScope(){
 	// curEnv->maxWidth = cur_width;
 
 
-	//////////////////////////////////////////// DEBUG code ///////////////////////////////////////
 
 	// for(auto sym : curEnv->addTable){
 	// 	cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << "\n";
@@ -103,7 +102,7 @@ Env* SymTable::EndScope(){
 		else	it++;
 	}
 
-	cerr << "addTable of scope: " << curEnv->name << "\n";
+	// cerr << "addTable of scope: " << curEnv->name << "\n";
 
 	int offset = 0;
 	for(auto sym : curEnv->addTable){
@@ -112,7 +111,7 @@ Env* SymTable::EndScope(){
 		else */sym.se->width = curEnv->getWidth(sym.se->type, sym.se->baseType, sym.se->width);
 		sym.se->offset = offset;
 		offset += sym.se->width;
-		cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << ", offset: " << sym.se->offset << "\n";
+		// cerr << "\t" << sym.fi << " -> width: " << sym.se->width << ", type: " << sym.se->type << ", basetype: " << sym.se->baseType << ", offset: " << sym.se->offset << "\n";
 	}
 
 	curEnv->width = offset;
@@ -120,7 +119,7 @@ Env* SymTable::EndScope(){
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	curEnv = curEnv->prevEnv;
-	cerr << "--------<<<<<<<<<<\n";
+	// cerr << "--------<<<<<<<<<<\n";
 
 	// curEnv->width = max(curEnv->maxWidth, curEnv->width + cur_width);
 	// return curEnv;

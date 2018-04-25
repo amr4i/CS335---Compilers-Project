@@ -983,7 +983,10 @@ local_variable_declarator : identifier
 		}
 		| identifier '=' local_variable_initializer	
 		{
-			$$ = $3;
+			genNode* newNode = new genNode();
+			$$ = newNode;
+			$$->code = $3->code;
+			
 			$$->place = $1->place;
 			
 			TAC* tac1 = new TAC();
